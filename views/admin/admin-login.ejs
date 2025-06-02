@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FitVibe - Admin Login</title>
+  <link rel="stylesheet" href="/styles.css"> <!-- Assumes centralized CSS -->
+  <style>
+    .admin-login-section {
+      max-width: 500px;
+      margin: 50px auto;
+      padding: 40px;
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+      text-align: center;
+    }
+    .admin-login-section h2 {
+      font-size: 32px;
+      margin-bottom: 30px;
+      color: #1a1a1a;
+    }
+    .admin-login-form {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    .admin-login-form input {
+      padding: 12px;
+      font-size: 16px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      outline: none;
+      transition: border 0.3s;
+    }
+    .admin-login-form input:focus {
+      border-color: #ffd700;
+    }
+    .admin-login-form button {
+      padding: 12px;
+      font-size: 18px;
+      font-weight: bold;
+      background: #ffd700;
+      color: #1a1a1a;
+      border: none;
+      border-radius: 25px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    .admin-login-form button:hover {
+      background: #e6c200;
+    }
+    .error-message {
+      color: red;
+      font-size: 0.75rem;
+      text-align: left;
+    }
+    .admin-login-form .login-link {
+      margin-top: 15px;
+      font-size: 14px;
+      color: #666;
+    }
+    .admin-login-form .login-link a {
+      color: #ffd700;
+      text-decoration: none;
+    }
+    .admin-login-form .login-link a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+ 
+
+ 
+  <div class="admin-login-section">
+    <h2>Admin Login</h2>
+    <form class="admin-login-form" action="/admin/login" method="POST">
+      <input type="email" name="email" placeholder="Email" required />
+      <input type="password" name="password" placeholder="Password" required />
+      <div class="error-message">
+        <% if (message) { %>
+          <%= message %>
+        <% } %>
+      </div>
+      <button type="submit">Login</button>
+      <div class="login-link">
+        Back to <a href="/login">User Login</a>
+      </div>
+    </form>
+  </div>
+
+  
+</body>
+</html>

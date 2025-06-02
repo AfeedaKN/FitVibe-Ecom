@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Orders - FitVibe</title>
+  <link rel="stylesheet" href="/css/styles.css">
+  <style>
+    .orders-section {
+      padding: 40px 20px;
+      max-width: 1200px;
+      margin: 0 auto;
+      background: #f9f9f9;
+    }
+
+    .orders-section h1 {
+      font-size: 28px;
+      color: #333;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    .order {
+      background: #fff;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+      margin-bottom: 20px;
+    }
+
+    .order h2 {
+      font-size: 20px;
+      color: #333;
+      margin-bottom: 10px;
+    }
+
+    .order-item {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+
+    .order-item p {
+      margin: 0;
+      font-size: 16px;
+    }
+  </style>
+</head>
+<body>
+  <%- include('./partials/header') %>
+
+  <div class="orders-section">
+    <h1>My Orders</h1>
+    <% if (orders && orders.length > 0) { %>
+      <% orders.forEach(order => { %>
+        <div class="order">
+          <h2>Order #<%= order._id %></h2>
+          <p>Date: <%= new Date(order.createdAt).toLocaleDateString() %></p>
+          <p>Status: <%= order.status %></p>
+          <p>Address: <%= order.address %></p>
+          <p>Payment Method: <%= order.paymentMethod %></p>
+          <% order.items.forEach(item => { %>
+            <div class="order-item">
+              <p><%= item.productId.productName %> x <%= item.quantity %></p>
+              <p>$<%= (item.price * item.quantity).toFixed(2) %></p>
+            </div>
+          <% }) %>
+          <p>Total: $<%= order.total.toFixed(2) %></p>
+        </div>
+      <% }) %>
+    <% } else { %>
+      <p>You have no orders yet. <a href="/products">Start shopping</a>.</p>
+    <% } %>
+  </div>
+
+  <%- include('./partials/footer') %>
+</body>
+</html>

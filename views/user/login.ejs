@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FitVibe - Login</title>
+  <style>
+   * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Arial', sans-serif;
+      line-height: 1.6;
+      background: #f4f4f4;
+    }
+    /* Navbar Styles */
+    .navbar {
+      background: linear-gradient(90deg, #1a1a1a, #333);
+      padding: 15px 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: white;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+    .navbar .logo {
+      font-size: 24px;
+      font-weight: bold;
+    }
+    .navbar a {
+      color: white;
+      text-decoration: none;
+      margin: 0 20px;
+      font-size: 16px;
+      transition: color 0.3s;
+    }
+    .navbar a:hover {
+      color: #ffd700;
+    }
+    .nav-right a {
+      padding: 8px 15px;
+      border: 1px solid #ffd700;
+      border-radius: 25px;
+      transition: background 0.3s;
+    }
+    .nav-right a:hover {
+      background: #ffd700;
+      color: #1a1a1a;
+    }
+    .nav-right span {
+      margin-right: 20px;
+      font-size: 16px;
+    }
+    /* Signup Form Styles */
+    .signup-section {
+      max-width: 500px;
+      margin: 50px auto;
+      padding: 40px;
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+      text-align: center;
+    }
+    .signup-section h2 {
+      font-size: 32px;
+      margin-bottom: 30px;
+      color: #1a1a1a;
+    }
+    .signup-form {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    .signup-form input {
+      padding: 12px;
+      font-size: 16px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      outline: none;
+      transition: border 0.3s;
+    }
+    .signup-form input:focus {
+      border-color: #ffd700;
+    }
+    .signup-form button {
+      padding: 12px;
+      font-size: 18px;
+      font-weight: bold;
+      background: #ffd700;
+      color: #1a1a1a;
+      border: none;
+      border-radius: 25px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    .signup-form button:hover {
+      background: #e6c200;
+    }
+    .signup-form .login-link {
+      margin-top: 15px;
+      font-size: 14px;
+      color: #666;
+    }
+    .signup-form .login-link a {
+      color: #ffd700;
+      text-decoration: none;
+    }
+    .signup-form .login-link a:hover {
+      text-decoration: underline;
+    }
+    .forgot-password {
+      font-size: 14px;
+      text-align: right; /* Align to the right */
+      color: #666;
+    }
+    .forgot-password a {
+      color: #ffd700;
+      text-decoration: none;
+    }
+    .forgot-password a:hover {
+      text-decoration: underline;
+    }
+    /* Footer Styles */
+    .footer {
+      background: linear-gradient(90deg, #1a1a1a, #333);
+      color: white;
+      padding: 40px 20px;
+      text-align: center;
+      box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.3);
+      position: relative;
+      bottom: 0;
+      width: 100%;
+    }
+    .footer a {
+      color: #ffd700;
+      text-decoration: none;
+      margin: 0 15px;
+      font-size: 16px;
+      transition: color 0.3s;
+    }
+    .footer a:hover {
+      color: white;
+    }
+    .footer p {
+      margin: 10px 0;
+      font-size: 14px;
+    }
+    .footer .social-icons {
+      margin-top: 20px;
+    }
+    .footer .social-icons a {
+      font-size: 20px;
+      margin: 0 10px;
+    }
+    .error-message {
+      color: red;
+      font-size: 14px;
+      text-align: left;
+      justify-content: center;
+      align-items: center;
+    }
+    .success-message {
+  color: green;
+  font-size: 14px;
+  text-align: left;
+  justify-content: center;
+  align-items: center;
+}
+
+  </style>
+</head>
+<body>
+
+<div class="signup-section">
+  <h2>Login to Your Account</h2>
+  
+  <form id="loginform" class="signup-form" action="/login" method="POST">
+    <input id="loginEmail" type="email" name="email" placeholder="Email" />
+    <div id="loginError1" class="error-message"></div>
+
+    <input id="loginPassword" type="password" name="password" placeholder="Password" />
+    <% if (message) { %>
+  <div class="<%= message.includes('successfully') ? 'success-message' : 'error-message' %>">
+    <%= message %>
+  </div>
+<% } %>
+    <div id="loginError2" class="error-message"></div>
+    <div class="forgot-password">
+      <a href="/forgot-password">Forgot Password?</a>
+    </div>
+
+    <button type="submit">Login</button>
+    <div class="login-link">
+      Don't you have an account? <a href="/signup">Signup</a>
+    </div>
+
+    
+    
+  </form>
+</div>
+
+</body>
+</html>

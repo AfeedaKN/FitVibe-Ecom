@@ -1,0 +1,95 @@
+<style>
+    .content-header {
+        background-color: #fff;
+        padding: 15px 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        margin-bottom: 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .header-left {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+    }
+    .content-header h1 {
+        font-size: 1.8rem;
+        color: #2c3e50;
+        margin: 0;
+    }
+    .breadcrumbs {
+        font-size: 0.9rem;
+        color: #666;
+    }
+    .breadcrumbs a {
+        color: #3498db;
+        text-decoration: none;
+    }
+    .breadcrumbs a:hover {
+        text-decoration: underline;
+    }
+    .admin-info {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .admin-info span {
+        font-size: 1rem;
+        color: #2c3e50;
+    }
+    .admin-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+    .sidebar-toggle {
+        display: none;
+        background: none;
+        border: none;
+        font-size: 1.5rem;
+        color: #333;
+        cursor: pointer;
+        padding: 10px;
+    }
+    @media (max-width: 768px) {
+        .content-header h1 {
+            font-size: 1.5rem;
+        }
+        .sidebar-toggle {
+            display: block;
+        }
+        .admin-info span {
+            font-size: 0.9rem;
+        }
+        .admin-avatar {
+            width: 30px;
+            height: 30px;
+        }
+    }
+</style>
+
+
+<header class="content-header">
+    <button class="sidebar-toggle" onclick="toggleSidebar()">☰</button>
+    <div class="header-left">
+        <h1><%= pageTitle %></h1>
+        <% if (breadcrumbs) { %>
+            <div class="breadcrumbs">
+                <% breadcrumbs.forEach((crumb, index) => { %>
+                    <% if (index < breadcrumbs.length - 1) { %>
+                        <a href="<%= crumb.url %>"><%= crumb.name %></a> &gt;
+                    <% } else { %>
+                        <span><%= crumb.name %></span>
+                    <% } %>
+                <% }) %>
+            </div>
+        <% } %>
+    </div>
+    <div class="admin-info">
+        <span>Welcome, <%= adminName %></span>
+    </div>
+</header>
+

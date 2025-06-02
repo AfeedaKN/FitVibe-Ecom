@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View Product - FitVibe</title>
+    <style>
+        body {
+            background-color: #f4f7fa;
+            margin: 0;
+            padding: 0;
+            font-family: 'Arial', sans-serif;
+        }
+        .content-main {
+            margin-left: 250px;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        .product-container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        .product-header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 20px;
+        }
+        .product-header h1 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        .offer-badge {
+            background-color: #e74c3c;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 1rem;
+            font-weight: bold;
+            display: inline-block;
+            margin-top: 10px;
+        }
+        .product-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        .info-group {
+            margin-bottom: 15px;
+        }
+        .info-label {
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+        .info-value {
+            color: #555;
+            font-size: 1.1rem;
+        }
+        .images-section {
+            margin-bottom: 30px;
+        }
+        .images-section h3 {
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+        .image-gallery {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 15px;
+        }
+        .image-gallery img {
+            width: 150px;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 2px solid #ddd;
+            transition: transform 0.3s;
+        }
+        .image-gallery img:hover {
+            transform: scale(1.05);
+        }
+        .image-gallery img.main-image {
+            border-color: #3498db;
+            border-width: 3px;
+        }
+        .size-variants {
+            margin-top: 30px;
+        }
+        .size-variants h3 {
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+        .variant-card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            background-color: #f9f9f9;
+        }
+        .variant-header {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .variant-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        .price-info {
+            background-color: white;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #3498db;
+        }
+        .price-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+        .regular-price {
+            color: #7f8c8d;
+            text-decoration: line-through;
+            font-size: 1rem;
+        }
+        .sale-price {
+            color: #e74c3c;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+        .savings {
+            color: #27ae60;
+            font-weight: bold;
+        }
+        .stock-info {
+            background-color: white;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #2ecc71;
+        }
+        .btn-group {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+        }
+        .btn {
+            padding: 12px 24px;
+            margin: 0 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 1rem;
+        }
+        .btn-primary {
+            background-color: #3498db;
+            color: white;
+        }
+        .btn-primary:hover {
+            background-color: #2980b9;
+        }
+        .btn-secondary {
+            background-color: #95a5a6;
+            color: white;
+        }
+        .btn-secondary:hover {
+            background-color: #7f8c8d;
+        }
+        @media (max-width: 768px) {
+            .content-main {
+                margin-left: 0;
+                padding: 10px;
+            }
+            .product-info {
+                grid-template-columns: 1fr;
+            }
+            .variant-info {
+                grid-template-columns: 1fr;
+            }
+            .image-gallery img {
+                width: 120px;
+                height: 120px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <%- include('./partials/sidebar', { page: 'products' }) %>
+
+    <section class="content-main">
+        <div class="product-container">
+            <div class="product-header">
+                <h1><%= product.productName %></h1>
+                <% if (product.productOffer > 0) { %>
+                    <div class="offer-badge">
+                        <%= product.productOffer %>% OFF on All Variants
+                    </div>
+                <% } %>
+            </div>
+
+            <div class="product-info">
+                <div>
+                    <div class="info-group">
+                        <div class="info-label">Description:</div>
+                        <div class="info-value"><%= product.description %></div>
+                    </div>
+                    <div class="info-group">
+                        <div class="info-label">Category:</div>
+                        <div class="info-value"><%= product.category.name %></div>
+                    </div>
+                    <div class="info-group">
+                        <div class="info-label">Color:</div>
+                        <div class="info-value"><%= product.color %></div>
+                    </div>
+                    <div class="info-group">
+                        <div class="info-label">Fabric:</div>
+                        <div class="info-value"><%= product.fabric %></div>
+                    </div>
+                </div>
+                <div>
+                    <% if (product.brand) { %>
+                    <div class="info-group">
+                        <div class="info-label">Brand:</div>
+                        <div class="info-value"><%= product.brand %></div>
+                    </div>
+                    <% } %>
+                    <div class="info-group">
+                        <div class="info-label">Total Stock:</div>
+                        <div class="info-value"><%= product.sizes.reduce((total, size) => total + size.stock, 0) %> units</div>
+                    </div>
+                    <div class="info-group">
+                        <div class="info-label">Available Sizes:</div>
+                        <div class="info-value"><%= product.sizes.length %> variants</div>
+                    </div>
+                    <div class="info-group">
+                        <div class="info-label">Status:</div>
+                        <div class="info-value">
+                            <% if (product.isActive) { %>
+                                <span style="color: #27ae60; font-weight: bold;">Active</span>
+                            <% } else { %>
+                                <span style="color: #e74c3c; font-weight: bold;">Inactive</span>
+                            <% } %>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="images-section">
+                <h3>Product Images</h3>
+                <div class="image-gallery">
+                    <% product.images.forEach((image, index) => { %>
+                        <img src="<%= image.url %>" alt="Product Image <%= index + 1 %>" 
+                             class="<%= image.isMain ? 'main-image' : '' %>" 
+                             title="<%= image.isMain ? 'Main Image' : 'Product Image ' + (index + 1) %>" />
+                    <% }) %>
+                </div>
+            </div>
+
+            <div class="size-variants">
+                <h3>Size Variants & Pricing</h3>
+                <% product.sizes.forEach((variant, index) => { %>
+                    <div class="variant-card">
+                        <div class="variant-header">
+                            <span>Size: <%= variant.size %></span>
+                            <% if (variant.stock <= 5 && variant.stock > 0) { %>
+                                <span style="color: #f39c12; font-size: 0.9rem;">⚠️ Low Stock</span>
+                            <% } else if (variant.stock === 0) { %>
+                                <span style="color: #e74c3c; font-size: 0.9rem;">❌ Out of Stock</span>
+                            <% } else { %>
+                                <span style="color: #27ae60; font-size: 0.9rem;">✅ In Stock</span>
+                            <% } %>
+                        </div>
+                        <div class="variant-info">
+                            <div class="price-info">
+                                <h4 style="margin: 0 0 10px 0; color: #2c3e50;">Pricing</h4>
+                                <% if (product.productOffer > 0) { %>
+                                    <div class="price-row">
+                                        <span>Regular Price:</span>
+                                        <span class="regular-price">₹<%= variant.price.toFixed(2) %></span>
+                                    </div>
+                                    <div class="price-row">
+                                        <span>Sale Price:</span>
+                                        <span class="sale-price">₹<%= variant.salePrice.toFixed(2) %></span>
+                                    </div>
+                                    <div class="price-row">
+                                        <span>You Save:</span>
+                                        <span class="savings">₹<%= variant.savings.toFixed(2) %> (<%= variant.savingsPercent %>%)</span>
+                                    </div>
+                                <% } else { %>
+                                    <div class="price-row">
+                                        <span>Price:</span>
+                                        <span class="sale-price">₹<%= variant.price.toFixed(2) %></span>
+                                    </div>
+                                <% } %>
+                            </div>
+                            <div class="stock-info">
+                                <h4 style="margin: 0 0 10px 0; color: #2c3e50;">Stock Information</h4>
+                                <div class="price-row">
+                                    <span>Available Quantity:</span>
+                                    <span style="font-weight: bold;"><%= variant.stock %> units</span>
+                                </div>
+                                <div class="price-row">
+                                    <span>Stock Status:</span>
+                                    <span style="font-weight: bold; color: <%= variant.stock > 5 ? '#27ae60' : variant.stock > 0 ? '#f39c12' : '#e74c3c' %>;">
+                                        <%= variant.stock > 5 ? 'Good Stock' : variant.stock > 0 ? 'Low Stock' : 'Out of Stock' %>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                <% }) %>
+            </div>
+
+            <div class="btn-group">
+                <a href="/admin/products" class="btn btn-secondary">Back to Products</a>
+                <a href="/admin/products/edit/<%= product._id %>" class="btn btn-primary">Edit Product</a>
+            </div>
+        </div>
+    </section>
+</body>
+</html>

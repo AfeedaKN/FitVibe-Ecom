@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User List - FitVibe</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <%- include('partials/sidePartial', { page: 'users' }) %>
+
+    <div class="main-content">
+        <header>
+            <h1>Customers</h1>
+        </header>
+
+        <div class="filters">
+            <input type="text" id="search" placeholder="Search users..." value="<%= search %>">
+            <button onclick="searchUsers()">Search</button>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>User ID</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% users.forEach(user => { %>
+                <tr>
+                    <td>#<%= user._id %></td>
+                    <td><%= user.name %></td>
+                    <td><%= user.email %></td>
+                    <td><%= user.phone %></td>
+                    <td><%= user.isBlocked ? 'Blocked' : 'Active' %></td>
+                    <td>
+                        <button 
+                            class="action-btn <%= user.isBlocked ? 'unblock-btn' : 'block-btn' %>" 
+                            onclick="toggleBlock('<%= user._id %>')"
+                        >
+                            <%= user.isBlocked ? 'Unblock' : 'Block' %>
+                        </button>
+                    </td>
+                </tr>
+                <% }) %>
+            </tbody>
+        </table>
+
+        <div class="pagination">
+            <% for (let i = 1; i <= totalPages; i++) { %>
+                <a href="/admin/users?page=<%= i %>&search=<%= search %>" class="<%= page === i ? 'active' : '' %>"><%= i %></a>
+            <% } %>
+        </div>
+    </div>
+
+    <script>
+        function searchUsers() {
+            const search = document.getElementById('search').value;
+            window.location.href = `/admin/users?search=${search}`;
+        }
+
+        async function toggleBlock(userId) {
+            try {
+                const response = await fetch(`/admin/block-user/${userId}`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                const result = await response.json();
+                if (result.success) {
+                    alert(result.message);
+                    window.location.reload();
+                } else {
+ 
+
+System: alert(result.message || 'Failed to toggle user status');
+                }
+            } catch (error) {
+                alert('Error toggling user status');
+            }
+        }
+    </script>
+</body>
+</html>

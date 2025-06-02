@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FitVibe - Your Cart</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <style>
+    /* Inherit Global Styles */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --primary-color: #1a1a1a;
+      --secondary-color: #ffd700;
+      --accent-color: #e6c200;
+      --text-light: #ffffff;
+      --text-dark: #333333;
+      --background-light: #f9f9f9;
+      --card-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+      --transition: all 0.3s ease;
+    }
+
+    body {
+      font-family: 'Arial', sans-serif;
+      line-height: 1.6;
+      color: var(--text-dark);
+      background-color: var(--background-light);
+    }
+
+    /* Cart Section */
+    .cart-section {
+      padding: 60px 20px;
+      text-align: center;
+      background: var(--background-light);
+    }
+
+    .cart-section h2 {
+      font-size: 36px;
+      margin-bottom: 30px;
+      color: var(--text-dark);
+      position: relative;
+      display: inline-block;
+    }
+
+    .cart-section h2::after {
+      content: '';
+      position: absolute;
+      bottom: -10px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 80px;
+      height: 3px;
+      background: var(--secondary-color);
+    }
+
+    .cart-items {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .cart-item {
+      display: flex;
+      align-items: center;
+      background: white;
+      padding: 15px;
+      border-radius: 10px;
+      box-shadow: var(--card-shadow);
+      transition: var(--transition);
+    }
+
+    .cart-item:hover {
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+    }
+
+    .cart-item img {
+      width: 100px;
+      height: 100px;
+      object-fit: cover;
+      border-radius: 8px;
+      margin-right: 20px;
+    }
+
+    .cart-item-details {
+      flex: 1;
+      text-align: left;
+    }
+
+    .cart-item-details h3 {
+      font-size: 18px;
+      margin-bottom: 10px;
+      color: var(--text-dark);
+    }
+
+    .cart-item-details .price {
+      font-size: 16px;
+      color: #e74c3c;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+
+    .cart-item-quantity {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .cart-item-quantity button {
+      width: 30px;
+      height: 30px;
+      border: none;
+      background: var(--primary-color);
+      color: var(--text-light);
+      border-radius: 5px;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .cart-item-quantity button:hover {
+      background: var(--secondary-color);
+      color: var(--primary-color);
+    }
+
+    .cart-item-quantity button:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+
+    .cart-item-quantity input {
+      width: 50px;
+      text-align: center;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      padding: 5px;
+    }
+
+    .cart-item-remove {
+      background: #e74c3c;
+      color: var(--text-light);
+      border: none;
+      padding: 8px 15px;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .cart-item-remove:hover {
+      background: #c0392b;
+    }
+
+    .cart-item-out-of-stock {
+      color: #e74c3c;
+      font-size: 14px;
+      font-style: italic;
+    }
+
+    .cart-summary {
+      margin-top: 40px;
+      text-align: right;
+      max-width: 800px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .cart-summary p {
+      font-size: 18px;
+      font-weight: bold;
+      margin-bottom: 20px;
+    }
+
+    .checkout-btn {
+      padding: 12px 25px;
+      background: var(--secondary-color);
+      color: var(--primary-color);
+      text-decoration: none;
+      border-radius: 25px;
+      font-weight: bold;
+      transition: var(--transition);
+    }
+
+    .checkout-btn:hover {
+      background: var(--accent-color);
+      transform: translateY(-3px);
+    }
+
+    .checkout-btn:disabled {
+      background: #ccc;
+      color: #666;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+
+    .empty-cart {
+      font-size: 18px;
+      color: var(--text-dark);
+    }
+
+    /* Responsive Styles */
+    @media (max-width: 768px) {
+      .cart-item {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .cart-item img {
+        width: 100%;
+        max-width: 150px;
+        margin-bottom: 10px;
+      }
+
+      .cart-section h2 {
+        font-size: 28px;
+      }
+
+      .cart-summary {
+        text-align: center;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .cart-section h2 {
+        font-size: 24px;
+      }
+
+      .cart-item-details h3 {
+        font-size: 16px;
+      }
+
+      .cart-item-details .price {
+        font-size: 14px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Header Partial -->
+  <%- include('./partials/header') %>
+
+<!-- Cart Section -->
+<div class="cart-section">
+  <h2>Your Cart</h2>
+  <% if (cartItems.length > 0) { %>
+
+    <div class="cart-items">
+      <% cartItems.forEach(item => { %>
+
+        <div class="cart-item">
+          <img src="<%= item.product.images && item.product.images.length > 0 ? item.product.images[0].url : '/path/to/default-image.jpg' %>" alt="<%= item.product.name %>" loading="lazy" />
+          <div class="cart-item-details">
+            <h3><%= item.product.name %></h3>
+            <p class="price">₹<%= item.variant.salePrice.toFixed(2) %> x <%= item.quantity %></p>
+            <% if (item.variant.stock === 0) { %>
+              <p class="cart-item-out-of-stock">Out of Stock</p>
+            <% } %>
+            <div class="cart-item-quantity">
+             <button class="decrement-btn" 
+              data-product-id="<%= item.product._id %>" 
+              data-variant-id="<%= item.variant._id %>">-</button>
+              <input type="number" value="<%= item.quantity %>" readonly>
+               <button class="increment-btn"
+               data-product-id="<%= item.product._id %>"
+            data-variant-id="<%= item.variant._id %>">+</button>
+            </div>
+          </div>
+          <button class="cart-item-remove"
+          data-product-id="<%= item.product._id %>"
+          data-variant-id="<%= item.variant._id %>">Remove</button>
+
+        </div>
+      <% }) %>
+    </div>
+
+    <div class="cart-summary">
+      <p>Total: ₹<%= cartItems.reduce((total, item) => total + (item.variant.salePrice * item.quantity), 0).toFixed(2) %></p>
+      <a href="/checkout" class="checkout-btn" <%= cartItems.some(item => item.variant.stock === 0) ? 'disabled' : '' %>>Proceed to Checkout</a>
+    </div>
+
+  <% } else { %>
+    <p class="empty-cart">Your cart is empty.</p>
+  <% } %>
+</div>
+
+  <!-- Footer Partial -->
+  <%- include('./partials/footer') %>
+
+  <!-- JavaScript for Cart Interactions -->
+  <script>
+    // Add to Cart (called from product pages)
+    async function addToCart(productId) {
+      try {
+        const response = await fetch('/cart/add', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ productId })
+        });
+        const result = await response.json();
+        if (result.success) {
+          alert('Product added to cart!');
+          window.location.reload(); // Refresh to update cart count in header
+        } else {
+          alert(result.message || 'Failed to add product to cart.');
+        }
+      } catch (error) {
+        alert('Error adding product to cart.');
+      }
+    }
+
+  document.querySelectorAll('.increment-btn').forEach(button => {
+  button.addEventListener('click', async () => {
+    const productId = button.getAttribute('data-product-id');
+    const variantId = button.getAttribute('data-variant-id');
+
+    try {
+      const response = await fetch('/cart/update', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ productId, variantId, change: 1 }) // ✅ use change: 1
+      });
+      if (response.ok) {
+        window.location.reload();
+      } else {
+        alert('Failed to update quantity.');
+      }
+    } catch (error) {
+      alert('Error updating quantity.');
+    }
+  });
+});
+
+document.querySelectorAll('.decrement-btn').forEach(button => {
+  button.addEventListener('click', async () => {
+    const productId = button.getAttribute('data-product-id');
+    const variantId = button.getAttribute('data-variant-id');
+
+    try {
+      const response = await fetch('/cart/update', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ productId, variantId, change: -1 }) // ✅ use change: -1
+      });
+      if (response.ok) {
+        window.location.reload();
+      } else {
+        alert('Failed to update quantity.');
+      }
+    } catch (error) {
+      alert('Error updating quantity.');
+    }
+  });
+});
+
+
+    // Remove from Cart
+    document.querySelectorAll('.cart-item-remove').forEach(button => {
+  button.addEventListener('click', async () => {
+    const productId = button.getAttribute('data-product-id');
+    const variantId = button.getAttribute('data-variant-id'); // ✅ added this
+
+    try {
+      const response = await fetch('/cart/remove', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ productId, variantId }) // ✅ send both
+      });
+
+      if (response.ok) {
+        window.location.reload();
+      } else {
+        alert('Failed to remove product.');
+      }
+    } catch (error) {
+      alert('Error removing product.');
+    }
+  });
+});
+
+  </script>
+</body>
+</html>

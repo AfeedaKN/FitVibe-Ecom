@@ -1,0 +1,86 @@
+<div class="sidebar">
+    <div class="sidebar-header">
+        <h3>FitVibe</h3>
+    </div>
+    <nav class="sidebar-nav">
+        <ul>
+            <li class="nav-item"><a href="/admin/dashboard" class="<%= page === 'dashboard' ? 'active' : '' %>"><span class="icon">📊</span> Dashboard</a></li>
+            <li class="nav-item"><a href="/admin/products" class="<%= page === 'products' ? 'active' : '' %>"><span class="icon">📦</span> Products</a></li>
+            <li class="nav-item"><a href="/admin/orders" class="<%= page === 'orders' ? 'active' : '' %>"><span class="icon">📋</span> Orders</a></li>
+            <li class="nav-item"><a href="/admin/users" class="<%= page === 'users' ? 'active' : '' %>"><span class="icon">👥</span> Customers</a></li>
+            <li class="nav-item"><a href="/admin/sales" class="<%= page === 'sales' ? 'active' : '' %>"><span class="icon">💰</span> Sales</a></li>
+            <li class="nav-item"><a href="/admin/categories" class="<%= page === 'categories' ? 'active' : '' %>"><span class="icon">🏷️</span> Categories</a></li>
+            <li class="nav-item"><a href="/admin/coupons" class="<%= page === 'coupons' ? 'active' : '' %>"><span class="icon">🎟️</span> Coupons</a></li>
+            <li class="nav-item"><a href="/admin/logout" class="logout"><span class="icon">🚪</span> Logout</a></li>
+        </ul>
+    </nav>
+</div>
+
+<style>
+    .sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 250px;
+        height: 100vh;
+        background-color: #2c3e50;
+        color: #ecf0f1;
+        padding-top: 20px;
+        box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease;
+    }
+    .sidebar-header {
+        padding: 20px;
+        text-align: center;
+        border-bottom: 1px solid #34495e;
+    }
+    .sidebar-header h3 {
+        margin: 0;
+        font-size: 1.5rem;
+        color: #ecf0f1;
+    }
+    .sidebar-nav ul {
+        list-style: none;
+        padding: 0;
+        margin: 20px 0;
+    }
+    .sidebar-nav .nav-item {
+        margin: 10px 0;
+    }
+    .sidebar-nav .nav-item a {
+        display: flex;
+        align-items: center;
+        padding: 15px 20px;
+        color: #ecf0f1;
+        text-decoration: none;
+        font-size: 1.1rem;
+        transition: background-color 0.3s ease;
+    }
+    .sidebar-nav .nav-item a .icon {
+        margin-right: 10px;
+        font-size: 1.2rem;
+    }
+    .sidebar-nav .nav-item a:hover {
+        background-color: #34495e;
+    }
+    .sidebar-nav .nav-item.active a,
+    .sidebar-nav .nav-item a.active {
+        background-color: #3498db;
+        color: #fff;
+    }
+    .sidebar-nav .nav-item a.logout {
+        background-color: #e74c3c;
+        color: #fff;
+    }
+    .sidebar-nav .nav-item a.logout:hover {
+        background-color: #c0392b;
+    }
+    @media (max-width: 768px) {
+        .sidebar {
+            transform: translateX(-250px);
+        }
+        .sidebar.active {
+            transform: translateX(0);
+        }
+    }
+</style>
