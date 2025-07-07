@@ -22,10 +22,10 @@ async function handleCropperInput(input) {
 function showCropperModal(file, current, total) {
   return new Promise((resolve, reject) => {
     console.log("CROPPER: showCropperModal called", file.name, current, total);
-    // Add event listeners for crop, skip, and cancel
+    
     document.getElementById("crop-btn").onclick = async function () {
       console.log("CROPPER: Crop button clicked");
-      // ...existing code...
+      
       resolve();
     };
     document.getElementById("skip-btn").onclick = function () {
@@ -36,6 +36,6 @@ function showCropperModal(file, current, total) {
       console.log("CROPPER: Cancel cropping");
       reject("User cancelled cropping");
     };
-    // ...existing code...
+    
   });
 }

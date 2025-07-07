@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FitVibe Admin - Order Details</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <style>
+    :root {
+      --primary-color: #1a1a1a;
+      --secondary-color: #ffd700;
+      --accent-color: #e6c200;
+      --text-light: #ffffff;
+      --text-dark: #333333;
+      --background-light: #f9f9f9;
+      --card-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+      --transition: all 0.3s ease;
+    }
+
+    body {
+      font-family: 'Arial', sans-serif;
+      line-height: 1.6;
+      color: var(--text-dark);
+      background-color: var(--background-light);
+      margin-left: 280px;
+    }
+
+    .container {
+      padding: 40px 20px;
+      max-width: 1200px;
+      margin: auto;
+    }
+
+    h1 {
+      font-size: 28px;
+      margin-bottom: 20px;
+      color: var(--text-dark);
+      position: relative;
+      display: inline-block;
+    }
+
+    h1::after {
+      content: '';
+      position: absolute;
+      bottom: -10px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 80px;
+      height: 3px;
+      background: var(--secondary-color);
+    }
+
+    .order-details,
+    .order-items,
+    .order-summary,
+    .status-timeline,
+    .return-requests {
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: var(--card-shadow);
+      margin-bottom: 20px;
+    }
+
+    .order-details p {
+      margin: 10px 0;
+      font-size: 15px;
+    }
+
+    .status-badge {
+      display: inline-block;
+      padding: 5px 10px;
+      border-radius: 15px;
+      font-size: 12px;
+      color: var(--text-light);
+    }
+
+    .status-pending { background: #f39c12; }
+    .status-processing { background: #3498db; }
+    .status-shipped { background: #9b59b6; }
+    .status-out-for-delivery { background: #8e44ad; }
+    .status-delivered { background: #2ecc71; }
+    .status-cancelled { background: #e74c3c; }
+    .status-returned { background: #c0392b; }
+    .status-return-pending { background: #e67e22; }
+
+    .order-items table,
+    .return-requests table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .order-items th,
+    .order-items td,
+    .return-requests th,
+    .return-requests td {
+      padding: 10px;
+      text-align: left;
+      border-bottom: 1px solid #ddd;
+    }
+
+    .order-items th,
+    .return-requests th {
+      background: var(--primary-color);
+      color: var(--text-light);
+    }
+
+    .order-items img {
+      width: 60px;
+      height: 60px;
+      object-fit: cover;
+      border-radius: 5px;
+    }
+
+    .order-summary p {
+      margin: 10px 0;
+      text-align: right;
+      font-size: 15px;
+    }
+
+    .order-summary .total {
+      font-weight: bold;
+      font-size: 18px;
+    }
+
+    .order-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .action-btn {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: var(--transition);
+      text-decoration: none;
+      color: var(--text-light);
+      font-size: 14px;
+    }
+
+    .status-btn { background: #3498db; }
+    .status-btn:hover { background: #2980b9; }
+    .approve-btn { background: #2ecc71; }
+    .approve-btn:hover { background: #27ae60; }
+    .reject-btn { background: #e74c3c; }
+    .reject-btn:hover { background: #c0392b; }
+    .invoice-btn { background: var(--primary-color); }
+    .invoice-btn:hover { background: var(--secondary-color); color: var(--primary-color); }
+    .action-btn:disabled { background: #ccc; cursor: not-allowed; }
+
+    .status-timeline {
+      position: relative;
+      padding: 20px 0;
+    }
+
+    .timeline {
+      list-style: none;
+      padding: 0;
+      position: relative;
+    }
+
+    .timeline::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 20px;
+      width: 3px;
+      background: #ccc;
+    }
+
+    .timeline li {
+      margin-bottom: 20px;
+      position: relative;
+      padding-left: 40px;
+    }
+
+    .timeline li::before {
+      content: '';
+      position: absolute;
+      left: 15px;
+      top: 5px;
+      width: 12px;
+      height: 12px;
+      background: var(--secondary-color);
+      border-radius: 50%;
+    }
+
+    .timeline li.completed::before {
+      background: #2ecc71;
+    }
+
+    .timeline li p {
+      margin: 0;
+      font-size: 14px;
+    }
+
+    .modal-content {
+      border-radius: 10px;
+    }
+
+    .modal-header {
+      background: var(--primary-color);
+      color: var(--text-light);
+    }
+
+    .modal-footer .btn-primary {
+      background: var(--secondary-color);
+      border-color: var(--secondary-color);
+      color: var(--primary-color);
+    }
+
+    .modal-footer .btn-primary:hover {
+      background: var(--accent-color);
+      border-color: var(--accent-color);
+    }
+
+    .form-label {
+      font-size: 14px;
+      color: var(--text-dark);
+    }
+
+    .form-control {
+      font-size: 14px;
+    }
+
+    .is-invalid {
+      border-color: #dc3545;
+    }
+
+    .invalid-feedback {
+      display: none;
+      color: #dc3545;
+      font-size: 12px;
+    }
+
+    .is-invalid ~ .invalid-feedback {
+      display: block;
+    }
+
+    @media (max-width: 768px) {
+      body { margin-left: 0; }
+      .container { padding: 20px; }
+      .order-items table, .return-requests table { display: block; overflow-x: auto; }
+    }
+  </style>
+</head>
+<body>
+  <%- include('./partials/sidebar', { page: 'orders' }) %>
+
+  <div class="container">
+    <h1>Order #<%= order.orderID %></h1>
+
+    <% if (error_msg && error_msg.length > 0) { %>
+  <div class="alert alert-danger">
+    <%= error_msg %>
+  </div>
+<% } %>
+
+<% if (success_msg && success_msg.length > 0) { %>
+  <div class="alert alert-success">
+    <%= success_msg %>
+  </div>
+<% } %>
+
+
+   
+    <div class="order-details">
+      <p><strong>Order Date:</strong> <%= order.orderDate.toLocaleDateString() %></p>
+      <p><strong>User:</strong> <%= order.user.name %> (<%= order.user.email %>)</p>
+      <p><strong>Status:</strong>
+        <span class="status-badge status-<%= order.orderStatus.toLowerCase().replace(' ', '-') %>">
+          <%= order.orderStatus %>
+        </span>
+      </p>
+      <p><strong>Payment Method:</strong> <%= order.paymentMethod %></p>
+      <p><strong>Payment Status:</strong>
+        <span class="status-badge status-<%= order.paymentStatus.toLowerCase() %>">
+          <%= order.paymentStatus %>
+        </span>
+      </p>
+      <p><strong>Total Amount:</strong> ₹<%= order.totalAmount.toFixed(2) %></p>
+      <p><strong>Discount:</strong> ₹<%= order.discount.toFixed(2) %></p>
+      <p><strong>Coupon Discount:</strong> ₹<%= order.couponDiscount.toFixed(2) %></p>
+      <p><strong>Shipping Charge:</strong> ₹<%= order.shippingCharge.toFixed(2) %></p>
+      <p><strong>Tax (GST):</strong> ₹<%= order.taxAmount.toFixed(2) %></p>
+      <p><strong>Final Amount:</strong> ₹<%= order.finalAmount.toFixed(2) %></p>
+      <hr>
+      <% if (order.address) { %>
+        <p><strong>Shipping Address:</strong></p>
+                            <p>
+                              <%= order.address.name %>
+                            </p>
+                            <p>
+                              <%= order.address.address || '' %>, <%= order.address.city %>, <%= order.address.state %>
+                                    - <%= order.address.zipCode %>
+                            </p>
+                            <p>
+                              <%= order.address.country %>
+                            </p>
+                            <p>Phone: <%= order.address.phone %>
+                            </p>
+                            <% } else { %>
+                              <p><strong>Shipping Address:</strong> Not available</p>
+                              <% } %>
+    </div>
+
+   
+    <div class="order-items">
+      <h2>Items</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Image</th>
+            <th>Product</th>
+            <th>Variant</th>
+            <th>Quantity</th>
+            <th>Price</th>
+            <th>Total</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% order.products.forEach(item => { %>
+            <tr>
+              <td><img src="<%= item.product.images?.[0]?.url || '/images/default.jpg' %>"
+                  alt="<%= item.product.name %>" onerror="this.src='/images/default.jpg'"></td>
+              <td><%= item.product.name %></td>
+              <td><%= item.variant.size %></td>
+              <td><%= item.quantity %></td>
+              <td>₹<%= item.variant.salePrice.toLocaleString('en-IN', { minimumFractionDigits: 2 }) %></td>
+              <td>₹<%= (item.variant.salePrice * item.quantity).toLocaleString('en-IN', { minimumFractionDigits: 2 }) %></td>
+              <td>
+                <span class="status-badge status-<%= item.status.toLowerCase().replace(' ', '-') %>">
+                  <%= item.status %>
+                </span>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+
+   
+    <% if (order.products.some(item => item.status === 'return pending')) { %>
+      <div class="return-requests">
+        <h2>Return Requests</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Product</th>
+              <th>Variant</th>
+              <th>Quantity</th>
+              <th>Return Reason</th>
+              <th>Request Date</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% order.products.filter(item => item.status === 'return pending').forEach(item => { %>
+              <tr>
+                <td><%= item.product.name %></td>
+                <td><%= item.variant.size %></td>
+                <td><%= item.quantity %></td>
+                <td><%= item.returnReason || 'N/A' %></td>
+                <td><%= item.returnRequestDate?.toLocaleDateString() || 'N/A' %></td>
+                <td>
+                  <button class="action-btn approve-btn" data-order-id="<%= order._id %>" data-product-id="<%= item.product._id %>" data-variant-size="<%= item.variant.size %>" data-bs-toggle="modal" data-bs-target="#verifyReturnModal" data-action="approve">Approve</button>
+                  <button class="action-btn reject-btn" data-order-id="<%= order._id %>" data-product-id="<%= item.product._id %>" data-variant-size="<%= item.variant.size %>" data-bs-toggle="modal" data-bs-target="#verifyReturnModal" data-action="reject">Reject</button>
+                </td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    <% } %>
+
+    
+    <div class="order-summary">
+      <h2>Summary</h2>
+      <p>Subtotal: ₹<%= order.totalAmount.toFixed(2) %></p>
+      <p>GST (5%): ₹<%= order.taxAmount.toFixed(2) %></p>
+      <% if (order.discount > 0) { %>
+        <p>Discount: -₹<%= order.discount.toFixed(2) %></p>
+      <% } %>
+      <% if (order.couponDiscount > 0) { %>
+        <p>Coupon Discount: -₹<%= order.couponDiscount.toFixed(2) %></p>
+      <% } %>
+      <p>Shipping: ₹<%= order.shippingCharge.toFixed(2) %></p>
+      <p class="total">Total: ₹<%= order.finalAmount.toFixed(2) %></p>
+    </div>
+
+    
+    <div class="status-timeline">
+      <h2>Order Status History</h2>
+      <ul class="timeline">
+        <% order.statusHistory.forEach(status => { %>
+          <li class="<%= ['delivered', 'cancelled', 'returned', 'return pending'].includes(status.status.toLowerCase()) || new Date(status.date) <= new Date() ? 'completed' : '' %>">
+            <p><strong><%= status.status %></strong> - <%= status.date.toLocaleDateString() %>
+              <% if (status.description) { %>
+                <br><%= status.description %>
+              <% } %>
+            </p>
+          </li>
+        <% }) %>
+      </ul>
+    </div>
+
+    <div class="order-actions">
+      <% if (!['cancelled', 'returned'].includes(order.orderStatus)) { %>
+        <button class="action-btn status-btn" data-order-id="<%= order._id %>" data-bs-toggle="modal" data-bs-target="#updateStatusModal">Update Status</button>
+      <% } %>
+      <a href="/admin/order/invoice/<%= order._id %>" class="action-btn invoice-btn">Download Invoice</a>
+    </div>
+  </div>
+
+  
+  <div class="modal fade" id="updateStatusModal" tabindex="-1" aria-labelledby="updateStatusModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="updateStatusModalLabel">Update Order Status</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <form id="updateStatusForm" action="/admin/order/status" method="POST">
+          <input type="hidden" name="orderId" id="statusOrderId" value="<%= order._id %>">
+          <div class="modal-body">
+            <div class="mb-3">
+              <label for="orderStatus" class="form-label">New Status</label>
+              <select class="form-control" id="orderStatus" name="status" required>
+                <option value="pending">Pending</option>
+                <option value="processing">Processing</option>
+                <option value="shipped">Shipped</option>
+                <option value="out for delivery">Out for Delivery</option>
+                <option value="delivered">Delivered</option>
+                <option value="cancelled">Cancelled</option>
+              </select>
+            </div>
+            <div class="mb-3" id="cancelReasonDiv" style="display: none;">
+              <label for="cancelReason" class="form-label">Cancellation Reason (Optional)</label>
+              <textarea class="form-control" id="cancelReason" name="reason" rows="4" maxlength="500"></textarea>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            <button type="submit" class="btn btn-primary" >Update Status</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  
+  <div class="modal fade" id="verifyReturnModal" tabindex="-1" aria-labelledby="verify-return-modal-label" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="verify-return-modal-label">Verify Return Request</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <form id="verifyReturnForm" action="/admin/order/return/verify" method="POST">
+          <input type="hidden" name="orderId" id="verifyOrderId">
+          <input type="hidden" name="productId" id="verifyProductId">
+          <input type="hidden" name="variantSize" id="verifyVariantSize">
+          <input type="hidden" name="action" id="verifyAction">
+          <div class="modal-body">
+            <p id="verifyMessage"></p>
+            <div class="mb-3" id="rejectReasonDiv" style="display: none;">
+              <label for="reason" class="form-label">Reason for Rejection (Optional)</label>
+              <textarea class="form-control" id="reason" name="reason" rows="4" maxlength="500"></textarea>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            <button type="submit" class="btn btn-primary" id="verifySubmitBtn">Confirm</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+  <script>
+    // Populate status modal
+    document.getElementById('orderStatus')?.addEventListener('change', (e) => {
+      const cancelReasonDiv = document.getElementById('cancelReasonDiv');
+      cancelReasonDiv.style.display = e.target.value === 'cancelled' ? 'block' : 'none';
+    });
+
+    // Populate return verification modal
+    document.querySelectorAll('.approve-btn, .reject-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const modal = document.querySelector('#verifyReturnModal');
+        modal.querySelector('#verifyOrderId').value = btn.dataset.orderId;
+        modal.querySelector('#verifyProductId').value = btn.dataset.productId;
+        modal.querySelector('#verifyVariantSize').value = btn.dataset.variantSize;
+        modal.querySelector('#verifyAction').value = btn.dataset.action;
+        const isReject = btn.dataset.action === 'reject';
+        modal.querySelector('#verifyMessage').textContent = isReject
+          ? 'Are you sure you want to reject this return request?'
+          : 'Are you sure you want to approve this return request and refund the customer?';
+        modal.querySelector('#rejectReasonDiv').style.display = isReject ? 'block' : 'none';
+        modal.querySelector('#reason').required = isReject;
+        modal.querySelector('#verifySubmitBtn').textContent = isReject ? 'Reject' : 'Approve';
+      });
+    });
+
+    // Handle form submissions
+    ['updateStatusForm', 'verifyReturnForm'].forEach(formId => {
+      const form = document.getElementById(formId);
+      if (form) {
+        form.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const formData = new FormData(form);
+          try {
+            const response = await fetch(form.action, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(Object.fromEntries(formData))
+            });
+            const result = await response.json();
+            if (result.success) {
+              window.location.reload();
+            } else {
+              alert(result.message || `Failed to ${formId.includes('Status') ? 'update status' : 'verify return'}.`);
+            }
+          } catch (error) {
+            alert(`Error ${formId.includes('Status') ? 'updating status' : 'verifying return'}.`);
+          }
+        });
+      }
+    });
+
+    
+  </script>
+</body>
+</html>

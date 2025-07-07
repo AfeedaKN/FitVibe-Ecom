@@ -1,0 +1,155 @@
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <div class="user-info">
+      <% if (user) { %>
+        <h3>Welcome, <%= user.name %>
+        </h3>
+        <% } %>
+
+    </div>
+    <button class="toggle-btn" id="toggleBtn"><i class="fas fa-bars"></i></button>
+  </div>
+  <nav class="sidebar-nav">
+    <a href="/" data-route="/"><i class="fas fa-home"></i> Home</a>
+    <a href="/user/account" data-route="/profile"><i class="fas fa-user"></i> Account</a>
+    <a href="/profile/orders" data-route="/profile/orders"><i class="fas fa-box"></i> Orders</a>
+    <a href="/profile/addresses" data-route="/profile/addresses"><i class="fas fa-map-marker-alt"></i> Addresses</a>
+    <a href="/profile/Wallet" data-route="/profile/Wallet"><i class="fas fa-wallet"></i> Wallet</a>
+    <a href="/profile/referrals" data-route="/profile/referrals"><i class="fas fa-users"></i> Referrals</a>
+    <a href="/profile/coupons" data-route="/profile/coupons"><i class="fas fa-ticket-alt"></i> Coupons</a>
+    <a href="/profile/change-password" data-route="/profile/change-password"><i class="fas fa-lock"></i> Change
+      Password</a>
+    <a href="/logout" data-route="/logout"><i class="fas fa-sign-out-alt"></i> Logout</a>
+  </nav>
+</div>
+
+<style>
+  :root {
+    --primary-color: #1a1a1a;
+    --secondary-color: #ffd700;
+    --accent-color: #e6c200;
+    --text-light: #ffffff;
+    --text-dark: #333333;
+    --background-light: #f9f9f9;
+    --card-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    --transition: all 0.3s ease;
+  }
+
+  .sidebar {
+    width: 280px;
+    background: linear-gradient(180deg, var(--primary-color), #2c2c2c);
+    color: var(--text-light);
+    height: 100vh;
+    padding: 20px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    overflow-y: auto;
+    transition: transform 0.3s ease;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+  }
+
+  .sidebar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+
+  .user-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .user-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--secondary-color);
+  }
+
+  .sidebar-header h3 {
+    font-size: 16px;
+    color: var(--secondary-color);
+    margin: 0;
+  }
+
+  .wallet-balance {
+    font-size: 12px;
+    color: #2ecc71;
+    margin: 0;
+  }
+
+  .toggle-btn {
+    background: none;
+    border: none;
+    color: var(--text-light);
+    font-size: 18px;
+    cursor: pointer;
+    display: none;
+  }
+
+  .sidebar-nav a {
+    display: flex;
+    align-items: center;
+    padding: 12px 15px;
+    color: var(--text-light);
+    text-decoration: none;
+    margin: 5px 0;
+    border-radius: 8px;
+    transition: var(--transition);
+    font-size: 14px;
+  }
+
+  .sidebar-nav a:hover,
+  .sidebar-nav a.active {
+    background: var(--secondary-color);
+    color: var(--primary-color);
+    transform: translateX(5px);
+  }
+
+  .sidebar-nav a i {
+    margin-right: 12px;
+    font-size: 16px;
+  }
+
+  @media (max-width: 768px) {
+    .sidebar {
+      width: 250px;
+      transform: translateX(-100%);
+    }
+
+    .sidebar.active {
+      transform: translateX(0);
+    }
+
+    .toggle-btn {
+      display: block;
+    }
+
+    body.sidebar-open {
+      overflow: hidden;
+    }
+  }
+</style>
+
+<script>
+  // Sidebar toggle for mobile
+  const sidebar = document.getElementById('sidebar');
+  const toggleBtn = document.getElementById('toggleBtn');
+  toggleBtn.addEventListener('click', () => {
+    sidebar.classList.toggle('active');
+    document.body.classList.toggle('sidebar-open');
+  });
+
+  // Highlight active link
+  const currentPath = window.location.pathname;
+  document.querySelectorAll('.sidebar-nav a').forEach(link => {
+    if (link.getAttribute('data-route') === currentPath) {
+      link.classList.add('active');
+    }
+  });
+</script>

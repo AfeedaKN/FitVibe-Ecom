@@ -146,6 +146,14 @@ const addProduct = async (req, res) => {
     const { name, description, categoryId, brand, color, offer, fabric, sku, tags } = req.body
 
     // Validate category
+    const existingProduct = await Product.findOne({
+  name: { $regex: new RegExp(`^${name}$`, 'i') } // ^ and $ ensure exact match
+});
+
+if (existingProduct) {
+  req.flash("error_msg", "Product with the same name already exists");
+  return res.redirect("/admin/addproducts");
+}
     const category = await Category.findById(categoryId)
     if (!category) {
       req.flash("error_msg", "Category not found")
@@ -325,29 +333,40 @@ const updateProduct = async (req, res) => {
       sku,
       tags,
       isActive
-    } = req.body
+    } = req.body;
+
+const productObjectId = new mongoose.Types.ObjectId(productId);
+const categoryIdObj = new mongoose.Types.ObjectId(category);
+
+
+    // Check duplicate name excluding current product
+    const existingProductn = await Product.findOne({
+      _id: { $ne: productObjectId },
+      name: { $regex: new RegExp(`^${name}$`, 'i') }
+    });
+
+    if (existingProductn) {
+      req.flash("error_msg", "Another product with the same name already exists");
+      return res.redirect("/admin/products");
+    }
 
     // Validate category
-    const categoryObj = await Category.findById(category)
+    const categoryObj = await Category.findById(categoryIdObj);
     if (!categoryObj) {
-      req.flash("error_msg", "Category not found")
-      return res.redirect("/admin/products")
+      req.flash("error_msg", "Category not found");
+      return res.redirect("/admin/products");
     }
 
     // Calculate offers
-    const productOffer = Number.parseFloat(offer) || 0
-    const categoryOffer = categoryObj.categoryOffer || 0
-    // const bestOffer = determineBestOffer(productOffer, categoryOffer)
+    const productOffer = Number.parseFloat(offer) || 0;
+    const categoryOffer = categoryObj.categoryOffer || 0;
+
+    // Calculate best offer
+    const bestOffer = determineBestOffer(productOffer, categoryOffer); // <-- define or import this function!
 
     // Process variants
-    // Step 1: Get data from form
-    const variantPrices = req.body.varientPrice || {}; // Object with sizes as keys
-    const sizes = req.body.sizes || {}; // Object with sizes as keys
-
-    // Step 2: Calculate best offer
-    const bestOffer = calculateBestPrice(variantPrices.S, productOffer, category.categoryOffer);
-
-    // Step 3: Loop through sizes and construct variants array
+    const variantPrices = req.body.varientPrice || {};
+    const sizes = req.body.sizes || {};
     const variants = [];
 
     ["S", "M", "L", "XL"].forEach((size) => {
@@ -366,12 +385,11 @@ const updateProduct = async (req, res) => {
       }
     });
 
-
-    // Get existing product for images
-    const existingProduct = await Product.findById(productId);
+    // Get existing product images
+    const existingProduct = await Product.findById(productObjectId);
     let images = existingProduct.images || [];
 
-    // Only use cropped images from the client (not raw/original)
+    // Filter duplicate files
     const seen = new Set();
     const filteredFiles = [];
     if (req.files && req.files.length > 0) {
@@ -383,20 +401,19 @@ const updateProduct = async (req, res) => {
       }
     }
 
-    // Process new images if uploaded (upload to Cloudinary)
-    if (filteredFiles && filteredFiles.length > 0) {
+    // Upload new images to Cloudinary
+    if (filteredFiles.length > 0) {
       const newImages = [];
+      const fs = require("fs").promises;
+
       for (let index = 0; index < filteredFiles.length; index++) {
         const file = filteredFiles[index];
         try {
-          // Upload to Cloudinary
           const uploadResult = await cloudinary.uploader.upload(file.path, {
             folder: "products",
-            transformation: [
-              { width: 800, height: 800, crop: "fill" }
-            ]
+            transformation: [{ width: 800, height: 800, crop: "fill" }]
           });
-          // Create thumbnail
+
           const thumbUrl = cloudinary.url(uploadResult.public_id, {
             width: 200,
             height: 200,
@@ -411,8 +428,6 @@ const updateProduct = async (req, res) => {
             public_id: uploadResult.public_id,
           });
 
-          // Remove local file after upload
-          const fs = require("fs").promises;
           await fs.unlink(file.path).catch(() => { });
         } catch (err) {
           console.error("PRODUCT CONTROLLER: Error uploading to Cloudinary (update)", file.path, err);
@@ -424,13 +439,13 @@ const updateProduct = async (req, res) => {
     }
 
     // Process tags
-    const tagArray = tags ? (typeof tags === 'string' ? tags.split(',').map(tag => tag.trim()) : tags) : []
+    const tagArray = tags ? (typeof tags === 'string' ? tags.split(',').map(tag => tag.trim()) : tags) : [];
 
     // Update product
-    await Product.findByIdAndUpdate(productId, {
+    await Product.findByIdAndUpdate(productObjectId, {
       name,
       description,
-      categoryId: new mongoose.Types.ObjectId(category),
+      categoryId: categoryIdObj,
       brand: brand || "",
       color,
       offer: productOffer,
@@ -443,16 +458,18 @@ const updateProduct = async (req, res) => {
       images,
       isActive: isActive === 'on',
       updatedAt: Date.now(),
-    })
+    });
 
-    req.flash("success_msg", "Product updated successfully")
-    res.redirect("/admin/products")
+    req.flash("success_msg", "Product updated successfully");
+    res.redirect("/admin/products");
+
   } catch (error) {
     console.error("PRODUCT CONTROLLER: Error in updateProduct", error);
-    req.flash("error_msg", "Failed to update product")
-    res.redirect("/admin/products")
+    req.flash("error_msg", "Failed to update product");
+    res.redirect("/admin/products");
   }
-}
+};
+
 
 const updateProductOffer = async (req, res) => {
   try {
@@ -533,17 +550,35 @@ const toggleProductListing = async (req, res) => {
     if (!product) {
       return res.status(404).json({ success: false, message: "Product not found" })
     }
-
-    product.isActive = !product.isActive
-    await product.save()
-
-    return res.status(200).json({
-      success: true,
-      message: product.isActive ? "Product listed successfully" : "Product unlisted successfully",
-      isListed: product.isActive,
-    })
+    if( product.isListed ===true ) {
+      await Product.updateOne(
+        { _id: productId }, 
+        { $set: { isListed: false } })  
+        return res.status(200).json({ success: true, message: "Product unlisted successfully" })  
+    }else{
+      await Product.updateOne(
+        { _id: productId }, 
+        { $set: { isListed: true } }) 
+        return res.status(200).json({ success: true, message: "Product listed successfully" })
+    }
+    
   } catch (error) {
     console.error("Error toggling product listing:", error)
+    res.status(500).json({ success: false, message: "Server error" })
+  }
+}
+const viewProduct = async (req, res) => {
+  try {
+    const productId = req.params.id
+    const product = await Product.findById(productId).populate("categoryId")
+
+    if (!product) {
+      return res.status(404).json({ success: false, message: "Product not found" })
+    }
+
+    res.render("productView", { product })
+  } catch (error) {
+    console.error("Error viewing product:", error)
     res.status(500).json({ success: false, message: "Server error" })
   }
 }
@@ -557,4 +592,5 @@ module.exports = {
   updateProductOffer,
   deleteProduct,
   toggleProductListing,
+  viewProduct
 }

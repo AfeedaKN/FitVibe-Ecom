@@ -39,11 +39,11 @@ const userSchema=new Schema({
         default:false
 
     },
-
-},
-{
-    timestamps:true,
-}
-)
-const User=mongoose.model("User",userSchema)
+  addresses: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Address",
+  }],
+}, {
+  timestamps: true,
+});const User=mongoose.model("User",userSchema)
 module.exports=User

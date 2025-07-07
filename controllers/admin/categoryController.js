@@ -1,18 +1,19 @@
-const Category=require("../../models/categorySchema")
+const Category = require("../../models/categorySchema");
+const Product = require("../../models/productSchema");
 
 
 const categoryInfo = async (req, res) => {
     try {
         let search = req.query.search || "";
         let page = parseInt(req.query.page) || 1;
-        const limit = 5; 
+        const limit = 5;
 
         const query = {
-            name: { $regex: ".*" + search + ".*", $options: "i" } 
+            name: { $regex: ".*" + search + ".*", $options: "i" }
         };
 
         const categories = await Category.find(query)
-            .sort({ createdAt: -1 }) 
+            .sort({ createdAt: -1 })
             .limit(limit)
             .skip((page - 1) * limit)
             .exec();
@@ -43,7 +44,10 @@ const addCategory = async (req, res) => {
             return res.status(400).json({ success: false, message: "Category name is required", error: "Category name is required" });
         }
 
-        const existingCategory = await Category.findOne({ name, isDeleted: false });
+        const existingCategory = await Category.findOne({
+            name: { $regex: `^${name}$`, $options: "i" },
+            isDeleted: false
+        });
         if (existingCategory) {
             return res.status(400).json({ success: false, message: "Category already exists", error: "Category already exists" });
         }
@@ -65,10 +69,15 @@ const editCategory = async (req, res) => {
             return res.status(400).json({ success: false, message: "Category ID and name are required" });
         }
 
-        const existingCategory = await Category.findOne({ name, _id: { $ne: id } });
+        const existingCategory = await Category.findOne({
+            name: { $regex: `^${name}$`, $options: "i" },
+            _id: { $ne: id },
+        });
+
         if (existingCategory) {
             return res.status(400).json({ success: false, message: "Category name already exists" });
         }
+
 
         const result = await Category.updateOne(
             { _id: id },
@@ -80,8 +89,8 @@ const editCategory = async (req, res) => {
         }
 
         res.status(200).json({ success: true, message: "Category updated successfully" });
-    } catch (error) {
-        console.error("Error editing category:", error); 
+        } catch (error) {
+        console.error("Error editing category:", error);
         res.status(500).json({ success: false, message: "Server error" });
     }
 };
@@ -109,6 +118,22 @@ const deleteCategory = async (req, res) => {
     }
 };
 
+const categoryDelete = async (req, res) => {
+    try {
+        const id = req.query.id;
+        console.log("id", id);
+        if (!id) {
+            return res.status(400).json({ success: false, message: "Category ID is required" });
+        }
+        await Category.findByIdAndDelete(id);
+        return res.status(200).json({ success: true, message: "Category deleted successfully" });
+
+    } catch (error) {
+        log.error("Error deleting category:", error);
+        res.status(500).json({ success: false, message: "Server error" });
+    }
+}
+
 const restoreCategory = async (req, res) => {
     try {
         const id = req.query.id;
@@ -125,7 +150,7 @@ const restoreCategory = async (req, res) => {
             return res.status(404).json({ success: false, message: "Category not found or already listed" });
         }
 
-        
+
 
         return res.status(200).json({ success: true, message: "Category listed successfully" });
     } catch (error) {
@@ -139,5 +164,6 @@ module.exports = {
     addCategory,
     editCategory,
     deleteCategory,
-    restoreCategory
+    restoreCategory,
+    categoryDelete
 };

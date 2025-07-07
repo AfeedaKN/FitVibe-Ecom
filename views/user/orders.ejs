@@ -3,76 +3,357 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>My Orders - FitVibe</title>
-  <link rel="stylesheet" href="/css/styles.css">
+  <title>FitVibe - My Orders</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
   <style>
-    .orders-section {
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --primary-color: #1a1a1a;
+      --secondary-color: #ffd700;
+      --accent-color: #e6c200;
+      --text-light: #ffffff;
+      --text-dark: #333333;
+      --background-light: #f9f9f9;
+      --card-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+      --transition: all 0.3s ease;
+    }
+
+    body {
+      font-family: 'Arial', sans-serif;
+      line-height: 1.6;
+      color: var(--text-dark);
+      background-color: var(--background-light);
+      margin-left: 280px;
+    }
+
+    .container {
       padding: 40px 20px;
       max-width: 1200px;
       margin: 0 auto;
-      background: #f9f9f9;
     }
 
-    .orders-section h1 {
+    h1 {
       font-size: 28px;
-      color: #333;
       margin-bottom: 20px;
+      color: var(--text-dark);
       text-align: center;
+      position: relative;
+      display: inline-block;
     }
 
-    .order {
-      background: #fff;
+    h1::after {
+      content: '';
+      position: absolute;
+      bottom: -10px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 80px;
+      height: 3px;
+      background: var(--secondary-color);
+    }
+
+    .search-bar {
+      margin-bottom: 20px;
+    }
+
+    .orders-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+
+    .order-card {
+      background: white;
       padding: 20px;
       border-radius: 10px;
-      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-      margin-bottom: 20px;
+      box-shadow: var(--card-shadow);
+      transition: var(--transition);
+      cursor: pointer;
+      position: relative;
     }
 
-    .order h2 {
-      font-size: 20px;
-      color: #333;
+    .order-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+    }
+
+    .order-card h2 {
+      font-size: 18px;
+      color: var(--text-dark);
       margin-bottom: 10px;
     }
 
-    .order-item {
+    .order-card p {
+      font-size: 14px;
+      margin: 5px 0;
+    }
+
+    .status-badge {
+      display: inline-block;
+      padding: 5px 10px;
+      border-radius: 15px;
+      font-size: 12px;
+      color: var(--text-light);
+      margin-left: 10px;
+    }
+
+    .status-pending { background: #f39c12; }
+    .status-processing { background: #3498db; }
+    .status-shipped { background: #9b59b6; }
+    .status-out-for-delivery { background: #8e44ad; }
+    .status-delivered { background: #2ecc71; }
+    .status-cancelled { background: #e74c3c; }
+    .status-returned { background: #c0392b; }
+    .status-return-pending { background: #e67e22; }
+
+    .order-actions {
+      margin-top: 10px;
       display: flex;
-      justify-content: space-between;
-      margin-bottom: 10px;
+      gap: 10px;
     }
 
-    .order-item p {
-      margin: 0;
-      font-size: 16px;
+    .action-btn {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: var(--transition);
+      font-size: 14px;
+      color: var(--text-light);
+    }
+
+    .cancel-btn { background: #e74c3c; }
+    .cancel-btn:hover { background: #c0392b; }
+    .return-btn { background: #e67e22; }
+    .return-btn:hover { background: #d35400; }
+    .action-btn:disabled { background: #ccc; cursor: not-allowed; }
+
+    .empty-orders {
+      text-align: center;
+      padding: 40px;
+      background: white;
+      border-radius: 10px;
+      box-shadow: var(--card-shadow);
+    }
+
+    .empty-orders a {
+      display: inline-block;
+      margin-top: 10px;
+      padding: 10px 20px;
+      background: var(--secondary-color);
+      color: var(--primary-color);
+      border-radius: 5px;
+      text-decoration: none;
+      transition: var(--transition);
+    }
+
+    .empty-orders a:hover {
+      background: var(--accent-color);
+    }
+
+    .pagination {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .pagination a, .pagination span {
+      padding: 8px 12px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      text-decoration: none;
+      color: var(--text-dark);
+      transition: var(--transition);
+    }
+
+    .pagination a:hover {
+      background: var(--secondary-color);
+      color: var(--primary-color);
+    }
+
+    .pagination .active {
+      background: var(--primary-color);
+      color: var(--text-light);
+      border-color: var(--primary-color);
+    }
+
+    @media (max-width: 768px) {
+      body { margin-left: 0; }
+      .orders-grid { grid-template-columns: 1fr; }
+      .container { padding: 20px; }
     }
   </style>
 </head>
 <body>
-  <%- include('./partials/header') %>
+ 
+  <%- include('./partials/sidebar') %>
 
-  <div class="orders-section">
+  <div class="container">
     <h1>My Orders</h1>
-    <% if (orders && orders.length > 0) { %>
-      <% orders.forEach(order => { %>
-        <div class="order">
-          <h2>Order #<%= order._id %></h2>
-          <p>Date: <%= new Date(order.createdAt).toLocaleDateString() %></p>
-          <p>Status: <%= order.status %></p>
-          <p>Address: <%= order.address %></p>
-          <p>Payment Method: <%= order.paymentMethod %></p>
-          <% order.items.forEach(item => { %>
-            <div class="order-item">
-              <p><%= item.productId.productName %> x <%= item.quantity %></p>
-              <p>$<%= (item.price * item.quantity).toFixed(2) %></p>
-            </div>
-          <% }) %>
-          <p>Total: $<%= order.total.toFixed(2) %></p>
+
+    <div class="search-bar">
+      <form action="/profile/orders" method="GET">
+        <div class="input-group">
+          <input type="text" name="search" class="form-control" placeholder="Search orders by ID" value="<%= query %>">
+          <button type="submit" class="btn btn-primary">Search</button>
         </div>
-      <% }) %>
+      </form>
+    </div>
+
+    <% if (messages.error) { %>
+      <div class="alert alert-danger">
+        <%= messages.error %>
+      </div>
+    <% } %>
+    <% if (messages.success) { %>
+      <div class="alert alert-success">
+        <%= messages.success %>
+      </div>
+    <% } %>
+
+    <% if (orders.length > 0) { %>
+      <div class="orders-grid">
+        <% orders.forEach(order => { %>
+          <div class="order-card" onclick="window.location.href='/order/<%= order._id %>'">
+            <h2>Order #<%= order.orderID %></h2>
+            <p>Date: <%= order.orderDate.toLocaleDateString() %></p>
+            <p>Status: <span class="status-badge status-<%= order.orderStatus.toLowerCase().replace(' ', '-') %>"><%= order.orderStatus %></span></p>
+            <p>Payment Method: <%= order.paymentMethod %></p>
+            <p>Total: ₹<%= order.finalAmount ? order.finalAmount.toFixed(2) : '0.00' %></p>
+            <div class="order-actions">
+              <% if (['pending', 'processing'].includes(order.orderStatus)) { %>
+                <button class="action-btn cancel-btn" data-order-id="<%= order._id %>" data-bs-toggle="modal" data-bs-target="#cancelOrderModal">Cancel</button>
+              <% } else if (order.orderStatus === 'delivered' && !order.products.some(item => ['return pending', 'returned'].includes(item.status))) { %>
+                <button class="action-btn return-btn" data-order-id="<%= order._id %>" data-bs-toggle="modal" data-bs-target="#returnOrderModal">Return</button>
+              <% } %>
+            </div>
+          </div>
+        <% }) %>
+      </div>
+      
+      <% if (totalPages > 1) { %>
+        <div class="pagination">
+          <% for(let i = 1; i <= totalPages; i++) { %>
+            <a href="/profile/orders?page=<%= i %><%= query ? '&search=' + query : '' %>" class="<%= currentPage === i ? 'active' : '' %>"><%= i %></a>
+          <% } %>
+        </div>
+      <% } %>
     <% } else { %>
-      <p>You have no orders yet. <a href="/products">Start shopping</a>.</p>
+      <div class="empty-orders">
+        <p>You have no orders yet.</p>
+        <a href="/products">Start Shopping</a>
+      </div>
     <% } %>
   </div>
 
-  <%- include('./partials/footer') %>
+  
+  <div class="modal fade" id="cancelOrderModal" tabindex="-1" aria-labelledby="cancelOrderModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="cancelOrderModalLabel">Cancel Order</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <form id="cancelOrderForm" method="POST">
+          <input type="hidden" name="orderId" id="cancelOrderId">
+          <div class="modal-body">
+            <p>Are you sure you want to cancel the entire order?</p>
+            <div class="mb-3">
+              <label for="cancelReason" class="form-label">Reason for Cancellation (Optional)</label>
+              <textarea class="form-control" id="cancelReason" name="reason" rows="4" maxlength="500"></textarea>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            <button type="submit" class="btn btn-primary">Confirm Cancellation</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  
+  <div class="modal fade" id="returnOrderModal" tabindex="-1" aria-labelledby="returnOrderModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="returnOrderModalLabel">Request Return</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <form id="returnOrderForm" method="POST">
+          <input type="hidden" name="orderId" id="returnOrderId">
+          <div class="modal-body">
+            <p>Please provide a reason for returning this order.</p>
+            <div class="mb-3">
+              <label for="returnReason" class="form-label">Reason for Return (Required)</label>
+              <textarea class="form-control" id="returnReason" name="reason" rows="4" maxlength="500" required></textarea>
+              <div class="invalid-feedback">Please provide a reason for the return.</div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            <button type="submit" class="btn btn-primary">Submit Return Request</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+  <script>
+    
+    document.querySelectorAll('.cancel-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        document.querySelector('#cancelOrderId').value = btn.dataset.orderId;
+      });
+    });
+
+    document.querySelectorAll('.return-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        document.querySelector('#returnOrderId').value = btn.dataset.orderId;
+      });
+    });
+
+    
+    ['cancelOrderForm', 'returnOrderForm'].forEach(formId => {
+      const form = document.getElementById(formId);
+      if (form) {
+        form.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const formData = new FormData(form);
+          const action = formId === 'cancelOrderForm' ? 'cancel' : 'return';
+          if (action === 'return' && !form.querySelector('#returnReason').value.trim()) {
+            form.querySelector('#returnReason').classList.add('is-invalid');
+            return;
+          }
+
+          try {
+            const response = await fetch(`/order/${action}/${formData.get('orderId')}`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(Object.fromEntries(formData))
+            });
+            const result = await response.json();
+            if (result.success) {
+              window.location.reload();
+            } else {
+                alert(`Failed to cancel order: ${result.message} ${result.error || ''}`);            }
+          } catch (error) {
+            alert(`Error ${action}ing order.`);
+          }
+        });
+      }
+    });
+  </script>
 </body>
 </html>

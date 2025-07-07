@@ -26,15 +26,16 @@ app.use(session({
 
 }))
 
-// Flash middleware
+
 app.use(flash());
 
-// Make flash messages available in all views
+
 app.use((req, res, next) => {
   res.locals.success_msg = req.flash('success');
   res.locals.error_msg = req.flash('error');
   next();
 });
+
  
 app.use(passport.initialize())
 app.use(passport.session())
@@ -55,12 +56,13 @@ app.use('/uploads', express.static('uploads'));
 
 app.use("/",userRouter)
 app.use("/admin",adminRouter)
-
+ 
 
 const PORT=3000 || process.env.PORT
 app.listen(PORT,()=>{
     console.log("http://localhost:3000");
 })
+
 
 
 

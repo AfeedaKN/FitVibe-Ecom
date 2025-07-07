@@ -266,8 +266,34 @@
       border-color: #ccc;
       pointer-events: none;
     }
+.products {
+  display: grid;
+  grid-template-columns: repeat(4, 300px); /* wider cards */
+  justify-content: center;
+  gap: 30px; /* bigger gap */
+  padding: 20px 0;
+}
 
-    /* Responsive Styles */
+.product-card {
+  border: 1px solid #ddd;
+  padding: 15px;
+  text-align: center;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  border-radius: 5px;
+  width: 300px; 
+}
+
+.product-card img {
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+}
+
+
+  .stars i {
+    color: gold;
+  }
+  
     @media (max-width: 768px) {
       .filter-search-section {
         flex-direction: column;
@@ -310,10 +336,10 @@
   </style>
 </head>
 <body>
-  <!-- Header Partial -->
+  
   <%- include('./partials/header') %>
 
-  <!-- Filter and Search Section -->
+  
   <div class="filter-search-section">
     <div class="search-bar">
       <input type="text" id="searchInput" placeholder="Search products..." value="<%= query.search || '' %>">
@@ -351,49 +377,55 @@
     </div>
   </div>
 
-  <!-- Products Section -->
-  <div class="section">
+  
+  
+    <div class="section">
     <h2>All Products</h2>
     <% if (products.length === 0) { %>
-      <p>No products found.</p>
+    <p>No products found.</p>
     <% } else { %>
-      <div class="products">
-        <% products.forEach(product => { %>
-          <div class="product-card">
-            <% if (product.images && product.images.length > 0) { %>
-              <img src="<%= product.images[0].url %>" alt="<%= product.name %>" loading="lazy" />
-            <% } else { %>
-              <img src="/path/to/default-image.jpg" alt="No image" loading="lazy" />
-            <% } %>
-            <h3><%= product.name %></h3>
-            <div class="stars">
-              <% for(let i = 0; i < Math.floor(product.rating || 0); i++) { %>
-                <i class="fas fa-star"></i>
-              <% } %>
-              <% if((product.rating || 0) % 1 !== 0) { %>
-                <i class="fas fa-star-half-alt"></i>
-              <% } %>
-              <% for(let i = 0; i < 5 - Math.ceil(product.rating || 0); i++) { %>
-                <i class="far fa-star"></i>
-              <% } %>
-            </div>
-            <% if (product.variants && product.variants.length > 0 && product.variants[0].salePrice !== undefined) { %>
-              <p class="price">₹<%= product.variants[0].salePrice.toFixed(2) %></p>
-            <% } else { %>
-              <p class="price">Price not available</p>
-            <% } %>
-            <div class="product-actions">
-              <a href="/products/<%= product._id %>" class="view-btn">View Details</a>
-              <button class="add-to-cart-btn" data-product-id="<%= product._id %>">
-                <i class="fas fa-shopping-cart"></i>
-              </button>
-            </div>
-          </div>
-        <% }) %>
-      </div>
-    <% } %>
+    <div class="products">
+      <% products.forEach(product => { %>
+        <div class="product-card">
+          <% if (product.images && product.images.length > 0) { %>
+            <img src="<%= product.images[0].url %>" alt="<%= product.name %>" loading="lazy" />
+          <% } else { %>
+            <img src="/path/to/default-image.jpg" alt="No image" loading="lazy" />
+          <% } %>
 
-    <!-- Pagination -->
+          <h3><%= product.name %></h3>
+
+          <div class="stars">
+            <% for(let i = 0; i < Math.floor(product.rating || 0); i++) { %>
+              <i class="fas fa-star"></i>
+            <% } %>
+            <% if ((product.rating || 0) % 1 !== 0) { %>
+              <i class="fas fa-star-half-alt"></i>
+            <% } %>
+            <% for(let i = 0; i < 5 - Math.ceil(product.rating || 0); i++) { %>
+              <i class="far fa-star"></i>
+            <% } %>
+          </div>
+
+          <% if (product.variants && product.variants.length > 0 && product.variants[0].salePrice !== undefined) { %>
+            <p class="price">₹<%= product.variants[0].salePrice.toFixed(2) %></p>
+          <% } else { %>
+            <p class="price">Price not available</p>
+          <% } %>
+
+          <div class="product-actions">
+            <a href="/products/<%= product._id %>" class="view-btn">View Details</a>
+            <button class="add-to-cart-btn" data-product-id="<%= product._id %>">
+              <i class="fas fa-shopping-cart"></i>
+            </button>
+          </div>
+        </div>
+      <% }) %>
+    </div>
+   <% } %>
+
+
+    
     <div class="pagination">
       <% if (currentPage > 1) { %>
         <a href="<%= buildQuery({ page: currentPage - 1 }) %>">Previous</a>
@@ -411,10 +443,10 @@
     </div>
   </div>
 
-  <!-- Footer Partial -->
+  
   <%- include('./partials/footer') %>
 
-  <!-- JavaScript for Client-Side Interactivity -->
+ 
   <script>
     document.querySelectorAll('.add-to-cart-btn').forEach(button => {
   button.addEventListener('click', async (e) => {
@@ -464,7 +496,7 @@
   });
 });
 
-    // Helper function to build query string
+    
     function buildQueryString(params) {
       const currentParams = new URLSearchParams(window.location.search);
       Object.entries(params).forEach(([key, value]) => {
@@ -477,7 +509,7 @@
       return '?' + currentParams.toString();
     }
 
-    // Event listeners for search, sort, and filters
+   
     document.getElementById('searchBtn').addEventListener('click', () => {
       const search = document.getElementById('searchInput').value;
       window.location.href = buildQueryString({ search, page: 1 });

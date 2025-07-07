@@ -85,7 +85,7 @@ const addToCartFromWishlist = async (req, res) => {
       cart = new Cart({ userId, items: [] });
     }
 
-    const variant = product.variants[0]; // Assuming default/first variant
+    const variant = product.variants[0]; 
     console.log('Variant:', variant);
 
     if (!variant) {
@@ -97,6 +97,11 @@ const addToCartFromWishlist = async (req, res) => {
     );
 
     if (existingItem) {
+      console.log('Existing item found in cart:', existingItem);
+      if( existingItem.quantity > 4) {
+        console.log('Cart limit exceeded');
+        return res.status(400).json({ success: false, message: 'Cart limit exceeded' });
+      }
       existingItem.quantity += 1;
       existingItem.totalPrice = existingItem.price * existingItem.quantity;
     } else {
@@ -108,6 +113,7 @@ const addToCartFromWishlist = async (req, res) => {
         totalPrice: variant.salePrice * 1
       });
     }
+
 
     await cart.save();
 

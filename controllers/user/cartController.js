@@ -4,38 +4,38 @@ const Product=require("../../models/productSchema")
 
 const addToCart = async (req, res) => {
     try {
-        console.log("🚀 Step 1: Got addToCart request");
+        console.log(" Step 1: Got addToCart request");
         const { productId, variantId, quantity } = req.body;
         const user = req.session.user;
 
         if (!user) {
-            console.log("❌ Step 2: User not logged in");
+            console.log(" Step 2: User not logged in");
             return res.status(401).json({ success: false, message: 'Please log in to add to cart' });
         }
 
-        console.log("✅ Step 3: User is logged in", user._id);
+        console.log("Step 3: User is logged in", user._id);
 
         const product = await Product.findById(productId);
         if (!product) {
-            console.log("❌ Step 4: Product not found",productId)
+            console.log(" Step 4: Product not found",productId)
             return res.status(404).json({ success: false, message: 'Product not found' });
         }
 
-        console.log("✅ Step 5: Product found");
-        console.log("🟡 Variant ID from request:", variantId);
-console.log("🟡 Available variant IDs:", product.variants.map(v => v._id.toString()));
+        console.log(" Step 5: Product found");
+        console.log(" Variant ID from request:", variantId);
+console.log(" Available variant IDs:", product.variants.map(v => v._id.toString()));
 
 
         const variant = product.variants.find(v => v._id.toString() === variantId);
         if (!variant) {
-            console.log("❌ Step 6: Variant not found");
+            
             return res.status(404).json({ success: false, message: 'Variant not found' });
         }
 
-        console.log("✅ Step 7: Variant found", variant);
+       
 
         if (variant.varientquatity < quantity) {
-            console.log("❌ Step 8: Not enough stock");
+           
             return res.status(400).json({ success: false, message: 'Not enough stock available' });
         }
 
@@ -52,6 +52,10 @@ console.log("🟡 Available variant IDs:", product.variants.map(v => v._id.toStr
         );
 
         if (cartItemIndex > -1) {
+            if( cart.items[cartItemIndex].quantity > 4) {
+                console.log('Cart limit exceeded');
+                return res.status(400).json({ success: false, message: 'Cart limit exceeded' });
+            }
             cart.items[cartItemIndex].quantity += quantity;
             cart.items[cartItemIndex].totalPrice =
                 cart.items[cartItemIndex].quantity * cart.items[cartItemIndex].price;
@@ -60,7 +64,7 @@ console.log("🟡 Available variant IDs:", product.variants.map(v => v._id.toStr
                 productId,
                 variantId,
                 quantity,
-                price: variant.varientPrice, // 🛑 make sure this is correct
+                price: variant.varientPrice, 
                 totalPrice: variant.varientPrice * quantity,
                 status: "placed",
                 cancellationReason: "none"
@@ -68,10 +72,10 @@ console.log("🟡 Available variant IDs:", product.variants.map(v => v._id.toStr
         }
 
         await cart.save();
-        console.log("✅ Step 10: Cart saved successfully");
+        console.log(" Step 10: Cart saved successfully");
         res.json({ success: true, message: 'Product added to cart' });
     } catch (error) {
-        console.error('🔥 Catch Block: Add to cart error:', error);
+        console.error('Catch Block: Add to cart error:', error);
         res.status(500).json({ success: false, message: 'Server error' });
     }
 };
@@ -106,6 +110,7 @@ const getCart = async (req, res) => {
             }
         }
 
+        console.log(cartItems,"sdds");
         res.render('cart', {
             cart,
             cartItems,
@@ -147,18 +152,22 @@ const updateCart = async (req, res) => {
         if (!variant) {
             return res.status(404).json({ success: false, message: 'Variant not found' });
         }
-
+        console.log("Variant stock:", variant);
         cartItem.quantity += change;
         if (cartItem.quantity <= 0) {
             cart.items = cart.items.filter(item => 
                 item.productId.toString() !== productId || item.variantId.toString() !== variantId
             );
-        } else if (cartItem.quantity > variant.stock) {
+            
+        } else if (cartItem.quantity > variant.varientquatity) {
             return res.status(400).json({ success: false, message: 'Not enough stock available' });
+        }else if (cartItem.quantity > 5) {
+            return res.status(400).json({ success: false, message: 'Cart limit exceeded' }); 
         } else {
             cartItem.totalPrice = cartItem.quantity * cartItem.price;
         }
 
+        console.log(cartItem.quantity);
         await cart.save();
         res.json({ success: true, message: 'Cart updated' });
     } catch (error) {

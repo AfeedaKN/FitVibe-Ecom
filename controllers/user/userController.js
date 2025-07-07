@@ -98,6 +98,7 @@ const signup = async (req, res) => {
     }
 };
 
+
 const securePassword = async (password) => {
     try {
         const passwordHash = await bcrypt.hash(password, 10);
@@ -107,6 +108,8 @@ const securePassword = async (password) => {
         throw error;
     }
 };
+
+
 
 const verifyOTP = async (req, res) => {
     try {
@@ -360,9 +363,8 @@ const resetPassword = async (req, res) => {
 
 const logout = async (req, res) => {
     try {
-        req.session.destroy(() => {
-            res.redirect('/');
-        });
+       delete req.session.user;  // only remove user
+       res.redirect('/');
     } catch (error) {
         console.log(error);
         res.redirect("/pageNotFound");

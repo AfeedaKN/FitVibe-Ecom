@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FitVibe - Manage Addresses</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <style>
+    :root {
+      --primary-color: #1a1a1a;
+      --secondary-color: #ffd700;
+      --accent-color: #e6c200;
+      --text-light: #ffffff;
+      --text-dark: #333333;
+      --background-light: #f9f9f9;
+      --card-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+      --transition: all 0.3s ease;
+    }
+
+    body {
+      font-family: 'Arial', sans-serif;
+      line-height: 1.6;
+      color: var(--text-dark);
+      background-color: var(--background-light);
+      margin-left: 280px;
+    }
+
+    .container {
+      padding: 40px 20px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      font-size: 28px;
+      margin-bottom: 20px;
+      color: var(--text-dark);
+      text-align: center;
+      position: relative;
+      display: inline-block;
+    }
+
+    h1::after {
+      content: '';
+      position: absolute;
+      bottom: -10px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 80px;
+      height: 3px;
+      background: var(--secondary-color);
+    }
+
+    .addresses-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+
+    .address-card {
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: var(--card-shadow);
+      transition: var(--transition);
+      position: relative;
+    }
+
+    .address-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+    }
+
+    .address-card h3 {
+      font-size: 18px;
+      color: var(--text-dark);
+      margin-bottom: 10px;
+    }
+
+    .address-card p {
+      font-size: 14px;
+      margin: 5px 0;
+    }
+
+    .default-badge {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: #2ecc71;
+      color: var(--text-light);
+      padding: 5px 10px;
+      border-radius: 15px;
+      font-size: 12px;
+    }
+
+    .address-actions {
+      margin-top: 10px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .action-btn {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: var(--transition);
+      font-size: 14px;
+      color: var(--text-light);
+    }
+
+    .edit-btn {
+      background: #3498db;
+    }
+
+    .edit-btn:hover {
+      background: #2980b9;
+    }
+
+    .delete-btn {
+      background: #e74c3c;
+    }
+
+    .delete-btn:hover {
+      background: #c0392b;
+    }
+
+    .default-btn {
+      background: #2ecc71;
+    }
+
+    .default-btn:hover {
+      background: #27ae60;
+    }
+
+    .default-btn:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+
+    .add-address-btn {
+      display: inline-block;
+      padding: 10px 20px;
+      background: var(--primary-color);
+      color: var(--text-light);
+      border-radius: 5px;
+      text-decoration: none;
+      transition: var(--transition);
+      margin-bottom: 20px;
+    }
+
+    .add-address-btn:hover {
+      background: var(--secondary-color);
+      color: var(--primary-color);
+    }
+
+    .modal-content {
+      border-radius: 10px;
+    }
+
+    .modal-header {
+      background: var(--primary-color);
+      color: var(--text-light);
+    }
+
+    .modal-footer .btn-primary {
+      background: var(--secondary-color);
+      border-color: var(--secondary-color);
+      color: var(--primary-color);
+    }
+
+    .modal-footer .btn-primary:hover {
+      background: var(--accent-color);
+      border-color: var(--accent-color);
+    }
+
+    .form-label {
+      font-size: 14px;
+      color: var(--text-dark);
+    }
+
+    .form-control {
+      font-size: 14px;
+    }
+
+    .empty-addresses {
+      text-align: center;
+      padding: 40px;
+      background: white;
+      border-radius: 10px;
+      box-shadow: var(--card-shadow);
+    }
+
+    .alert {
+      margin-bottom: 20px;
+    }
+
+    @media (max-width: 768px) {
+      body {
+        margin-left: 0;
+      }
+
+      .addresses-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .container {
+        padding: 20px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <%- include('./partials/sidebar') %>
+
+    <div class="container">
+      <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+        <h1 class="m-0">Manage Addresses</h1>
+        <a href="#" class="add-address-btn" data-bs-toggle="modal" data-bs-target="#addAddressModal">Add New Address</a>
+      </div>
+
+      <% if (messages.error) { %>
+        <div class="alert alert-danger">
+          <%= messages.error %>
+        </div>
+        <% } %>
+          <% if (messages.success) { %>
+            <div class="alert alert-success">
+              <%= messages.success %>
+            </div>
+            <% } %>
+
+              <% if (addresses && addresses.length> 0) { %>
+                <div class="addresses-grid">
+                  <% addresses.forEach(address=> { %>
+                    <div class="address-card">
+                      <% if (address.isDefault) { %>
+                        <span class="default-badge">Default</span>
+                        <% } %>
+                          <h3>
+                            <%= address.name %>
+                          </h3>
+                          <p>
+                            <%= address.address %>, <%= address.city %>, <%= address.state %>
+                                  <%= address.zipCode %>
+                          </p>
+                          <p>
+                            <%= address.country %>
+                          </p>
+                          <p>Phone: <%= address.phone %>
+                          </p>
+                          <div class="address-actions">
+                            <button class="action-btn edit-btn" data-bs-toggle="modal"
+                              data-bs-target="#editAddressModal" data-id="<%= address._id %>"
+                              data-name="<%= address.name %>" data-phone="<%= address.phone %>"
+                              data-address="<%= address.address %>" data-city="<%= address.city %>"
+                              data-state="<%= address.state %>" data-zipcode="<%= address.zipCode %>"
+                              data-country="<%= address.country %>"
+                              data-isdefault="<%= address.isDefault %>">Edit</button>
+                            <button class="action-btn delete-btn" data-bs-toggle="modal"
+                              data-bs-target="#deleteAddressModal" data-id="<%= address._id %>">Delete</button>
+                            <form action="/address/set-default" method="POST" style="display: inline;">
+                              <input type="hidden" name="addressId" value="<%= address._id %>">
+                              <button type="submit" class="action-btn default-btn" <%=address.isDefault ? 'disabled'
+                                : '' %>>Set as Default</button>
+                            </form>
+                          </div>
+                    </div>
+                    <% }) %>
+                </div>
+                <% } else { %>
+                  <div class="empty-addresses">
+                    <p>No addresses found. Add one to get started.</p>
+                  </div>
+                  <% } %>
+    </div>
+
+    
+    <div class="modal fade" id="addAddressModal" tabindex="-1" aria-labelledby="addAddressModalLabel"
+      aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="addAddressModalLabel">Add New Address</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <form action="/save-address" method="POST">
+            <div class="modal-body">
+             <div class="mb-3">
+  <label for="addName" class="form-label">Full Name</label>
+  <input type="text" class="form-control" id="addName" name="name">
+  <small class="text-danger" id="nameError"></small>
+</div>
+<div class="mb-3">
+  <label for="addPhone" class="form-label">Phone Number</label>
+  <input type="tel" class="form-control" id="addPhone" name="phone">
+  <small class="text-danger" id="phoneError"></small>
+</div>
+<div class="mb-3">
+  <label for="addAddress" class="form-label">Street Address</label>
+  <input type="text" class="form-control" id="addAddress" name="address">
+  <small class="text-danger" id="addressError"></small>
+</div>
+<div class="mb-3">
+  <label for="addCity" class="form-label">City</label>
+  <input type="text" class="form-control" id="addCity" name="city">
+  <small class="text-danger" id="cityError"></small>
+</div>
+<div class="mb-3">
+  <label for="addState" class="form-label">State</label>
+  <input type="text" class="form-control" id="addState" name="state">
+  <small class="text-danger" id="stateError"></small>
+</div>
+<div class="mb-3">
+  <label for="addZipCode" class="form-label">Zip Code</label>
+  <input type="text" class="form-control" id="addZipCode" name="zipCode">
+  <small class="text-danger" id="zipCodeError"></small>
+</div>
+<div class="mb-3">
+  <label for="addCountry" class="form-label">Country</label>
+  <input type="text" class="form-control" id="addCountry" name="country">
+  <small class="text-danger" id="countryError"></small>
+</div>
+
+              <div class="mb-3 form-check">
+                <input type="checkbox" class="form-check-input" id="addIsDefault" name="isDefault">
+                <label class="form-check-label" for="addIsDefault">Set as Default</label>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+              <button type="submit" class="btn btn-primary">Save Address</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    
+    <div class="modal fade" id="editAddressModal" tabindex="-1" aria-labelledby="editAddressModalLabel"
+      aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="editAddressModalLabel">Edit Address</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <form action="/profile/address/edit" method="POST">
+            <div class="modal-body">
+              <input type="hidden" id="editId" name="addressId">
+              <div class="mb-3">
+                <label for="editName" class="form-label">Full Name</label>
+                <input type="text" class="form-control" id="editName" name="name" >
+              </div>
+              <div class="mb-3">
+                <label for="editPhone" class="form-label">Phone Number</label>
+                <input type="number" class="form-control" id="editPhone" name="phone" >
+              </div>
+              <div class="mb-3">
+                <label for="editAddress" class="form-label">Street Address</label>
+                <input type="text" class="form-control" id="editAddress" name="address" >
+              </div>
+              <div class="mb-3">
+                <label for="editCity" class="form-label">City</label>
+                <input type="text" class="form-control" id="editCity" name="city" >
+              </div>
+              <div class="mb-3">
+                <label for="editState" class="form-label">State</label>
+                <input type="text" class="form-control" id="editState" name="state" >
+              </div>
+              <div class="mb-3">
+                <label for="editZipCode" class="form-label">Zip Code</label>
+                <input type="number" class="form-control" id="editZipCode" name="zipCode" >
+              </div>
+              <div class="mb-3">
+                <label for="editCountry" class="form-label">Country</label>
+                <input type="text" class="form-control" id="editCountry" name="country" >
+              </div>
+              <div class="mb-3 form-check">
+                <input type="checkbox" class="form-check-input" id="editIsDefault" name="isDefault">
+                <label class="form-check-label" for="editIsDefault">Set as Default</label>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+              <button type="submit" class="btn btn-primary">Update Address</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    
+    <div class="modal fade" id="deleteAddressModal" tabindex="-1" aria-labelledby="deleteAddressModalLabel"
+      aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="deleteAddressModalLabel">Confirm Delete</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            Are you sure you want to delete this address?
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <form action="/address/delete/" method="POST" id="deleteAddressForm">
+              <input type="hidden" name="addressId" id="deleteAddressId">
+              <button type="submit" class="btn btn-danger">Delete</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+      crossorigin="anonymous"></script>
+    <script>
+      // Populate edit modal
+     document.querySelectorAll('.edit-btn').forEach(button => {
+  button.addEventListener('click', () => {
+    const modal = document.querySelector('#editAddressModal');
+
+    // 👉 Add this to debug
+    console.log("DATA FROM BUTTON:", button.dataset);
+
+    // Set values
+    modal.querySelector('#editId').value = button.dataset.id;
+    modal.querySelector('#editName').value = button.dataset.name;
+    modal.querySelector('#editPhone').value = button.dataset.phone;
+    modal.querySelector('#editAddress').value = button.dataset.address;
+    modal.querySelector('#editCity').value = button.dataset.city;
+    modal.querySelector('#editState').value = button.dataset.state;
+    modal.querySelector('#editZipCode').value = button.dataset.zipcode;
+    modal.querySelector('#editCountry').value = button.dataset.country;
+    modal.querySelector('#editIsDefault').checked = button.dataset.isdefault === 'true';
+  });
+});
+
+
+      document.querySelectorAll('.delete-btn').forEach(button => {
+        button.addEventListener('click', () => {
+          const modal = document.querySelector('#deleteAddressModal');
+          const addressId = button.dataset.id;
+          modal.querySelector('#deleteAddressId').value = addressId;
+          modal.querySelector('#deleteAddressForm').action = `/address/delete/${addressId}`;
+        });
+      });
+
+
+ 
+  document.querySelector('#addAddressModal form').addEventListener('submit', function (e) {
+    const form = e.target;
+    const name = form.name;
+    const phone = form.phone;
+    const address = form.address;
+    const city = form.city;
+    const state = form.state;
+    const zipCode = form.zipCode;
+    const country = form.country;
+
+    // Clear old errors
+    document.querySelectorAll('#addAddressModal small.text-danger').forEach(s => s.textContent = '');
+
+    let isValid = true;
+
+    if (!name.value.trim()) {
+      document.getElementById('nameError').textContent = "Full name is required";
+      isValid = false;
+    }
+
+    if (!phone.value.trim()) {
+      document.getElementById('phoneError').textContent = "Phone number is required";
+      isValid = false;
+    } else if (!/^\d{10}$/.test(phone.value.trim())) {
+      document.getElementById('phoneError').textContent = "Enter valid 10-digit phone number";
+      isValid = false;
+    }
+
+    if (!address.value.trim()) {
+      document.getElementById('addressError').textContent = "Street address is required";
+      isValid = false;
+    }
+
+    if (!city.value.trim()) {
+      document.getElementById('cityError').textContent = "City is required";
+      isValid = false;
+    }
+
+    if (!state.value.trim()) {
+      document.getElementById('stateError').textContent = "State is required";
+      isValid = false;
+    }
+
+    if (!zipCode.value.trim()) {
+      document.getElementById('zipCodeError').textContent = "Zip code is required";
+      isValid = false;
+    } else if (!/^\d{5,6}$/.test(zipCode.value.trim())) {
+      document.getElementById('zipCodeError').textContent = "Invalid zip code";
+      isValid = false;
+    }
+
+    if (!country.value.trim()) {
+      document.getElementById('countryError').textContent = "Country is required";
+      isValid = false;
+    }
+
+    if (!isValid) {
+      e.preventDefault();
+    }
+  });
+
+
+    </script>
+</body>
+
+</html>

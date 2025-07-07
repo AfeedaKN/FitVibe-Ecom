@@ -240,10 +240,10 @@
   </style>
 </head>
 <body>
-  <!-- Header Partial -->
+  
   <%- include('./partials/header') %>
 
-<!-- Cart Section -->
+
 <div class="cart-section">
   <h2>Your Cart</h2>
   <% if (cartItems.length > 0) { %>
@@ -255,6 +255,7 @@
           <img src="<%= item.product.images && item.product.images.length > 0 ? item.product.images[0].url : '/path/to/default-image.jpg' %>" alt="<%= item.product.name %>" loading="lazy" />
           <div class="cart-item-details">
             <h3><%= item.product.name %></h3>
+            <p><strong>Size:</strong> <%= item.variant.size %></p>
             <p class="price">₹<%= item.variant.salePrice.toFixed(2) %> x <%= item.quantity %></p>
             <% if (item.variant.stock === 0) { %>
               <p class="cart-item-out-of-stock">Out of Stock</p>
@@ -287,12 +288,12 @@
   <% } %>
 </div>
 
-  <!-- Footer Partial -->
+  
   <%- include('./partials/footer') %>
 
-  <!-- JavaScript for Cart Interactions -->
+  
   <script>
-    // Add to Cart (called from product pages)
+    
     async function addToCart(productId) {
       try {
         const response = await fetch('/cart/add', {
@@ -303,9 +304,9 @@
         const result = await response.json();
         if (result.success) {
           alert('Product added to cart!');
-          window.location.reload(); // Refresh to update cart count in header
+          window.location.reload(); 
         } else {
-          alert(result.message || 'Failed to add product to cart.');
+          showToast(result.message || '','error');
         }
       } catch (error) {
         alert('Error adding product to cart.');
@@ -321,14 +322,17 @@
       const response = await fetch('/cart/update', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ productId, variantId, change: 1 }) // ✅ use change: 1
+        body: JSON.stringify({ productId, variantId, change: 1 }) 
+      })
+      .then(response =>response.json())
+      .then(data => {
+        if (data.success) {
+          window.location.reload();
+        } else {
+          alert(data.message);
+        }
       });
-      if (response.ok) {
-        window.location.reload();
-      } else {
-        alert('Failed to update quantity.');
-      }
-    } catch (error) {
+  } catch (error) {
       alert('Error updating quantity.');
     }
   });
@@ -343,7 +347,7 @@ document.querySelectorAll('.decrement-btn').forEach(button => {
       const response = await fetch('/cart/update', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ productId, variantId, change: -1 }) // ✅ use change: -1
+        body: JSON.stringify({ productId, variantId, change: -1 }) 
       });
       if (response.ok) {
         window.location.reload();
@@ -361,13 +365,13 @@ document.querySelectorAll('.decrement-btn').forEach(button => {
     document.querySelectorAll('.cart-item-remove').forEach(button => {
   button.addEventListener('click', async () => {
     const productId = button.getAttribute('data-product-id');
-    const variantId = button.getAttribute('data-variant-id'); // ✅ added this
+    const variantId = button.getAttribute('data-variant-id'); 
 
     try {
       const response = await fetch('/cart/remove', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ productId, variantId }) // ✅ send both
+        body: JSON.stringify({ productId, variantId }) 
       });
 
       if (response.ok) {

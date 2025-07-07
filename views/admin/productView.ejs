@@ -198,12 +198,21 @@
                 height: 120px;
             }
         }
+        
+    h1 {
+      font-size: 28px;
+      margin-bottom: 20px;
+      color: var(--text-dark);
+      position: relative;
+      display: inline-block;
+    }
     </style>
 </head>
 <body>
     <%- include('./partials/sidebar', { page: 'products' }) %>
 
     <section class="content-main">
+        <h1>View Page</h1>
         <div class="product-container">
             <div class="product-header">
                 <h1><%= product.productName %></h1>
@@ -222,7 +231,7 @@
                     </div>
                     <div class="info-group">
                         <div class="info-label">Category:</div>
-                        <div class="info-value"><%= product.category.name %></div>
+                        <div class="info-value"><%= product.categoryId.name %></div>
                     </div>
                     <div class="info-group">
                         <div class="info-label">Color:</div>
@@ -242,16 +251,16 @@
                     <% } %>
                     <div class="info-group">
                         <div class="info-label">Total Stock:</div>
-                        <div class="info-value"><%= product.sizes.reduce((total, size) => total + size.stock, 0) %> units</div>
+<%= product.variants.reduce((total, size) => total + size.varientquatity, 0) %> units
                     </div>
                     <div class="info-group">
                         <div class="info-label">Available Sizes:</div>
-                        <div class="info-value"><%= product.sizes.length %> variants</div>
+                        <div class="info-value"><%= product.variants.length %> variants</div>
                     </div>
                     <div class="info-group">
                         <div class="info-label">Status:</div>
                         <div class="info-value">
-                            <% if (product.isActive) { %>
+                            <% if (product.isListed) { %>
                                 <span style="color: #27ae60; font-weight: bold;">Active</span>
                             <% } else { %>
                                 <span style="color: #e74c3c; font-weight: bold;">Inactive</span>
@@ -273,59 +282,67 @@
             </div>
 
             <div class="size-variants">
-                <h3>Size Variants & Pricing</h3>
-                <% product.sizes.forEach((variant, index) => { %>
-                    <div class="variant-card">
-                        <div class="variant-header">
-                            <span>Size: <%= variant.size %></span>
-                            <% if (variant.stock <= 5 && variant.stock > 0) { %>
-                                <span style="color: #f39c12; font-size: 0.9rem;">⚠️ Low Stock</span>
-                            <% } else if (variant.stock === 0) { %>
-                                <span style="color: #e74c3c; font-size: 0.9rem;">❌ Out of Stock</span>
-                            <% } else { %>
-                                <span style="color: #27ae60; font-size: 0.9rem;">✅ In Stock</span>
-                            <% } %>
-                        </div>
-                        <div class="variant-info">
-                            <div class="price-info">
-                                <h4 style="margin: 0 0 10px 0; color: #2c3e50;">Pricing</h4>
-                                <% if (product.productOffer > 0) { %>
-                                    <div class="price-row">
-                                        <span>Regular Price:</span>
-                                        <span class="regular-price">₹<%= variant.price.toFixed(2) %></span>
-                                    </div>
-                                    <div class="price-row">
-                                        <span>Sale Price:</span>
-                                        <span class="sale-price">₹<%= variant.salePrice.toFixed(2) %></span>
-                                    </div>
-                                    <div class="price-row">
-                                        <span>You Save:</span>
-                                        <span class="savings">₹<%= variant.savings.toFixed(2) %> (<%= variant.savingsPercent %>%)</span>
-                                    </div>
-                                <% } else { %>
-                                    <div class="price-row">
-                                        <span>Price:</span>
-                                        <span class="sale-price">₹<%= variant.price.toFixed(2) %></span>
-                                    </div>
-                                <% } %>
-                            </div>
-                            <div class="stock-info">
-                                <h4 style="margin: 0 0 10px 0; color: #2c3e50;">Stock Information</h4>
-                                <div class="price-row">
-                                    <span>Available Quantity:</span>
-                                    <span style="font-weight: bold;"><%= variant.stock %> units</span>
-                                </div>
-                                <div class="price-row">
-                                    <span>Stock Status:</span>
-                                    <span style="font-weight: bold; color: <%= variant.stock > 5 ? '#27ae60' : variant.stock > 0 ? '#f39c12' : '#e74c3c' %>;">
-                                        <%= variant.stock > 5 ? 'Good Stock' : variant.stock > 0 ? 'Low Stock' : 'Out of Stock' %>
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                <% }) %>
-            </div>
+  <h3>Size Variants & Pricing</h3>
+  <% product.variants.forEach((variant, index) => { %>
+    <div class="variant-card">
+      <div class="variant-header">
+        <span>Size: <%= variant.size %></span>
+        <% if (variant.varientquatity <= 5 && variant.varientquatity > 0) { %>
+          <span style="color: #f39c12; font-size: 0.9rem;">⚠️ Low Stock</span>
+        <% } else if (variant.varientquatity === 0) { %>
+          <span style="color: #e74c3c; font-size: 0.9rem;">❌ Out of Stock</span>
+        <% } else { %>
+          <span style="color: #27ae60; font-size: 0.9rem;">✅ In Stock</span>
+        <% } %>
+      </div>
+
+      <div class="variant-info">
+<div class="price-info">
+  <h4 style="margin: 0 0 10px 0; color: #2c3e50;">Pricing</h4>
+  <% if (product.productOffer > 0) { %>
+    <div class="price-row">
+      <span>Regular Price:</span>
+      <span class="regular-price">₹<%= variant.varientPrice.toFixed(2) %></span>
+    </div>
+    <div class="price-row">
+      <span>Sale Price:</span>
+      <span class="sale-price">₹<%= variant.salePrice.toFixed(2) %></span>
+    </div>
+    <div class="price-row">
+      <span>You Save:</span>
+      <%
+        const savings = variant.varientPrice - variant.salePrice;
+        const savingsPercent = Math.round((savings / variant.varientPrice) * 100);
+      %>
+      <span class="savings">₹<%= savings.toFixed(2) %> (<%= savingsPercent %>%)</span>
+    </div>
+  <% } else { %>
+    <div class="price-row">
+      <span>Price:</span>
+      <span class="sale-price">₹<%= variant.varientPrice.toFixed(2) %></span>
+    </div>
+  <% } %>
+</div>
+
+
+        <div class="stock-info">
+          <h4 style="margin: 0 0 10px 0; color: #2c3e50;">Stock Information</h4>
+          <div class="price-row">
+            <span>Available Quantity:</span>
+            <span style="font-weight: bold;"><%= variant.varientquatity %> units</span>
+          </div>
+          <div class="price-row">
+            <span>Stock Status:</span>
+            <span style="font-weight: bold; color: <%= variant.varientquatity > 5 ? '#27ae60' : variant.varientquatity > 0 ? '#f39c12' : '#e74c3c' %>;">
+              <%= variant.varientquatity > 5 ? 'Good Stock' : variant.varientquatity > 0 ? 'Low Stock' : 'Out of Stock' %>
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  <% }) %>
+</div>
+
 
             <div class="btn-group">
                 <a href="/admin/products" class="btn btn-secondary">Back to Products</a>

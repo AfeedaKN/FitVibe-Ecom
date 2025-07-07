@@ -89,6 +89,14 @@ const orderSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
+    statusHistory: [
+  {
+    status: String,
+    date: Date,
+    description: String,
+  },
+],
+
     coupon: {
       couponId: {
         type: mongoose.Schema.Types.ObjectId,
@@ -164,7 +172,7 @@ const orderSchema = new mongoose.Schema(
 )
 
 orderSchema.pre("save", async function (next) {
-  if (this.isNew) {
+  if (!this.orderID) {
     const date = new Date()
     const year = date.getFullYear().toString().slice(-2)
     const month = ("0" + (date.getMonth() + 1)).slice(-2)

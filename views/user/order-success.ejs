@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FitVibe - Order Successful</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <style>
+    /* Inherit Global Styles */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --primary-color: #1a1a1a;
+      --secondary-color: #ffd700;
+      --accent-color: #e6c200;
+      --text-light: #ffffff;
+      --text-dark: #333333;
+      --background-light: #f9f9f9;
+      --card-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+      --transition: all 0.3s ease;
+    }
+
+    body {
+      font-family: 'Arial', sans-serif;
+      line-height: 1.6;
+      color: var(--text-dark);
+      background-color: var(--background-light);
+    }
+
+    /* Success Section */
+    .success-section {
+      padding: 60px 20px;
+      text-align: center;
+      background: var(--background-light);
+      min-height: 80vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .success-section h2 {
+      font-size: 36px;
+      margin-bottom: 20px;
+      color: var(--text-dark);
+    }
+
+    .success-section p {
+      font-size: 18px;
+      margin-bottom: 30px;
+      color: var(--text-dark);
+    }
+
+    .success-section img {
+      max-width: 300px;
+      margin-bottom: 30px;
+    }
+
+    .success-actions {
+      display: flex;
+      gap: 20px;
+    }
+
+    .success-actions a {
+      padding: 12px 25px;
+      text-decoration: none;
+      border-radius: 25px;
+      font-weight: bold;
+      transition: var(--transition);
+    }
+
+    .success-actions .order-details-btn {
+      background: var(--primary-color);
+      color: var(--text-light);
+    }
+
+    .success-actions .order-details-btn:hover {
+      background: var(--secondary-color);
+      color: var(--primary-color);
+    }
+
+    .success-actions .continue-shopping-btn {
+      background: var(--secondary-color);
+      color: var(--primary-color);
+    }
+
+    .success-actions .continue-shopping-btn:hover {
+      background: var(--accent-color);
+    }
+
+    /* Responsive Styles */
+    @media (max-width: 768px) {
+      .success-section h2 {
+        font-size: 28px;
+      }
+
+      .success-section p {
+        font-size: 16px;
+      }
+
+      .success-section img {
+        max-width: 200px;
+      }
+
+      .success-actions {
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .success-actions a {
+        width: 100%;
+        text-align: center;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .success-section h2 {
+        font-size: 24px;
+      }
+
+      .success-section p {
+        font-size: 14px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <%- include('./partials/header') %>
+
+ 
+  <div class="success-section">
+    <h2>Thank You for Your Order!</h2>
+    <p>Your order has been successfully placed. You'll receive a confirmation soon.</p>
+    <div class="success-actions">
+      <a href='/profile/orders' class="order-details-btn">View Orders</a>
+      <a href="/products" class="continue-shopping-btn">Continue Shopping</a>
+    </div>
+  </div>
+
+  
+  <%- include('./partials/footer') %>
+</body>
+</html>

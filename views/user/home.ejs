@@ -549,15 +549,14 @@ body {
 }
 </style>
 <body>
-  <!-- Include the header partial -->
+ 
   <%- include('./partials/header') %>
 
-  <!-- Main Banner Carousel -->
+ 
    <div class="banner">
     <div class="carousel" id="carousel">
       
-      <!-- <img src="image/banner3.webp" alt="Stylish Shirt 1" loading="lazy"> -->
-      <!-- <img src="image/banner 4.webp" alt="Elegant Shirt 2" loading="lazy"> -->
+     
       <img src="image/bannernew.jpg" alt="Formal Shirt 3" loading="lazy">
     </div>
     <div class="banner-overlay"></div>
@@ -576,7 +575,7 @@ body {
 
 
 
-  <!-- New Arrivals Section -->
+ 
  <div class="section">
   <h2>New Arrivals</h2>
   <div class="products">
@@ -624,13 +623,13 @@ body {
 </div>
 
 
-  <!-- Middle Banner -->
+  
   <div class="middle-banner" style="background: url('https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?w=1600&h=600&fit=crop') no-repeat center center/cover;">
     <div class="middle-banner-text">Discover Timeless Elegance</div>
   </div>
 
 
-  <!-- Trending Products Section -->
+  
   <div class="section">
   <h2>Trending</h2>
   <div class="products">
@@ -678,13 +677,13 @@ body {
 </div>
 
 
-  <!-- Formal Banner -->
+ 
   <div class="formal-banner" style="background: url('https://images.unsplash.com/photo-1618354691551-8a942d87344b?w=1600&h=700&fit=crop') no-repeat center center/cover;">
     <div class="formal-banner-text">Sophistication Meets Comfort</div>
   </div>
 
 
-  <!-- Featured Collections Section -->
+  
 <div class="section">
   <h2>Featured Collections</h2>
   <div class="collections">
@@ -695,7 +694,7 @@ body {
           alt="<%= collection.name %>"
           loading="lazy"
           style="cursor: pointer;"  <!-- Optional: cursor pointer to show it's clickable -->
-          onclick="alert('You clicked <%= collection.name %> collection!')" <!-- example action -->
+          onclick="alert('You clicked <%= collection.name %> collection!')" 
         />
         <div class="collection-overlay">
           <h3><%= collection.name %></h3>
@@ -709,10 +708,10 @@ body {
 
   </div>
 
-  <!-- Include the footer partial -->
+  
   <%- include('./partials/footer') %>
 
-  <!-- Scripts -->
+ 
   <script src="/js/carousel.js"></script>
   <script src="/js/cart.js"></script>
 </body>

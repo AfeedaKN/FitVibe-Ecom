@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FitVibe - User Profile</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --primary-color: #1a1a1a;
+      --secondary-color: #ffd700;
+      --accent-color: #e6c200;
+      --text-light: #ffffff;
+      --text-dark: #333333;
+      --background-light: #f9f9f9;
+      --card-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+      --transition: all 0.3s ease;
+    }
+
+    body {
+      font-family: 'Arial', sans-serif;
+      line-height: 1.6;
+      color: var(--text-dark);
+      background-color: var(--background-light);
+      margin-left: 250px;
+    }
+
+    .container {
+      padding: 40px 20px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      font-size: 28px;
+      margin-bottom: 20px;
+      color: var(--text-dark);
+      position: relative;
+      display: inline-block;
+    }
+
+    h1::after {
+      content: '';
+      position: absolute;
+      bottom: -10px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 80px;
+      height: 3px;
+      background: var(--secondary-color);
+    }
+
+    .profile-section, .address-section, .orders-section {
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: var(--card-shadow);
+      margin-bottom: 20px;
+    }
+
+    .profile-section {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .profile-image {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
+    .profile-details h2 {
+      font-size: 22px;
+      margin-bottom: 10px;
+    }
+
+    .profile-details p {
+      margin: 5px 0;
+    }
+
+    .profile-actions {
+      margin-top: 20px;
+      display: flex;
+      gap: 10px;
+    }
+
+    .profile-actions a, .profile-actions button {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: var(--transition);
+      text-decoration: none;
+      color: var(--text-light);
+    }
+
+    .edit-profile-btn {
+      background: var(--primary-color);
+    }
+
+    .edit-profile-btn:hover {
+      background: var(--secondary-color);
+      color: var(--primary-color);
+    }
+
+    .change-password-btn {
+      background: #3498db;
+    }
+
+    .change-password-btn:hover {
+      background: #2980b9;
+    }
+
+    .forgot-password-btn {
+      background: #e74c3c;
+    }
+
+    .forgot-password-btn:hover {
+      background: #c0392b;
+    }
+
+    .address-section p {
+      margin: 10px 0;
+    }
+
+    .orders-section table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .orders-section th, .orders-section td {
+      padding: 10px;
+      text-align: left;
+      border-bottom: 1px solid #ddd;
+    }
+
+    .orders-section th {
+      background: var(--primary-color);
+      color: var(--text-light);
+    }
+
+    .cancel-btn {
+      padding: 5px 10px;
+      background: #e74c3c;
+      color: var(--text-light);
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .cancel-btn:hover {
+      background: #c0392b;
+    }
+
+    .cancel-btn:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+
+    @media (max-width: 768px) {
+      body {
+        margin-left: 0;
+      }
+
+      .container {
+        padding: 20px;
+      }
+
+      .profile-section {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .profile-image {
+        width: 80px;
+        height: 80px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <%- include('./partials/sidebar') %>
+
+  <div class="container">
+    <h1>My Profile</h1>
+
+  
+    <div class="profile-section">
+     <img src="/image/profileimage.jpeg" alt="Profile Image" class="profile-image">
+      <div class="profile-details">
+        <h2><%= user.name %></h2>
+        <p>Email: <%= user.email %></p>
+          <p>Mobile: <%= user.phone || 'Not provided' %></p>
+        <div class="profile-actions">
+          <a href="/profile/edit" class="edit-profile-btn">Edit Profile</a>
+          <a href="/profile/change-password" class="change-password-btn">Change Password</a>
+          <a href="/forgot-password" class="forgot-password-btn">Forgot Password</a>
+        </div>
+      </div>
+    </div>
+
+   
+    <div class="address-section">
+      <h2>Default Address</h2>
+      <% if (defaultAddress) { %>
+        <p><strong><%= defaultAddress.name %></strong></p>
+      <p><%= defaultAddress.address %>, <%= defaultAddress.city %>, <%= defaultAddress.state %> <%= defaultAddress.zipCode %></p>
+        <p><%= defaultAddress.country %></p>
+        <p>Phone: <%= defaultAddress.phone %></p>
+      <% } else { %>
+        <p>No default address set. <a href="/profile/addresses">Add an address</a>.</p>
+      <% } %>
+    </div>
+
+  
+   
+<div class="orders-section">
+  <h2>Recent Orders</h2>
+  <% if (orders.length > 0) { %>
+    <table>
+      <thead>
+        <tr>
+          <th>Order ID</th>
+          <th>Date</th>
+          <th>Total</th>
+          <th>Status</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% orders.forEach(order => { %>
+          <tr>
+            <td><a href="/order/<%= order._id %>"><%= order.orderID %></a></td>
+            <td><%= new Date(order.createdAt).toLocaleDateString() %></td>
+            <td>₹<%= order.finalAmount.toFixed(2) %></td>
+            <td><%= order.orderStatus %></td>
+            <td>
+              <% if (order.orderStatus === 'pending') { %>
+                <button class="cancel-btn" data-order-id="<%= order._id %>">Cancel</button>
+              <% } else { %>
+                <button class="cancel-btn" disabled>Cancel</button>
+              <% } %>
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  <% } else { %>
+    <p>No orders found.</p>
+  <% } %>
+</div>
+
+
+
+  <script>
+    
+    document.querySelectorAll('.cancel-btn').forEach(button => {
+      button.addEventListener('click', async () => {
+        if (button.disabled) return;
+        const orderId = button.getAttribute('data-order-id');
+        if (confirm('Are you sure you want to cancel this order?')) {
+          try {
+            const response = await fetch(`/order/cancel/${orderId}`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' }
+            });
+            const result = await response.json();
+            if (result.success) {
+              window.location.reload();
+            } else {
+              alert(result.message || 'Failed to cancel order.');
+            }
+          } catch (error) {
+            alert('Error cancelling order.');
+          }
+        }
+      });
+    });
+  </script>
+</body>
+</html>

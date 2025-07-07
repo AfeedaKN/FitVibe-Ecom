@@ -96,11 +96,11 @@ const allproducts = async (req, res) => {
     }
 
 if (category) {
-  query.categoryId = category; // FIXED
+  query.categoryId = category; 
 }
 
 if (brand) {
-  query.brand = { $regex: new RegExp(brand, 'i') }; // FIXED for flexible match
+  query.brand = { $regex: new RegExp(brand, 'i') }; 
 }
 
 
@@ -110,7 +110,7 @@ if (brand) {
       if (maxPrice) query['variants.salePrice'].$lte = Number(maxPrice);
     }
 
-    // Sorting
+    
     let sortOption = {};
     switch (sort) {
       case 'priceAsc':
@@ -126,7 +126,7 @@ if (brand) {
         sortOption.name = -1;
         break;
       case 'popularity':
-        sortOption.popularity = -1; // Assuming popularity is a field
+        sortOption.popularity = -1; 
         break;
       case 'rating':
         sortOption.rating = -1;
@@ -135,13 +135,13 @@ if (brand) {
         sortOption.createdAt = -1;
         break;
       case 'featured':
-        sortOption.featured = -1; // Assuming featured is a boolean field
+        sortOption.featured = -1; 
         break;
       default:
         sortOption.createdAt = -1;
     }
 
-    // Pagination
+    
     const totalProducts = await Product.countDocuments(query);
     const totalPages = Math.ceil(totalProducts / limit);
     const products = await Product.find(query)
@@ -150,11 +150,11 @@ if (brand) {
       .limit(Number(limit))
       .populate('categoryId');
 
-    // Fetch categories and brands for filters
+    
     const categories = await Category.find();
     const brands = await Product.distinct('brand');
 
-    // Build query string for pagination links
+    
     const buildQuery = (params) => {
       const queryParams = { ...req.query, ...params };
       return `/products?${new URLSearchParams(queryParams).toString()}`;

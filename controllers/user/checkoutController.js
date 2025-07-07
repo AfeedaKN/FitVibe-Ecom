@@ -1,201 +1,198 @@
 const Cart = require('../../models/cartSchema');
 const Product = require('../../models/productSchema');
 const Order = require('../../models/orderSchema');
+const User = require('../../models/userSchema');
+const Address = require('../../models/addressSchema');
 
-const checkout = async (req, res) => {
-    try {
-        const user = req.session.user;
-        if (!user) {
-            return res.status(401).json({ success: false, message: 'Please log in to checkout' });
-        }
-
-        const cart = await Cart.findOne({ userId: user._id }).populate('items.productId');
-        if (!cart || cart.items.length === 0) {
-            return res.status(400).json({ success: false, message: 'Your cart is empty' });
-        }
-
-        res.json({ success: true, message: 'Proceed to checkout' });
-    } catch (error) {
-        console.error('Checkout error:', error);
-        res.status(500).json({ success: false, message: 'Server error' });
+const getCheckout = async (req, res) => {
+  try {
+    if (!req.user || !req.user._id) {
+      return res.redirect('/login'); 
     }
+
+    const userId = req.user._id;
+    const user = await User.findById(userId);
+    const cart = await Cart.findOne({ userId }).populate('items.productId');
+    const addresses = await Address.find({ user: userId });
+
+    console.log("User ID:", userId);
+
+    if (!cart || cart.items.length === 0) {
+      return res.render('checkout', { 
+        cart: null, 
+        user, 
+        addresses,           
+        subtotal: 0, 
+        tax: 0, 
+        discount: 0, 
+        shipping: 0, 
+        total: 0, 
+        defaultAddress: null 
+      });
+    }
+
+    const subtotal = cart.items.reduce((sum, item) => sum + (item.productId.variants[0].salePrice * item.quantity), 0);
+
+    const tax = subtotal * 0.05;
+    const discount = subtotal > 5000 ? subtotal * 0.1 : 0;
+    const shipping = 100;
+    const total = subtotal + tax - discount + shipping;
+
+    res.render('checkout', {
+      addresses,
+      user,
+      cart,
+      subtotal,
+      tax,
+      discount,
+      shipping,
+      total,
+      defaultAddress: addresses.length > 0 ? addresses[0]._id : null 
+    });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Server Error');
+  }
 };
 
-const buyNow = async (req, res) => {
-    try {
-        const { productId, variantId, quantity } = req.body;
-        const user = req.session.user;
 
-        if (!user) {
-            return res.status(401).json({ success: false, message: 'Please log in to buy now' });
-        }
-
-        const product = await Product.findById(productId);
-        if (!product) {
-            return res.status(404).json({ success: false, message: 'Product not found' });
-        }
-
-        const variant = product.variants.find(v => v._id.toString() === variantId);
-        if (!variant) {
-            return res.status(404).json({ success: false, message: 'Variant not found' });
-        }
-
-        if (variant.stock < quantity) {
-            return res.status(400).json({ success: false, message: 'Not enough stock available' });
-        }
-
-        req.session.buyNowItem = { productId, variantId, quantity };
-        res.json({ success: true, message: 'Proceed to checkout' });
-    } catch (error) {
-        console.error('Buy now error:', error);
-        res.status(500).json({ success: false, message: 'Server error' });
-    }
-};
-
-const loadCheckout = async (req, res) => {
-    try {
-        const user = req.session.user;
-        if (!user) {
-            return res.redirect('/login');
-        }
-
-        let items = [];
-        let total = 0;
-
-        if (req.session.buyNowItem) {
-            // Buy Now flow
-            const { productId, variantId, quantity } = req.session.buyNowItem;
-            const product = await Product.findById(productId);
-            const variant = product.variants.find(v => v._id.toString() === variantId);
-            items = [{ product, variant, quantity }];
-            total = variant.price * quantity;
-        } else {
-            // Cart checkout flow
-            const cart = await Cart.findOne({ userId: user._id }).populate('items.productId');
-            if (cart) {
-                for (const item of cart.items) {
-                    if (item.productId) {
-                        const product = item.productId;
-                        const variant = product.variants.find(v => v._id.toString() === item.variantId.toString());
-                        if (variant) {
-                            items.push({ product, variant, quantity: item.quantity });
-                            total += item.totalPrice;
-                        }
-                    }
-                }
-            }
-        }
-
-        if (items.length === 0) {
-            return res.redirect('/cart');
-        }
-
-        res.render('checkout', { items, total });
-    } catch (error) {
-        console.error('Load checkout error:', error);
-        res.redirect('/pageNotFound');
-    }
-};
 
 const placeOrder = async (req, res) => {
-    try {
-        const { address, paymentMethod } = req.body;
-        const user = req.session.user;
+  try {
+    const { paymentMethod, addressId } = req.body;  
+    console.log("Payment Method:", req.body);
+    console.log('Request Body:', req.body);
+    console.log("Placing order with method:", paymentMethod);
 
-        if (!user) {
-            return res.status(401).json({ success: false, message: 'Please log in to place order' });
-        }
 
-        let items = [];
-        let total = 0;
 
-        if (req.session.buyNowItem) {
-            const { productId, variantId, quantity } = req.session.buyNowItem;
-            const product = await Product.findById(productId);
-            const variant = product.variants.find(v => v._id.toString() === variantId);
-            items = [{ 
-                productId, 
-                variantId, 
-                quantity, 
-                price: variant.price,
-                status: 'Pending',
-                cancellationReason: 'none'
-            }];
-            total = variant.price * quantity;
+    const userId = req.user._id;
+    const user = await User.findById(userId);
+    const cart = await Cart.findOne({ userId }).populate('items.productId');
 
-            // Update stock
-            variant.stock -= quantity;
-            await product.save();
-
-            delete req.session.buyNowItem;
-        } else {
-            const cart = await Cart.findOne({ userId: user._id }).populate('items.productId');
-            if (!cart || cart.items.length === 0) {
-                return res.status(400).json({ success: false, message: 'Your cart is empty' });
-            }
-
-            for (const item of cart.items) {
-                if (item.productId) {
-                    const product = item.productId;
-                    const variant = product.variants.find(v => v._id.toString() === item.variantId.toString());
-                    if (variant) {
-                        items.push({ 
-                            productId: item.productId, 
-                            variantId: item.variantId, 
-                            quantity: item.quantity, 
-                            price: item.price,
-                            status: 'Pending',
-                            cancellationReason: 'none'
-                        });
-                        total += item.totalPrice;
-
-                        // Update stock
-                        variant.stock -= item.quantity;
-                        await product.save();
-                    }
-                }
-            }
-
-            // Clear the cart
-            await Cart.findOneAndUpdate({ userId: user._id }, { items: [] });
-        }
-
-        const order = new Order({
-            userId: user._id,
-            items,
-            total,
-            address,
-            paymentMethod,
-            status: 'Pending'
-        });
-
-        await order.save();
-        res.json({ success: true, message: 'Order placed successfully' });
-    } catch (error) {
-        console.error('Place order error:', error);
-        res.status(500).json({ success: false, message: 'Server error' });
+    if (!cart || cart.items.length === 0) {
+      return res.status(400).json({ success: false, message: 'Cart is empty' });
     }
+
+    
+    const outOfStock = cart.items.some(item => item.productId.variants[0].stock < item.quantity);
+    if (outOfStock) {
+      return res.status(400).json({ success: false, message: 'Some items are out of stock' });
+    }
+
+    console.log("Stock is fine:", outOfStock);
+
+    
+    const address = await Address.findOne({ _id: addressId, user: userId });
+    if (!address) {
+      return res.status(400).json({ success: false, message: 'Invalid or missing address' });
+    }
+
+    const generateOrderID = () => {
+      const date = new Date();
+      const year = date.getFullYear().toString().slice(-2);
+      const month = ("0" + (date.getMonth() + 1)).slice(-2);
+      const day = ("0" + date.getDate()).slice(-2);
+      const random = Math.floor(Math.random() * 10000).toString().padStart(4, "0");
+      return `ORD${year}${month}${day}${random}`;
+    };
+
+    const orderID = generateOrderID();
+
+    
+    const subtotal = cart.items.reduce((sum, item) => sum + (item.productId.variants[0].salePrice * item.quantity), 0);
+    const taxAmount = subtotal * 0.05;
+    const discount = subtotal > 5000 ? subtotal * 0.1 : 0;
+    const shippingCharge = 100;
+    const totalAmount = subtotal + taxAmount;
+    const finalAmount = totalAmount - discount + shippingCharge;
+
+   
+    const products = cart.items.map(item => ({
+      product: item.productId._id,
+      variant: {
+        size: item.productId.variants[0].size,
+        varientPrice: item.productId.variants[0].varientPrice,
+        salePrice: item.productId.variants[0].salePrice
+      },
+      quantity: item.quantity
+    }));
+
+    
+    const order = new Order({
+      user: userId,
+      orderID: orderID,
+      products,
+      address: address._id, 
+      totalAmount,
+      discount,
+      taxAmount,
+      shippingCharge,
+      finalAmount,
+      paymentMethod,
+      orderStatus: "pending",
+    });
+
+    await order.save();
+
+   
+    for (const item of cart.items) {
+  
+      const product = item.productId;
+      console.log("no product", product);
+      
+      product.variants[0].varientquatity -= item.quantity;
+      console.log("no stock", product.variants[0].varientquatity);
+      await product.save();
+    }
+
+   
+    cart.items = [];
+    await cart.save();
+
+    res.json({ success: true, orderId: order.orderID });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: 'Server Error' });
+  }
 };
 
-const viewOrders = async (req, res) => {
-    try {
-        const user = req.session.user;
-        if (!user) {
-            return res.redirect('/login');
-        }
+const getOrderSuccess = async (req, res) => {
+  try {
+    const { orderId } = req.params;
+     const order = await Order.find({ user: req.user._id })
+          .sort({ createdAt: -1 })
+          .populate('products.product') 
+    res.render('order-success', { orderId,order });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Server Error');
+  }
+};
 
-        const orders = await Order.find({ userId: user._id }).populate('items.productId').sort({ createdAt: -1 });
-        res.render('orders', { orders });
-    } catch (error) {
-        console.error('View orders error:', error);
-        res.redirect('/pageNotFound');
+const getOrderDetails = async (req, res) => {
+  try {
+    const orderId = req.params.id;
+
+    const order = await Order.findById(orderId)
+      .populate("products.product")
+      .populate("address"); 
+
+    if (!order) {
+      return res.status(404).send("Order not found");
     }
+
+    res.render("order-details", { order }); 
+  } catch (error) {
+    console.error("Order Detail Error:", error);
+    res.status(500).send("Server Error");
+  }
 };
 
 module.exports = {
-    checkout,
-    buyNow,
-    loadCheckout,
-    placeOrder,
-    viewOrders
+  getCheckout,
+  placeOrder,
+  getOrderSuccess,
+  getOrderDetails
 };
