@@ -2,19 +2,19 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const cartSchema = new Schema({
-  userId: { // 🔄 renamed from `user` to `userId`
+  userId: { 
     type: Schema.Types.ObjectId,
     ref: 'User',
     required: true
   },
-  items: [ // 🔄 renamed from `products` to `items`
+  items: [ 
     {
-      productId: { // 🔄 renamed from `product` to `productId`
+      productId: { 
         type: Schema.Types.ObjectId,
         ref: 'Product',
         required: true
       },
-      variantId: { // 🆕 added this to match variant logic
+      variantId: { 
         type: Schema.Types.ObjectId,
         required: true
       },

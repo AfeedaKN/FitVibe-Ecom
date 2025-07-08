@@ -40,31 +40,69 @@ const loadOrders = async (req, res) => {
 };
 const updateOrderStatus = async (req, res) => {
   try {
-    console.log('Request body:', req.body); 
+    console.log('Request body:', req.body);
 
     const { orderId, status, reason } = req.body;
+
     
-    if (!orderId) {
-      return res.status(400).json({ success: false, message: 'Order ID is required' });
+    if (!orderId || !mongoose.Types.ObjectId.isValid(orderId)) {
+      return res.status(400).json({ success: false, message: 'Invalid or missing order ID' });
     }
 
+    
     const order = await Order.findById(orderId);
     if (!order) {
       return res.status(404).json({ success: false, message: 'Order not found' });
     }
+
+    
+    if (order.orderStatus.toLowerCase() === 'delivered') {
+      return res.status(400).json({
+        success: false,
+        message: 'Cannot update status for a delivered order',
+      });
+    }
+
+    
+    const validStatuses = [
+      'pending',
+      'processing',
+      'shipped',
+      'out for delivery',
+      'delivered',
+      'cancelled',
+    ];
+    if (!validStatuses.includes(status.toLowerCase())) {
+      return res.status(400).json({ success: false, message: 'Invalid status' });
+    }
+
     
     order.orderStatus = status;
 
-    if (status === 'cancelled' && reason) {
-      order.cancelReason = reason;
+    
+    if (status.toLowerCase() === 'delivered') {
+      order.paymentStatus = 'completed';
+      order.deliveryDate = new Date();
     }
 
+    
+    if (status.toLowerCase() === 'cancelled' && reason) {
+      order.cancellationReason = reason;
+    }
+
+    
+    order.statusHistory.push({
+      status,
+      date: new Date(),
+      description: status.toLowerCase() === 'cancelled' && reason ? reason : undefined,
+    });
+
+    
     await order.save();
 
     res.json({ success: true, message: 'Status updated successfully' });
-
   } catch (error) {
-    console.error('Error updating order status:', error); 
+    console.error('Error updating order status:', error);
     res.status(500).json({ success: false, message: 'Server error updating status' });
   }
 };

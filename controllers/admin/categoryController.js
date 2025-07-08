@@ -118,6 +118,7 @@ const deleteCategory = async (req, res) => {
     }
 };
 
+
 const categoryDelete = async (req, res) => {
     try {
         const id = req.query.id;

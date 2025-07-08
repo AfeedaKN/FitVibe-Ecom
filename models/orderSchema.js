@@ -1,5 +1,5 @@
-const mongoose = require("mongoose")
-const Schema = mongoose.Schema
+const mongoose = require("mongoose");
+const Schema = mongoose.Schema;
 
 const productSchema = new mongoose.Schema({
   product: {
@@ -45,7 +45,7 @@ const productSchema = new mongoose.Schema({
   returnRequestDate: Date,
   trackingNumber: String,
   trackingUrl: String,
-})
+});
 
 const orderSchema = new mongoose.Schema(
   {
@@ -64,6 +64,16 @@ const orderSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Address",
       required: true,
+    },
+    addressDetails: {
+      // New field to store address snapshot
+      name: { type: String, required: true },
+      address: { type: String, required: true },
+      city: { type: String, required: true },
+      state: { type: String, required: true },
+      zipCode: { type: String, required: true },
+      country: { type: String, required: true },
+      phone: { type: String, required: true },
     },
     totalAmount: {
       type: Number,
@@ -90,13 +100,12 @@ const orderSchema = new mongoose.Schema(
       required: true,
     },
     statusHistory: [
-  {
-    status: String,
-    date: Date,
-    description: String,
-  },
-],
-
+      {
+        status: String,
+        date: Date,
+        description: String,
+      },
+    ],
     coupon: {
       couponId: {
         type: mongoose.Schema.Types.ObjectId,
@@ -110,7 +119,7 @@ const orderSchema = new mongoose.Schema(
       enum: ["COD", "online", "paypal", "wallet"],
       required: true,
     },
-    paymentMentod: String,
+    paymentMentod: String, // Note: This seems to be a typo; consider removing or correcting
     paymentStatus: {
       type: String,
       enum: ["pending", "completed", "failed", "refunded"],
@@ -168,21 +177,21 @@ const orderSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-  },
-)
+  }
+);
 
 orderSchema.pre("save", async function (next) {
   if (!this.orderID) {
-    const date = new Date()
-    const year = date.getFullYear().toString().slice(-2)
-    const month = ("0" + (date.getMonth() + 1)).slice(-2)
-    const day = ("0" + date.getDate()).slice(-2)
+    const date = new Date();
+    const year = date.getFullYear().toString().slice(-2);
+    const month = ("0" + (date.getMonth() + 1)).slice(-2);
+    const day = ("0" + date.getDate()).slice(-2);
     const random = Math.floor(Math.random() * 10000)
       .toString()
-      .padStart(4, "0")
-    this.orderID = `ORD${year}${month}${day}${random}`
+      .padStart(4, "0");
+    this.orderID = `ORD${year}${month}${day}${random}`;
   }
-  next()
-})
+  next();
+});
 
-module.exports = mongoose.model("Order", orderSchema)
+module.exports = mongoose.model("Order", orderSchema);

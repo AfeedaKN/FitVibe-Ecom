@@ -255,12 +255,12 @@
                   </span>
                 </td>
                 <td>₹<%= order.finalAmount.toFixed(2) %></td>
-                <td>
-                  <a href="/admin/order/<%= order._id %>" class="action-btn view-btn">View</a>
-                  <% if (!['cancelled', 'returned'].includes(order.orderStatus)) { %>
-                    <button class="action-btn status-btn" data-order-id="<%= order._id %>" data-bs-toggle="modal" data-bs-target="#updateStatusModal">Update Status</button>
-                  <% } %>
-                </td>
+<td>
+  <a href="/admin/order/<%= order._id %>" class="action-btn view-btn">View</a>
+  <% if (!['cancelled', 'returned', 'delivered'].includes(order.orderStatus.toLowerCase())) { %>
+    <button class="action-btn status-btn" data-order-id="<%= order._id %>" data-bs-toggle="modal" data-bs-target="#updateStatusModal">Update Status</button>
+  <% } %>
+</td>
               </tr>
             <% }) %>
           </tbody>

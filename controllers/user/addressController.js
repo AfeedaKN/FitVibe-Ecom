@@ -96,10 +96,8 @@ const setDefaultAddress = async (req, res) => {
     const { addressId } = req.body;
     const userId = req.user._id;
 
-    // Set all addresses to isDefault: false
     await Address.updateMany({ user: userId }, { $set: { isDefault: false } });
 
-    // Set selected one to true
     const updated = await Address.findOneAndUpdate(
       { _id: addressId, user: userId },
       { $set: { isDefault: true } },
@@ -110,7 +108,7 @@ const setDefaultAddress = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Address not found' });
     }
 
-    return res.redirect("/profile/addresses"); // ✅ reloads the page;
+    return res.redirect("/profile/addresses");
   } catch (error) {
     console.error("Set Default Address Error:", error);
     res.status(500).json({ message: "Server Error" });
@@ -129,7 +127,7 @@ const deleteAddress = async (req, res) => {
     }
 
  
- res.redirect('/profile/addresses'); // Change '/addresses' to your address page URL
+ res.redirect('/profile/addresses');
   } catch (error) {
     console.error("Delete Address Error:", error);
     res.status(500).json({ success: false, message: "Server Error" });

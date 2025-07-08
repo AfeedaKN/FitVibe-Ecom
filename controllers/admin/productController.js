@@ -8,7 +8,7 @@ const { calculateBestPrice, determineBestOffer } = require("../../utils/offerUti
 const sharp = require("sharp")
 const { error } = require("console")
 
-// Ensure Cloudinary is configured before any upload
+
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME?.trim(),
   api_key: process.env.CLOUDINARY_API_KEY?.trim(),
@@ -145,9 +145,9 @@ const addProduct = async (req, res) => {
   try {
     const { name, description, categoryId, brand, color, offer, fabric, sku, tags } = req.body
 
-    // Validate category
+    
     const existingProduct = await Product.findOne({
-  name: { $regex: new RegExp(`^${name}$`, 'i') } // ^ and $ ensure exact match
+  name: { $regex: new RegExp(`^${name}$`, 'i') } 
 });
 
 if (existingProduct) {
@@ -160,12 +160,12 @@ if (existingProduct) {
       return res.redirect("/admin/addproducts")
     }
 
-    // Calculate offers
+    
     const productOffer = Number(offer) || 0
     const categoryOffer = category.categoryOffer || 0
     const bestOffer = determineBestOffer(productOffer, categoryOffer)
 
-    // Process variants
+    
     const variants = []
     const sizes = ["S", "M", "L", "XL"]
     const varientPrices = Array.isArray(req.body.varientPrice) ? req.body.varientPrice : [req.body.varientPrice]
@@ -194,11 +194,7 @@ if (existingProduct) {
       return res.redirect("/admin/addproducts")
     }
 
-    // Only use cropped images from the client (not raw/original)
-    // If you use a hidden input or DataTransfer to replace the FileList in the browser,
-    // multer will only receive the cropped images, not the raw ones.
-
-    // If you see both cropped and raw images in req.files, filter out duplicates by filename:
+    
     const seen = new Set();
     const filteredFiles = [];
     for (const file of req.files) {
@@ -218,18 +214,18 @@ if (existingProduct) {
       return res.redirect("/admin/addproducts");
     }
 
-    // Upload each image to Cloudinary and get the URLs
+    
     for (let index = 0; index < filteredFiles.length; index++) {
       const file = filteredFiles[index];
       try {
-        // Upload to Cloudinary
+        
         const uploadResult = await cloudinary.uploader.upload(file.path, {
           folder: "products",
           transformation: [
             { width: 800, height: 800, crop: "fill" }
           ]
         });
-        // Create thumbnail
+        
         const thumbUrl = cloudinary.url(uploadResult.public_id, {
           width: 200,
           height: 200,
@@ -244,7 +240,7 @@ if (existingProduct) {
           public_id: uploadResult.public_id,
         });
 
-        // Remove local file after upload
+       
         const fs = require("fs").promises;
         await fs.unlink(file.path).catch(() => { });
       } catch (err) {
@@ -254,10 +250,10 @@ if (existingProduct) {
       }
     }
 
-    // Process tags
+    
     const tagArray = tags ? (typeof tags === 'string' ? tags.split(',').map(tag => tag.trim()) : tags) : []
 
-    // Create product
+    
     const newProduct = new Product({
       name,
       description,
@@ -339,7 +335,7 @@ const productObjectId = new mongoose.Types.ObjectId(productId);
 const categoryIdObj = new mongoose.Types.ObjectId(category);
 
 
-    // Check duplicate name excluding current product
+    
     const existingProductn = await Product.findOne({
       _id: { $ne: productObjectId },
       name: { $regex: new RegExp(`^${name}$`, 'i') }
@@ -350,21 +346,21 @@ const categoryIdObj = new mongoose.Types.ObjectId(category);
       return res.redirect("/admin/products");
     }
 
-    // Validate category
+    
     const categoryObj = await Category.findById(categoryIdObj);
     if (!categoryObj) {
       req.flash("error_msg", "Category not found");
       return res.redirect("/admin/products");
     }
 
-    // Calculate offers
+    
     const productOffer = Number.parseFloat(offer) || 0;
     const categoryOffer = categoryObj.categoryOffer || 0;
 
-    // Calculate best offer
-    const bestOffer = determineBestOffer(productOffer, categoryOffer); // <-- define or import this function!
+    
+    const bestOffer = determineBestOffer(productOffer, categoryOffer); 
 
-    // Process variants
+    
     const variantPrices = req.body.varientPrice || {};
     const sizes = req.body.sizes || {};
     const variants = [];
@@ -385,11 +381,11 @@ const categoryIdObj = new mongoose.Types.ObjectId(category);
       }
     });
 
-    // Get existing product images
+    
     const existingProduct = await Product.findById(productObjectId);
     let images = existingProduct.images || [];
 
-    // Filter duplicate files
+    
     const seen = new Set();
     const filteredFiles = [];
     if (req.files && req.files.length > 0) {
@@ -401,7 +397,7 @@ const categoryIdObj = new mongoose.Types.ObjectId(category);
       }
     }
 
-    // Upload new images to Cloudinary
+    
     if (filteredFiles.length > 0) {
       const newImages = [];
       const fs = require("fs").promises;
@@ -438,10 +434,10 @@ const categoryIdObj = new mongoose.Types.ObjectId(category);
       images = [...images, ...newImages];
     }
 
-    // Process tags
+    
     const tagArray = tags ? (typeof tags === 'string' ? tags.split(',').map(tag => tag.trim()) : tags) : [];
 
-    // Update product
+    
     await Product.findByIdAndUpdate(productObjectId, {
       name,
       description,
@@ -520,7 +516,7 @@ const deleteProduct = async (req, res) => {
       })
     }
 
-    // Delete images from Cloudinary
+    
     for (const image of product.images) {
       try {
         const publicId = image.url.split("/").pop().split(".")[0]

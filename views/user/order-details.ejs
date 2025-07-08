@@ -95,6 +95,9 @@
       background: #9b59b6;
     }
 
+   .status-completed { background: #27ae60; }
+
+
     .status-out-for-delivery {
       background: #8e44ad;
     }
@@ -349,55 +352,54 @@
                     <% } %>
 
 
-                     
-                      <div class="order-details">
-                        <p><strong>Order Date:</strong>
-                          <%= order.orderDate.toLocaleDateString() %>
-                        </p>
-                        <p><strong>Status:</strong>
-                          <span class="status-badge status-<%= order.orderStatus.toLowerCase().replace(' ', '-') %>">
-                            <%= order.orderStatus %>
-                          </span>
-                        </p>
-                        <p><strong>Payment Method:</strong>
-                          <%= order.paymentMethod %>
-                        </p>
-                        <p><strong>Payment Status:</strong>
-                          <span class="status-badge status-<%= order.paymentStatus.toLowerCase() %>">
-                            <%= order.paymentStatus %>
-                          </span>
-                        </p>
-                        <p><strong>Total Amount:</strong> ₹<%= order.totalAmount.toFixed(2) %>
-                        </p>
-                        <p><strong>Discount:</strong> ₹<%= order.discount.toFixed(2) %>
-                        </p>
-                        <p><strong>Coupon Discount:</strong> ₹<%= order.couponDiscount.toFixed(2) %>
-                        </p>
-                        <p><strong>Shipping Charge:</strong> ₹<%= order.shippingCharge.toFixed(2) %>
-                        </p>
-                        <p><strong>Tax (GST):</strong> ₹<%= order.taxAmount.toFixed(2) %>
-                        </p>
-                        <p><strong>Final Amount:</strong> ₹<%= order.finalAmount.toFixed(2) %>
-                        </p>
-                        <hr>
-                        <% if (order.address) { %>
-                          <p><strong>Shipping Address:</strong></p>
-                          <p>
-                            <%= order.address.name %>
-                          </p>
-                          <p>
-                            <%= order.address.address || '' %>, <%= order.address.city %>, <%= order.address.state %>
-                                  - <%= order.address.zipCode %>
-                          </p>
-                          <p>
-                            <%= order.address.country %>
-                          </p>
-                          <p>Phone: <%= order.address.phone %>
-                          </p>
-                          <% } else { %>
-                            <p><strong>Shipping Address:</strong> Not available</p>
-                            <% } %>
-                      </div>
+<div class="order-details">
+  <p><strong>Order Date:</strong>
+    <%= order.orderDate.toLocaleDateString() %>
+  </p>
+  <p><strong>Status:</strong>
+    <span class="status-badge status-<%= order.orderStatus.toLowerCase().replace(' ', '-') %>">
+      <%= order.orderStatus %>
+    </span>
+  </p>
+  <p><strong>Payment Method:</strong>
+    <%= order.paymentMethod %>
+  </p>
+  <p><strong>Payment Status:</strong>
+    <span class="status-badge status-<%= order.paymentStatus.toLowerCase() %>">
+      <%= order.paymentStatus %>
+    </span>
+  </p>
+  <p><strong>Total Amount:</strong> ₹<%= order.totalAmount.toFixed(2) %>
+  </p>
+  <p><strong>Discount:</strong> ₹<%= order.discount.toFixed(2) %>
+  </p>
+  <p><strong>Coupon Discount:</strong> ₹<%= order.couponDiscount.toFixed(2) %>
+  </p>
+  <p><strong>Shipping Charge:</strong> ₹<%= order.shippingCharge.toFixed(2) %>
+  </p>
+  <p><strong>Tax (GST):</strong> ₹<%= order.taxAmount.toFixed(2) %>
+  </p>
+  <p><strong>Final Amount:</strong> ₹<%= order.finalAmount.toFixed(2) %>
+  </p>
+  <hr>
+  <% if (order.addressDetails) { %>
+    <p><strong>Shipping Address:</strong></p>
+    <p>
+      <%= order.addressDetails.name %>
+    </p>
+    <p>
+      <%= order.addressDetails.address || '' %>, <%= order.addressDetails.city %>, <%= order.addressDetails.state %>
+            - <%= order.addressDetails.zipCode %>
+    </p>
+    <p>
+      <%= order.addressDetails.country %>
+    </p>
+    <p>Phone: <%= order.addressDetails.phone %>
+    </p>
+  <% } else { %>
+    <p><strong>Shipping Address:</strong> Not available</p>
+  <% } %>
+</div>
 
                      
                       <div class="order-items">

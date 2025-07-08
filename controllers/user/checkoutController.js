@@ -60,12 +60,10 @@ const getCheckout = async (req, res) => {
 
 const placeOrder = async (req, res) => {
   try {
-    const { paymentMethod, addressId } = req.body;  
+    const { paymentMethod, addressId } = req.body;
     console.log("Payment Method:", req.body);
     console.log('Request Body:', req.body);
     console.log("Placing order with method:", paymentMethod);
-
-
 
     const userId = req.user._id;
     const user = await User.findById(userId);
@@ -75,7 +73,6 @@ const placeOrder = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Cart is empty' });
     }
 
-    
     const outOfStock = cart.items.some(item => item.productId.variants[0].stock < item.quantity);
     if (outOfStock) {
       return res.status(400).json({ success: false, message: 'Some items are out of stock' });
@@ -83,7 +80,6 @@ const placeOrder = async (req, res) => {
 
     console.log("Stock is fine:", outOfStock);
 
-    
     const address = await Address.findOne({ _id: addressId, user: userId });
     if (!address) {
       return res.status(400).json({ success: false, message: 'Invalid or missing address' });
@@ -93,14 +89,13 @@ const placeOrder = async (req, res) => {
       const date = new Date();
       const year = date.getFullYear().toString().slice(-2);
       const month = ("0" + (date.getMonth() + 1)).slice(-2);
-      const day = ("0" + date.getDate()).slice(-2);
+      const day = ("0" + date.getDate()).toString().padStart(2, "0");
       const random = Math.floor(Math.random() * 10000).toString().padStart(4, "0");
       return `ORD${year}${month}${day}${random}`;
     };
 
     const orderID = generateOrderID();
 
-    
     const subtotal = cart.items.reduce((sum, item) => sum + (item.productId.variants[0].salePrice * item.quantity), 0);
     const taxAmount = subtotal * 0.05;
     const discount = subtotal > 5000 ? subtotal * 0.1 : 0;
@@ -108,23 +103,30 @@ const placeOrder = async (req, res) => {
     const totalAmount = subtotal + taxAmount;
     const finalAmount = totalAmount - discount + shippingCharge;
 
-   
     const products = cart.items.map(item => ({
       product: item.productId._id,
       variant: {
         size: item.productId.variants[0].size,
         varientPrice: item.productId.variants[0].varientPrice,
-        salePrice: item.productId.variants[0].salePrice
+        salePrice: item.productId.variants[0].salePrice,
       },
-      quantity: item.quantity
+      quantity: item.quantity,
     }));
 
-    
     const order = new Order({
       user: userId,
       orderID: orderID,
       products,
-      address: address._id, 
+      address: address._id,
+      addressDetails: {
+        name: address.name,
+        address: address.address,
+        city: address.city,
+        state: address.state,
+        zipCode: address.zipCode,
+        country: address.country,
+        phone: address.phone,
+      },
       totalAmount,
       discount,
       taxAmount,
@@ -136,18 +138,14 @@ const placeOrder = async (req, res) => {
 
     await order.save();
 
-   
     for (const item of cart.items) {
-  
       const product = item.productId;
       console.log("no product", product);
-      
       product.variants[0].varientquatity -= item.quantity;
       console.log("no stock", product.variants[0].varientquatity);
       await product.save();
     }
 
-   
     cart.items = [];
     await cart.save();
 

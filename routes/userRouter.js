@@ -76,6 +76,7 @@ router.post('/profile/change-password',userAuth, userProfileController.postChang
 router.get("/profile/orders", userAuth,orderController.getOrders);
 router.get("profile/order/:id", userAuth,orderController.getOrderDetail);
 router.post("/order/cancel/:orderId",  orderController.cancelOrder);
+router.get("/order/invoice/:id", userAuth, orderController.downloadInvoice);
 
 module.exports=router 
 

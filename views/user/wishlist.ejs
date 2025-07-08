@@ -24,11 +24,26 @@
       --transition: all 0.3s ease;
     }
 
+    html, body {
+      height: 100%;
+    }
+
     body {
       font-family: 'Arial', sans-serif;
       line-height: 1.6;
       color: var(--text-dark);
       background-color: var(--background-light);
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    main {
+      flex: 1 0 auto;
+    }
+
+    footer {
+      flex-shrink: 0;
     }
 
     /* Wishlist Section */
@@ -209,46 +224,47 @@
   <!-- Header Partial -->
   <%- include('./partials/header') %>
 
-  <!-- Wishlist Section -->
-  <div class="wishlist-section">
-    <h2>Your Wishlist</h2>
-    <% if (wishlist && wishlist.items.length > 0) { %>
-      <div class="wishlist-items">
-        <% wishlist.items.forEach(item => { %>
-          <div class="wishlist-item">
-            <img src="<%= item.product.images && item.product.images.length > 0 ? item.product.images[0].url : '/path/to/default-image.jpg' %>" alt="<%= item.product.name %>" loading="lazy" />
-            <div class="wishlist-item-details">
-              <h3><%= item.product.name %></h3>
-              <p class="price">₹<%= item.product.variants[0].salePrice.toFixed(2) %></p>
-              <div class="stars">
-                <% for(let i = 0; i < Math.floor(item.product.rating || 0); i++) { %>
-                  <i class="fas fa-star"></i>
-                <% } %>
-                <% if((item.product.rating || 0) % 1 !== 0) { %>
-                  <i class="fas fa-star-half-alt"></i>
-                <% } %>
-                <% for(let i = 0; i < 5 - Math.ceil(item.product.rating || 0); i++) { %>
-                  <i class="far fa-star"></i>
+  <main>
+    <!-- Wishlist Section -->
+    <div class="wishlist-section">
+      <h2>Your Wishlist</h2>
+      <% if (wishlist && wishlist.items.length > 0) { %>
+        <div class="wishlist-items">
+          <% wishlist.items.forEach(item => { %>
+            <div class="wishlist-item">
+              <img src="<%= item.product.images && item.product.images.length > 0 ? item.product.images[0].url : '/path/to/default-image.jpg' %>" alt="<%= item.product.name %>" loading="lazy" />
+              <div class="wishlist-item-details">
+                <h3><%= item.product.name %></h3>
+                <p class="price">₹<%= item.product.variants[0].salePrice.toFixed(2) %></p>
+                <div class="stars">
+                  <% for(let i = 0; i < Math.floor(item.product.rating || 0); i++) { %>
+                    <i class="fas fa-star"></i>
+                  <% } %>
+                  <% if((item.product.rating || 0) % 1 !== 0) { %>
+                    <i class="fas fa-star-half-alt"></i>
+                  <% } %>
+                  <% for(let i = 0; i < 5 - Math.ceil(item.product.rating || 0); i++) { %>
+                    <i class="far fa-star"></i>
+                  <% } %>
+                </div>
+                <% if (item.product.variants[0].stock === 0) { %>
+                  <p class="wishlist-item-out-of-stock">Out of Stock</p>
                 <% } %>
               </div>
-              <% if (item.product.variants[0].stock === 0) { %>
-                <p class="wishlist-item-out-of-stock">Out of Stock</p>
-              <% } %>
+              <div class="wishlist-item-actions">
+                <button class="btn btn-primary add-to-cart-btn" data-product-id="<%= item.product._id %>">
+                  Add to Cart
+                </button>
+                <button class="remove-btn" data-product-id="<%= item.product._id %>">Remove</button>
+              </div>
             </div>
-            <div class="wishlist-item-actions">
-<button class="btn btn-primary add-to-cart-btn" data-product-id="<%= item.product._id %>">
-  Add to Cart
-</button>
-
-              <button class="remove-btn" data-product-id="<%= item.product._id %>">Remove</button>
-            </div>
-          </div>
-        <% }) %>
-      </div>
-    <% } else { %>
-      <p class="empty-wishlist">Your wishlist is empty.</p>
-    <% } %>
-  </div>
+          <% }) %>
+        </div>
+      <% } else { %>
+        <p class="empty-wishlist">Your wishlist is empty.</p>
+      <% } %>
+    </div>
+  </main>
 
   <!-- Footer Partial -->
   <%- include('./partials/footer') %>
@@ -276,7 +292,6 @@
           }
         } catch (err) {
           console.error('Error:', err);
-
           alert('Error adding product to cart');
         }
       });
@@ -305,6 +320,5 @@
 
   });
 </script>
-
 </body>
 </html>

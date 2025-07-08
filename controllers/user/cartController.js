@@ -4,16 +4,16 @@ const Product=require("../../models/productSchema")
 
 const addToCart = async (req, res) => {
     try {
-        console.log(" Step 1: Got addToCart request");
+        
         const { productId, variantId, quantity } = req.body;
         const user = req.session.user;
 
         if (!user) {
-            console.log(" Step 2: User not logged in");
+            
             return res.status(401).json({ success: false, message: 'Please log in to add to cart' });
         }
 
-        console.log("Step 3: User is logged in", user._id);
+        console.log(" User is logged in", user._id);
 
         const product = await Product.findById(productId);
         if (!product) {
@@ -21,9 +21,9 @@ const addToCart = async (req, res) => {
             return res.status(404).json({ success: false, message: 'Product not found' });
         }
 
-        console.log(" Step 5: Product found");
+        
         console.log(" Variant ID from request:", variantId);
-console.log(" Available variant IDs:", product.variants.map(v => v._id.toString()));
+        console.log(" Available variant IDs:", product.variants.map(v => v._id.toString()));
 
 
         const variant = product.variants.find(v => v._id.toString() === variantId);
@@ -32,7 +32,6 @@ console.log(" Available variant IDs:", product.variants.map(v => v._id.toString(
             return res.status(404).json({ success: false, message: 'Variant not found' });
         }
 
-       
 
         if (variant.varientquatity < quantity) {
            
@@ -41,10 +40,10 @@ console.log(" Available variant IDs:", product.variants.map(v => v._id.toString(
 
         let cart = await Cart.findOne({ userId: user._id });
         if (!cart) {
-            console.log("🛒 Step 9: Creating new cart");
+            console.log("  Creating new cart");
             cart = new Cart({ userId: user._id, items: [] });
         } else {
-            console.log("🛒 Step 9: Cart found");
+            console.log(" Cart found");
         }
 
         const cartItemIndex = cart.items.findIndex(item =>
