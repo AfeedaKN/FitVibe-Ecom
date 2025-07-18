@@ -3,49 +3,100 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard - FitVibe</title>
-    <link rel="stylesheet" href="/css/style.css">
+    <title>Admin Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .sidebar {
+            transition: transform 0.3s ease-in-out;
+        }
+        .abc{
+            padding-left: 260px;
+        }
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            .sidebar.open {
+                transform: translateX(0);
+            }
+        }
+    </style>
 </head>
-<body>
+<body class="bg-gray-100 font-sans abc">
+    <!-- Header Partial -->
+
+    <div class="flex h-screen">
     <%- include('./partials/sidebar', { page: 'dashboard' }) %>
 
-    <div class="main-content">
-        <header>
-            <h1>Dashboard</h1>
-          
-        </header>
+        <!-- Main Content -->
+        <main class="flex-1 p-6 overflow-y-auto">
+            <div class="flex justify-between items-center mb-6">
+                <h1 class="text-2xl font-bold text-gray-800">Admin Dashboard</h1>
+                <button id="sidebarToggle" class="md:hidden text-gray-800 focus:outline-none">
+                    <i class="fas fa-bars text-xl"></i>
+                </button>
+            </div>
 
-        <div class="summary-cards">
-            <div class="card">
-                <h3>Total Orders</h3>
-                <!-- <p><%= totalOrders %></p> -->
-            </div>
-            <div class="card">
-                <h3>Total Revenue</h3>
-                <!-- <p>$<%= totalRevenue.toFixed(2) %></p> -->
-            </div>
-            <div class="card">
-                <h3>Total Users</h3>
-                <!-- <p><%= totalUsers %></p> -->
-            </div>
-        </div>
+            <!-- Dashboard Widgets -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Widget 1: Users -->
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h2 class="text-lg font-semibold text-gray-700">Total Users</h2>
+                    <p class="text-3xl font-bold text-blue-600">1,234</p>
+                    <p class="text-sm text-gray-500">+5% from last month</p>
+                </div>
 
-        <h2>Recent Orders</h2>
-        <table>
-            <thead>
-                <tr>
-                    <th>Order ID</th>
-                    <th>Product</th>
-                    <th>Date</th>
-                    <th>Customer</th>
-                    <th>Total</th>
-                    <th>Payment</th>
-                    <th>Status</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
-            
-        </table>
+                <!-- Widget 2: Revenue -->
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h2 class="text-lg font-semibold text-gray-700">Revenue</h2>
+                    <p class="text-3xl font-bold text-green-600">$12,345</p>
+                    <p class="text-sm text-gray-500">+10% from last month</p>
+                </div>
+
+                <!-- Widget 3: Orders -->
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h2 class="text-lg font-semibold text-gray-700">Orders</h2>
+                    <p class="text-3xl font-bold text-purple-600">567</p>
+                    <p class="text-sm text-gray-500">+3% from last month</p>
+                </div>
+            </div>
+
+            <!-- Recent Activity Table -->
+            <div class="mt-8 bg-white p-6 rounded-lg shadow-md">
+                <h2 class="text-lg font-semibold text-gray-700 mb-4">Recent Activity</h2>
+                <table class="w-full text-left">
+                    <thead>
+                        <tr class="text-gray-600">
+                            <th class="p-3">User</th>
+                            <th class="p-3">Action</th>
+                            <th class="p-3">Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="border-t">
+                            <td class="p-3">John Doe</td>
+                            <td class="p-3">Updated Profile</td>
+                            <td class="p-3">2025-07-08</td>
+                        </tr>
+                        <tr class="border-t">
+                            <td class="p-3">Jane Smith</td>
+                            <td class="p-3">Placed Order</td>
+                            <td class="p-3">2025-07-07</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </main>
     </div>
+
+    <script>
+        const sidebarToggle = document.getElementById('sidebarToggle');
+        const sidebar = document.querySelector('.sidebar');
+        
+        sidebarToggle.addEventListener('click', () => {
+            sidebar.classList.toggle('open');
+        });
+    </script>
 </body>
 </html>

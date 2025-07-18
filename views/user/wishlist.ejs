@@ -235,27 +235,28 @@
               <img src="<%= item.product.images && item.product.images.length > 0 ? item.product.images[0].url : '/path/to/default-image.jpg' %>" alt="<%= item.product.name %>" loading="lazy" />
               <div class="wishlist-item-details">
                 <h3><%= item.product.name %></h3>
-                <p class="price">₹<%= item.product.variants[0].salePrice.toFixed(2) %></p>
+                <p><strong>Size:</strong> <%= item.variant.size %></p>
+                <p class="price">₹<%= item.variant.salePrice %></p>
                 <div class="stars">
-                  <% for(let i = 0; i < Math.floor(item.product.rating || 0); i++) { %>
+                  <% for(let i = 0; i < Math.floor(item.product.ratings.average || 0); i++) { %>
                     <i class="fas fa-star"></i>
                   <% } %>
-                  <% if((item.product.rating || 0) % 1 !== 0) { %>
+                  <% if((item.product.ratings.average || 0) % 1 !== 0) { %>
                     <i class="fas fa-star-half-alt"></i>
                   <% } %>
-                  <% for(let i = 0; i < 5 - Math.ceil(item.product.rating || 0); i++) { %>
+                  <% for(let i = 0; i < 5 - Math.ceil(item.product.ratings.average || 0); i++) { %>
                     <i class="far fa-star"></i>
                   <% } %>
                 </div>
-                <% if (item.product.variants[0].stock === 0) { %>
+                <% if (item.variant.varientquatity === 0) { %>
                   <p class="wishlist-item-out-of-stock">Out of Stock</p>
                 <% } %>
               </div>
               <div class="wishlist-item-actions">
-                <button class="btn btn-primary add-to-cart-btn" data-product-id="<%= item.product._id %>">
+                <button class="btn btn-primary add-to-cart-btn" data-product-id="<%= item.product._id %>" data-variant-id="<%= item.variant._id %>">
                   Add to Cart
                 </button>
-                <button class="remove-btn" data-product-id="<%= item.product._id %>">Remove</button>
+                <button class="remove-btn" data-product-id="<%= item.product._id %>" data-variant-id="<%= item.variant._id %>">Remove</button>
               </div>
             </div>
           <% }) %>
@@ -270,55 +271,94 @@
   <%- include('./partials/footer') %>
 
   <!-- JavaScript for Wishlist Interactions -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script>
-  document.addEventListener('DOMContentLoaded', () => {
-
-    // ✅ Add to cart from wishlist
-    document.querySelectorAll('.add-to-cart-btn').forEach(button => {
-      button.addEventListener('click', async () => {
-        const productId = button.getAttribute('data-product-id');
-        try {
-          const response = await fetch('/wishlist/add-to-cart', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ productId })
-          });
-          const result = await response.json();
-          if (result.success) {
-            alert('Product added to cart!');
-            window.location.reload();
-          } else {
-            alert(result.message || 'Failed to add product to cart.');
-          }
-        } catch (err) {
-          console.error('Error:', err);
-          alert('Error adding product to cart');
-        }
-      });
+    const Toast = Swal.mixin({
+      toast: true,
+      position: 'top-end',
+      showConfirmButton: false,
+      timer: 3000,
+      timerProgressBar: true,
+      didOpen: (toast) => {
+        toast.addEventListener('mouseenter', Swal.stopTimer);
+        toast.addEventListener('mouseleave', Swal.resumeTimer);
+      }
     });
 
-    // ✅ Remove from Wishlist
-    document.querySelectorAll('.remove-btn').forEach(button => {
-      button.addEventListener('click', async () => {
-        const productId = button.getAttribute('data-product-id');
-        try {
-          const response = await fetch('/wishlist/remove', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ productId })
-          });
-          if (response.ok) {
-            window.location.reload();
-          } else {
-            alert('Failed to remove product from wishlist.');
+    document.addEventListener('DOMContentLoaded', () => {
+      // Add to cart from wishlist
+      document.querySelectorAll('.add-to-cart-btn').forEach(button => {
+        button.addEventListener('click', async () => {
+          const productId = button.getAttribute('data-product-id');
+          const variantId = button.getAttribute('data-variant-id');
+          try {
+            const response = await fetch('/wishlist/add-to-cart', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ productId, variantId })
+            });
+            const result = await response.json();
+            if (result.success) {
+              Toast.fire({
+                icon: 'success',
+                title: 'Product added to cart'
+              });
+              setTimeout(() => {
+                window.location.reload();
+              }, 1000);
+            } else {
+              Toast.fire({
+                icon: 'error',
+                title: result.message || 'Failed to add product to cart.'
+              });
+            }
+          } catch (err) {
+            console.error('Error:', err);
+            Toast.fire({
+              icon: 'error',
+              title: 'Error adding product to cart'
+            });
           }
-        } catch (error) {
-          alert('Error removing product from wishlist.');
-        }
+        });
+      });
+
+      // Remove from Wishlist
+      document.querySelectorAll('.remove-btn').forEach(button => {
+        button.addEventListener('click', async () => {
+          const productId = button.getAttribute('data-product-id');
+          const variantId = button.getAttribute('data-variant-id');
+          try {
+            const response = await fetch('/wishlist/remove', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ productId, variantId })
+            });
+            if (response.ok) {
+              Swal.fire({
+                title: 'Success',
+                text: 'Product removed successfully',
+                icon: 'success',
+                confirmButtonText: 'OK'
+              }).then(() => {
+                window.location.reload();
+              });
+            } else {
+              Swal.fire({
+                title: 'Error',
+                text: 'Failed to remove product from wishlist.',
+                icon: 'error'
+              });
+            }
+          } catch (error) {
+            Swal.fire({
+              title: 'Error',
+              text: 'Error removing product from wishlist.',
+              icon: 'error'
+            });
+          }
+        });
       });
     });
-
-  });
-</script>
+  </script>
 </body>
 </html>

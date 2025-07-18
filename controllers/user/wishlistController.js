@@ -1,40 +1,58 @@
 const Wishlist = require('../../models/wishlistSchema');
-const Product = require('../../models/productSchema'); // assuming you have a product schema
-const Cart = require('../../models/cartSchema'); // only if you're using cart system
+const Product = require('../../models/productSchema');
+const Cart = require('../../models/cartSchema');
 
-// 📄 1. Show Wishlist Page
 const getWishlistPage = async (req, res) => {
   try {
     const userId = req.session.user._id;
-    let wishlist = await Wishlist.findOne({ user: userId }).populate('products');
-    const products = await Product.find({});
+    let wishlist = await Wishlist.findOne({ user: userId }).populate('items.product');
+
     if (!wishlist) {
-      wishlist = await Wishlist.create({ user: userId, products: [] });
+      wishlist = await Wishlist.create({ user: userId, items: [] });
     }
 
-    const items = wishlist.products.map(product => ({
-      product
+    // Manually populate variant details
+    const populatedItems = await Promise.all(wishlist.items.map(async (item) => {
+      const product = item.product;
+      const variant = product.variants.id(item.variant);
+      return {
+        product,
+        variant: variant || { size: 'N/A', salePrice: 0, varientquatity: 0 }
+      };
     }));
 
-    res.render('wishlist', { wishlist: { items }, product: products });
+    res.render('wishlist', { wishlist: { items: populatedItems } });
   } catch (error) {
     console.error('Error loading wishlist:', error);
     res.status(500).send('Server Error');
   }
 };
 
-// ➕ 2. Add to Wishlist
 const addToWishlist = async (req, res) => {
   try {
     const userId = req.session.user._id;
-    const { productId } = req.body;
+    const { productId, variantId } = req.body;
+
+    if (!variantId) {
+      return res.status(400).json({ success: false, message: 'Variant ID is required' });
+    }
+
+    const product = await Product.findById(productId);
+    if (!product || !product.variants.id(variantId)) {
+      return res.status(404).json({ success: false, message: 'Product or variant not found' });
+    }
 
     let wishlist = await Wishlist.findOne({ user: userId });
 
     if (!wishlist) {
-      wishlist = new Wishlist({ user: userId, products: [productId] });
-    } else if (!wishlist.products.includes(productId)) {
-      wishlist.products.push(productId);
+      wishlist = new Wishlist({ user: userId, items: [{ product: productId, variant: variantId }] });
+    } else {
+      const itemExists = wishlist.items.some(
+        item => item.product.toString() === productId && item.variant.toString() === variantId
+      );
+      if (!itemExists) {
+        wishlist.items.push({ product: productId, variant: variantId });
+      }
     }
 
     await wishlist.save();
@@ -45,38 +63,36 @@ const addToWishlist = async (req, res) => {
   }
 };
 
-// ❌ 3. Remove from Wishlist
 const removeFromWishlist = async (req, res) => {
   try {
     const userId = req.session.user._id;
-    const { productId } = req.body;
+    const { productId, variantId } = req.body;
 
     await Wishlist.updateOne(
       { user: userId },
-      { $pull: { products: productId } }
+      { $pull: { items: { product: productId, variant: variantId } } }
     );
 
     res.json({ success: true });
   } catch (error) {
     console.error('Error removing from wishlist:', error);
-    res.status(500).json({ success: false });
+    res.status(500).json({ success: false, message: 'Server error' });
   }
 };
 
 const addToCartFromWishlist = async (req, res) => {
   try {
     const userId = req.session.user._id;
-    const { productId } = req.body;
+    const { productId, variantId } = req.body;
 
     const product = await Product.findById(productId);
-    console.log("Received productId:", req.body.productId);
-    console.log('Product ID from request:', productId)
-    
-
-
-
     if (!product) {
       return res.status(404).json({ success: false, message: 'Product not found' });
+    }
+
+    const variant = product.variants.id(variantId);
+    if (!variant) {
+      return res.status(400).json({ success: false, message: 'Variant not found' });
     }
 
     let cart = await Cart.findOne({ userId });
@@ -85,21 +101,12 @@ const addToCartFromWishlist = async (req, res) => {
       cart = new Cart({ userId, items: [] });
     }
 
-    const variant = product.variants[0]; 
-    console.log('Variant:', variant);
-
-    if (!variant) {
-      return res.status(400).json({ success: false, message: 'No variant found for product' });
-    }
-
     const existingItem = cart.items.find(
-      item => item.productId.toString() === productId && item.variantId.toString() === variant._id.toString()
+      item => item.productId.toString() === productId && item.variantId.toString() === variantId
     );
 
     if (existingItem) {
-      console.log('Existing item found in cart:', existingItem);
-      if( existingItem.quantity > 4) {
-        console.log('Cart limit exceeded');
+      if (existingItem.quantity >= 4) {
         return res.status(400).json({ success: false, message: 'Cart limit exceeded' });
       }
       existingItem.quantity += 1;
@@ -114,26 +121,39 @@ const addToCartFromWishlist = async (req, res) => {
       });
     }
 
-
     await cart.save();
 
     await Wishlist.updateOne(
       { user: userId },
-      { $pull: { products: productId } }
+      { $pull: { items: { product: productId, variant: variantId } } }
     );
 
     res.json({ success: true });
-
   } catch (error) {
     console.error('Error adding to cart:', error);
-    res.status(500).json({ success: false });
+    res.status(500).json({ success: false, message: 'Server error' });
   }
 };
 
+const checkWishlist = async (req, res) => {
+  try {
+    const userId = req.session.user._id;
+    const { productId } = req.params;
+
+    const wishlist = await Wishlist.findOne({ user: userId });
+    const exists = wishlist && wishlist.items.some(item => item.product.toString() === productId);
+
+    res.json({ exists });
+  } catch (error) {
+    console.error('Error checking wishlist:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+};
 
 module.exports = {
   getWishlistPage,
   addToWishlist,
   removeFromWishlist,
-  addToCartFromWishlist
+  addToCartFromWishlist,
+  checkWishlist
 };

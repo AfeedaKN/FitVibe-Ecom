@@ -66,7 +66,7 @@ const orderSchema = new mongoose.Schema(
       required: true,
     },
     addressDetails: {
-      // New field to store address snapshot
+      
       name: { type: String, required: true },
       address: { type: String, required: true },
       city: { type: String, required: true },
@@ -119,7 +119,7 @@ const orderSchema = new mongoose.Schema(
       enum: ["COD", "online", "paypal", "wallet"],
       required: true,
     },
-    paymentMentod: String, // Note: This seems to be a typo; consider removing or correcting
+    paymentMentod: String, 
     paymentStatus: {
       type: String,
       enum: ["pending", "completed", "failed", "refunded"],

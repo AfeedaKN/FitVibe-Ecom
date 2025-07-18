@@ -95,7 +95,7 @@ const cancelOrder = async (req, res) => {
     order.orderStatus = 'cancelled';
     order.cancelReason = reason || '';
 
-    for (const item of order.products) {
+    for (const item of order.products) { 
       const productId = item.product;
       const variantSize = item.variant.size;
       const quantityToAdd = item.quantity;

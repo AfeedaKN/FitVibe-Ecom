@@ -7,9 +7,16 @@ const wishlistSchema = new Schema({
     ref: 'User',
     required: true
   },
-  products: [{
-    type: Schema.Types.ObjectId,
-    ref: 'Product'
+  items: [{
+    product: {
+      type: Schema.Types.ObjectId,
+      ref: 'Product',
+      required: true
+    },
+    variant: {
+      type: Schema.Types.ObjectId, // References the _id of a variant subdocument
+      required: true
+    }
   }]
 }, { timestamps: true });
 

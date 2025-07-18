@@ -6,6 +6,7 @@ const customerController = require("../controllers/admin/customerController");
 const categoryController = require("../controllers/admin/categoryController");
 const productController = require("../controllers/admin/productController");
 const orderController = require("../controllers/admin/orderController");
+const ordersample=require('../controllers/admin/ordersampleController')
 
 
 
@@ -43,6 +44,9 @@ router.get("/orders",adminAuth,orderController.loadOrders);
 router.post("/order/status", adminAuth, orderController.updateOrderStatus);
 router.get("/order/:id", adminAuth, orderController.viewOrderDetails);
 
+
+
+// router.get("/total",ordersample.totalorder)
 
 
 module.exports = router;

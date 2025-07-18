@@ -51,6 +51,7 @@ router.get("/user/wishlist",userAuth,wishlistController.getWishlistPage)
 router.post("/wishlist/add",userAuth,wishlistController.addToWishlist)
 router.post("/wishlist/remove",userAuth,wishlistController.removeFromWishlist)
 router.post("/wishlist/add-to-cart",userAuth,wishlistController.addToCartFromWishlist)
+router.get("/wishlist/check/:productId", userAuth, wishlistController.checkWishlist);
 
 router.get('/checkout',userAuth,checkoutController.getCheckout)
 router.post('/order/place', userAuth, checkoutController.placeOrder)
