@@ -171,6 +171,27 @@
   justify-content: center;
   align-items: center;
 }
+    .google-signin-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 12px;
+      font-size: 18px;
+      font-weight: bold;
+      background: #ffffff;
+      color: #1a1a1a;
+      border: 1px solid #ddd;
+      border-radius: 25px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    .google-signin-btn img {
+      width: 20px;
+      margin-right: 10px;
+    }
+    .google-signin-btn:hover {
+      background: #f8f8f8;
+    }
 
   </style>
 </head>
@@ -195,9 +216,14 @@
     </div>
 
     <button type="submit">Login</button>
+          <a href="/auth/google" class="google-signin-btn" onclick="handleGoogleSignIn()">
+        <img src="https://www.google.com/favicon.ico" alt="Google Icon" />
+        Sign in with Google
+      </a>
     <div class="login-link">
       Don't you have an account? <a href="/signup">Signup</a>
     </div>
+
 
     
     

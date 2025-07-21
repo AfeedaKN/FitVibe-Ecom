@@ -15,8 +15,6 @@ const getCheckout = async (req, res) => {
     const cart = await Cart.findOne({ userId }).populate('items.productId');
     const addresses = await Address.find({ user: userId });
 
-    console.log("User ID:", userId);
-
     if (!cart || cart.items.length === 0) {
       return res.render('checkout', { 
         cart: null, 
@@ -31,7 +29,17 @@ const getCheckout = async (req, res) => {
       });
     }
 
-    const subtotal = cart.items.reduce((sum, item) => sum + (item.productId.variants[0].salePrice * item.quantity), 0);
+    cart.items.forEach(item => {
+      const product = item.productId;
+      const matchedVariant = product.variants.find(variant => 
+        variant._id.toString() === item.variantId.toString()
+      );
+      item.variant = matchedVariant; 
+    });
+
+    const subtotal = cart.items.reduce((sum, item) => {
+      return sum + (item.variant?.salePrice || 0) * item.quantity;
+    }, 0);
 
     const tax = subtotal * 0.05;
     const discount = subtotal > 5000 ? subtotal * 0.1 : 0;
@@ -55,6 +63,7 @@ const getCheckout = async (req, res) => {
     res.status(500).send('Server Error');
   }
 };
+
 
 
 

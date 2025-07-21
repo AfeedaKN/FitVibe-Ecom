@@ -27,7 +27,10 @@ const loadProducts = async (req, res) => {
     const sortOrder = req.query.sortOrder || "desc"
     const isActiveFilter = req.query.isActive || ""
 
-    const filter = {}
+    const filter = {
+  isDeleted: false, 
+}
+
 
     if (searchQuery) {
       filter.$or = [
@@ -66,7 +69,7 @@ const loadProducts = async (req, res) => {
 
     const totalProducts = await Product.countDocuments(filter)
     const totalPages = Math.ceil(totalProducts / limit)
-
+   
     const products = await Product.find(filter)
       .populate("categoryId")
       .sort(sort)
@@ -146,8 +149,11 @@ const addProduct = async (req, res) => {
     const { name, description, categoryId, brand, color, offer, fabric, sku, tags } = req.body
 
     
-    const existingProduct = await Product.findOne({
-  name: { $regex: new RegExp(`^${name}$`, 'i') } 
+const existingProduct = await Product.findOne({
+  $or: [
+    { name: { $regex: new RegExp(`^${name}$`, 'i') } },
+    { sku: sku }
+  ]
 });
 
 if (existingProduct) {
@@ -525,8 +531,9 @@ const deleteProduct = async (req, res) => {
         console.error("Error deleting image from Cloudinary:", error)
       }
     }
-
-    await Product.findByIdAndDelete(productId)
+     product.isDeleted = true
+    await product.save()
+    
 
     return res.status(200).json({
       success: true,

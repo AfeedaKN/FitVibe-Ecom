@@ -6,7 +6,7 @@ const customerController = require("../controllers/admin/customerController");
 const categoryController = require("../controllers/admin/categoryController");
 const productController = require("../controllers/admin/productController");
 const orderController = require("../controllers/admin/orderController");
-const ordersample=require('../controllers/admin/ordersampleController')
+
 
 
 
@@ -26,7 +26,7 @@ router.get("/unblockCustomer", adminAuth, customerController.unblockCustomer);
 router.get("/categories", adminAuth, categoryController.categoryInfo);
 router.post("/addCategory", adminAuth, categoryController.addCategory);
 router.patch("/editCategory", adminAuth, categoryController.editCategory);
-router.patch("/deleteCategory", adminAuth, categoryController.deleteCategory);
+router.patch("/deleteCategory", adminAuth, categoryController.categorylist);
 router.delete("/categoryDelete", adminAuth, categoryController.categoryDelete);
 router.patch("/restoreCategory", adminAuth, categoryController.restoreCategory);
 
@@ -43,10 +43,13 @@ router.put("/toggle-product-listing/:id", adminAuth, productController.togglePro
 router.get("/orders",adminAuth,orderController.loadOrders);
 router.post("/order/status", adminAuth, orderController.updateOrderStatus);
 router.get("/order/:id", adminAuth, orderController.viewOrderDetails);
+router.post('/order/return-approve/:orderId', adminAuth, orderController.approveReturn);
+router.post('/order/return-reject/:orderId', adminAuth, orderController.rejectReturn);
 
 
 
-// router.get("/total",ordersample.totalorder)
+
+
 
 
 module.exports = router;

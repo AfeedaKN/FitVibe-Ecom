@@ -9,7 +9,7 @@ const categoryInfo = async (req, res) => {
         const limit = 5;
 
         const query = {
-            name: { $regex: ".*" + search + ".*", $options: "i" }
+            name: { $regex: ".*" + search + ".*", $options: "i" }, isDeleted: false
         };
 
         const categories = await Category.find(query)
@@ -95,7 +95,7 @@ const editCategory = async (req, res) => {
     }
 };
 
-const deleteCategory = async (req, res) => {
+const categorylist = async (req, res) => {     //islisted
     try {
         const id = req.query.id;
         if (!id) {
@@ -126,7 +126,7 @@ const categoryDelete = async (req, res) => {
         if (!id) {
             return res.status(400).json({ success: false, message: "Category ID is required" });
         }
-        await Category.findByIdAndDelete(id);
+        const result=await Category.updateOne({_id:id},{$set:{isDeleted:true}})
         return res.status(200).json({ success: true, message: "Category deleted successfully" });
 
     } catch (error) {
@@ -164,7 +164,7 @@ module.exports = {
     categoryInfo,
     addCategory,
     editCategory,
-    deleteCategory,
+    categorylist,
     restoreCategory,
     categoryDelete
 };

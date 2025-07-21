@@ -14,6 +14,8 @@ const addressController=require("../controllers/user/addressController")
 const orderController = require("../controllers/user/orderController");
 const passport = require("passport");
 const Wishlist = require("../models/wishlistSchema");
+const walletController = require("../controllers/user/walletController");
+
 
 router.get("/pageNotFound",userController.pageNotFound)
 router.get("/",showProductsController.loadHomepage)
@@ -78,6 +80,10 @@ router.get("/profile/orders", userAuth,orderController.getOrders);
 router.get("profile/order/:id", userAuth,orderController.getOrderDetail);
 router.post("/order/cancel/:orderId",  orderController.cancelOrder);
 router.get("/order/invoice/:id", userAuth, orderController.downloadInvoice);
+router.post("/order/return/:orderId",userAuth, orderController.returnOrder);
+
+router.get("/profile/Wallet", userAuth, walletController.getWalletPage);
+router.post("/wallet/add-funds", userAuth, walletController.addFunds);
 
 module.exports=router 
 

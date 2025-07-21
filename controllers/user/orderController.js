@@ -3,6 +3,7 @@ const Order = require("../../models/orderSchema");
 const Product = require('../../models/productSchema');
 const PDFDocument = require('pdfkit');
 const fs = require("fs");
+const mongoose = require('mongoose');
 
 const getOrders = async (req, res) => {
   try {

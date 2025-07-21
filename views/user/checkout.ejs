@@ -333,27 +333,36 @@
     <div class="checkout-section">
       <!-- Address Section -->
       <div class="checkout-address">
-<h2>Shipping Address</h2>
-<% if (addresses && addresses.length > 0) { %>
-  <div class="address-list">
-    <% addresses.forEach(address => { %>
-      <script>console.log('Address ID:', '<%= address._id %>');</script>
-      <div class="address-card <%= address.isDefault ? 'default' : '' %>">
-        <input type="radio" name="address" value="<%= address._id %>" <%= address.isDefault ? 'checked' : '' %>>
-        <p><strong><%= address.name %></strong></p>
-        <p><%= address.address || 'N/A' %>, <%= address.city %>, <%= address.state %> <%= address.zipCode %></p>
-        <p><%= address.country %></p>
-        <p>Phone: <%= address.phone %></p>
-        <div class="address-actions">
-          <button class="set-default-btn" data-address-id="<%= address._id %>" <%= address.isDefault ? 'disabled' : '' %>>Set as Default</button>
-          <button class="edit-btn" data-address-id="<%= address._id %>">Edit</button>
-        </div>
-      </div>
-    <% }) %>
-  </div>
-<% } else { %>
-  <p>No addresses found. Please add an address.</p>
-<% } %>
+        <h2>Shipping Address</h2>
+        <% if (addresses && addresses.length> 0) { %>
+          <div class="address-list">
+            <% addresses.forEach(address=> { %>
+              <script>console.log('Address ID:', '<%= address._id %>');</script>
+              <div class="address-card <%= address.isDefault ? 'default' : '' %>">
+                <input type="radio" name="address" value="<%= address._id %>" <%=address.isDefault ? 'checked' : '' %>>
+                <p><strong>
+                    <%= address.name %>
+                  </strong></p>
+                <p>
+                  <%= address.address || 'N/A' %>, <%= address.city %>, <%= address.state %>
+                        <%= address.zipCode %>
+                </p>
+                <p>
+                  <%= address.country %>
+                </p>
+                <p>Phone: <%= address.phone %>
+                </p>
+                <div class="address-actions">
+                  <button class="set-default-btn" data-address-id="<%= address._id %>" <%=address.isDefault ? 'disabled'
+                    : '' %>>Set as Default</button>
+                  <button class="edit-btn" data-address-id="<%= address._id %>">Edit</button>
+                </div>
+              </div>
+              <% }) %>
+          </div>
+          <% } else { %>
+            <p>No addresses found. Please add an address.</p>
+            <% } %>
               <button class="add-address-btn">Add New Address</button>
               <form class="address-form" id="addressForm" action="/profile/address/edit" method="POST">
                 <input type="hidden" name="addressId" id="addressId">
@@ -384,6 +393,8 @@
                     <%= item.productId ? item.productId.name : 'Product Name' %>
                   </h3>
                   <p>Quantity: <%= item.quantity %>
+                  </p>
+                  <p>Size: <%= item.variant?.size %>
                   </p>
                   <p>Item Total: ₹<%= item.productId && item.productId.variants && item.productId.variants[0] ?
                       (item.productId.variants[0].salePrice * item.quantity).toFixed(2) : '0.00' %>
@@ -472,30 +483,30 @@
         });
 
         // Edit Address
-document.addEventListener("DOMContentLoaded", () => {
-  document.querySelectorAll('.edit-btn').forEach(button => {
-    button.addEventListener('click', async () => {
-      const addressId = button.getAttribute('data-address-id');
-      try {
-        const response = await fetch(`/address/${addressId}`);
-        const address = await response.json();
-        const form = document.getElementById('addressForm');
-        form.classList.add('active');
-        form.querySelector('#addressId').value = address._id;
-        form.querySelector('[name="name"]').value = address.name;
-        form.querySelector('[name="address"]').value = address.address;
-        form.querySelector('[name="city"]').value = address.city;
-        form.querySelector('[name="state"]').value = address.state;
-        form.querySelector('[name="zipCode"]').value = address.zipCode;
-        form.querySelector('[name="country"]').value = address.country;
-        form.querySelector('[name="phone"]').value = address.phone;
-      } catch (err) {
-        console.error('Error loading address:', err);
-        alert('Failed to load address.');
-      }
-    });
-  });
-});    
+        document.addEventListener("DOMContentLoaded", () => {
+          document.querySelectorAll('.edit-btn').forEach(button => {
+            button.addEventListener('click', async () => {
+              const addressId = button.getAttribute('data-address-id');
+              try {
+                const response = await fetch(`/address/${addressId}`);
+                const address = await response.json();
+                const form = document.getElementById('addressForm');
+                form.classList.add('active');
+                form.querySelector('#addressId').value = address._id;
+                form.querySelector('[name="name"]').value = address.name;
+                form.querySelector('[name="address"]').value = address.address;
+                form.querySelector('[name="city"]').value = address.city;
+                form.querySelector('[name="state"]').value = address.state;
+                form.querySelector('[name="zipCode"]').value = address.zipCode;
+                form.querySelector('[name="country"]').value = address.country;
+                form.querySelector('[name="phone"]').value = address.phone;
+              } catch (err) {
+                console.error('Error loading address:', err);
+                alert('Failed to load address.');
+              }
+            });
+          });
+        });
         document.getElementById('addressForm').addEventListener('submit', async (e) => {
           e.preventDefault();
           const formData = new FormData(e.target);
@@ -540,7 +551,7 @@ document.addEventListener("DOMContentLoaded", () => {
         // Place Order
         document.querySelector('.place-order-btn').addEventListener('click', async () => {
           const paymentMethod = document.querySelector('input[name="paymentMethod"]:checked')?.value;
-          const addressId = document.querySelector('input[name="address"]:checked')?.value;  
+          const addressId = document.querySelector('input[name="address"]:checked')?.value;
 
           try {
             if (!addressId) {
@@ -556,7 +567,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const response = await fetch('/order/place', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ paymentMethod, addressId })  
+              body: JSON.stringify({ paymentMethod, addressId })
             });
 
             const result = await response.json();

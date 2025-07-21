@@ -86,7 +86,18 @@ const allproducts = async (req, res) => {
       maxPrice = ''
     } = req.query;
 
+    const listedCategories = await Category.find({ isDeleted: false, isListed: true });
+    const listedCategoryIds = listedCategories.map(cat => cat._id);
+
+    const categories = listedCategories;
+
     let query = { isDeleted: false, isListed: true }; 
+
+    if (category) {
+      query.categoryId = category; 
+    } else {
+       query.categoryId = { $in: listedCategoryIds };
+    }
 
     if (search) {
       query.$or = [
@@ -95,9 +106,6 @@ const allproducts = async (req, res) => {
       ];
     }
 
-if (category) {
-  query.categoryId = category; 
-}
 
 if (brand) {
   query.brand = { $regex: new RegExp(brand, 'i') }; 
@@ -151,7 +159,6 @@ if (brand) {
       .populate('categoryId');
 
     
-    const categories = await Category.find();
     const brands = await Product.distinct('brand');
 
     

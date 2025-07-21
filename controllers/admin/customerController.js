@@ -15,9 +15,11 @@ const customerInfo = async (req, res) => {
         };
 
         const userData = await User.find(query)
+            .sort({ createdAt: -1 })
             .limit(limit)
             .skip((page - 1) * limit)
-            .exec();
+            .exec()
+            
 
         const count = await User.countDocuments(query);
         const totalPages = Math.ceil(count / limit);
