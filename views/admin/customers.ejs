@@ -1,316 +1,583 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Customer Management - FitVibe</title>
-    <link rel="stylesheet" href="/css/style.css">
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <style>
-        body {
-            background-color: #f4f7fa;
-            margin: 0;
-            padding: 0;
-            font-family: 'Arial', sans-serif;
-        }
-        .main-content {
-            margin-left: 250px; /* Adjust based on sidebar width */
-            padding: 20px;
-        }
-        .content-header {
-            background-color: white;
-            padding: 15px 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-            margin-bottom: 20px;
-        }
-        .content-header h2 {
-            font-size: 1.8rem;
-            color: #2c3e50;
-            margin: 0;
-        }
-        .filters {
-            display: flex;
-            justify-content: center;
-            margin-bottom: 20px;
-        }
-        .input-group {
-            width: 100%;
-            max-width: 500px;
-            display: flex;
-            align-items: center;
-            background-color: white;
-            border: 1px solid #ddd;
-            border-radius: 25px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-            overflow: hidden;
-        }
-        .input-group input {
-            border: none;
-            padding: 10px 15px;
-            flex: 1;
-            border-radius: 25px 0 0 25px;
-            outline: none;
-        }
-        .input-group button {
-            background-color: #3498db;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 0 25px 25px 0;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-        .input-group button:hover {
-            background-color: #2980b9;
-        }
-        .table {
-            background-color: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
-        }
-        .table thead th {
-            background-color: #2c3e50;
-            color: white;
-            padding: 15px;
-            text-align: left;
-            font-weight: 600;
-        }
-        .table tbody tr {
-            transition: background-color 0.3s;
-        }
-        .table tbody tr:hover {
-            background-color: #f8f9fa;
-        }
-        .table td {
-            padding: 15px;
-            vertical-align: middle;
-            border-bottom: 1px solid #eee;
-        }
-        .action-btn {
-            padding: 8px 16px;
-            border-radius: 4px;
-            font-size: 0.9rem;
-            border: none;
-            cursor: pointer;
-            transition: background-color 0.3s, transform 0.1s;
-        }
-        .action-btn:hover {
-            transform: translateY(-1px);
-        }
-        .block-btn {
-            background-color: #e74c3c;
-            color: white;
-        }
-        .block-btn:hover {
-            background-color: #c0392b;
-        }
-        .unblock-btn {
-            background-color: #2ecc71;
-            color: white;
-        }
-        .unblock-btn:hover {
-            background-color: #27ae60;
-        }
-        .pagination {
-            margin-top: 20px;
-            display: flex;
-            justify-content: center;
-        }
-        .pagination .page-item {
-            margin: 0 5px;
-        }
-        .pagination .page-link {
-            color: #3498db;
-            border-radius: 5px;
-            padding: 8px 12px;
-            border: 1px solid #ddd;
-            transition: background-color 0.3s, color 0.3s;
-        }
-        .pagination .page-item.active .page-link {
-            background-color: #3498db;
-            border-color: #3498db;
-            color: white;
-        }
-        .pagination .page-link:hover {
-            background-color: #3498db;
-            color: white;
-        }
-        .footer {
-            background-color: #2c3e50;
-            color: white;
-            padding: 20px;
-            text-align: center;
-            margin-top: 20px;
-            border-radius: 8px;
-        }
-        .footer p {
-            margin-bottom: 10px;
-            font-size: 0.9rem;
-        }
-        .footer-links a {
-            color: #3498db;
-            text-decoration: none;
-            margin: 0 10px;
-            font-size: 0.9rem;
-            transition: color 0.3s;
-        }
-        .footer-links a:hover {
-            color: #2980b9;
-        }
-        .social-icons {
-            margin-top: 10px;
-        }
-        .social-icons a {
-            color: #3498db;
-            text-decoration: none;
-            margin: 0 8px;
-            font-size: 0.9rem;
-            transition: color 0.3s;
-        }
-        .social-icons a:hover {
-            color: #2980b9;
-        }
-        .table-striped{
-            width: 1600px;
-        }
-        @media (max-width: 768px) {
-            .main-content {
-                margin-left: 0;
-                padding: 10px;
-            }
-            .content-header h2 {
-                font-size: 1.5rem;
-            }
-            .input-group {
-                max-width: 100%;
-            }
-            .input-group input {
-                padding: 8px 10px;
-            }
-            .input-group button {
-                padding: 8px 15px;
-            }
-            .table th, .table td {
-                padding: 10px;
-                font-size: 0.9rem;
-            }
-            .action-btn {
-                padding: 6px 12px;
-                font-size: 0.8rem;
-            }
-            .pagination .page-link {
-                padding: 6px 10px;
-            }
-        }
-    </style>
-</head>
-<body>
+<%- include('./partials/header', { pageTitle: 'Customer Management' }) %>
+
 <%- include('./partials/sidebar', { page: 'users' }) %>
 
-    <div class="main-content">
-<%- include('./partials/header', { pageTitle: 'customers', adminName: adminName, breadcrumbs: [{ name: 'customers', url: '/admin/users' }, { name: 'customers' }] }) %>
-        
-
-        <div class="filters">
-            <form action="/admin/users" method="get" class="d-inline">
-                <div class="input-group">
-                    <input type="text" class="form-control" placeholder="Search customers" name="search" value="<%= search %>"/>
-                    <button class="btn" type="submit">Search</button>
+<div class="main-content">
+    <!-- Top Header -->
+    <header class="top-header">
+        <div class="header-content">
+            <div class="header-left">
+                <button class="sidebar-toggle" onclick="toggleSidebar()">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <div>
+                    <h1 class="page-title">Customer Management</h1>
+                    <div class="breadcrumbs">
+                        <a href="/admin/dashboard">Dashboard</a>
+                        <span class="breadcrumb-separator">/</span>
+                        <span>Customers</span>
+                    </div>
                 </div>
-            </form>
+            </div>
+            <div class="header-right">
+                <div class="admin-profile">
+                    <div class="admin-avatar">
+                        A
+                    </div>
+                    <div class="admin-info">
+                        <div class="admin-name">Admin</div>
+                        <div class="admin-role">Administrator</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Content Area -->
+    <div class="content-area">
+        <!-- Search and Stats -->
+        <div class="row g-4 mb-4">
+            <!-- Search Bar -->
+            <div class="col-lg-8">
+                <div class="card-modern no-hover">
+                    <div class="card-body-modern">
+                        <form action="/admin/users" method="get" class="d-flex gap-3">
+                            <div class="position-relative flex-grow-1">
+                                <input type="text" 
+                                       name="search" 
+                                       class="form-control form-control-modern ps-5" 
+                                       placeholder="Search customers by name, email, or phone..." 
+                                       value="<%= search || '' %>">
+                                <i class="fas fa-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted-modern"></i>
+                            </div>
+                            <button type="submit" class="btn btn-primary-modern">
+                                <i class="fas fa-search me-2"></i>Search
+                            </button>
+                            <a href="/admin/users" class="btn btn-outline-modern">
+                                <i class="fas fa-times me-2"></i>Clear
+                            </a>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Customer Stats -->
+            <div class="col-lg-4">
+                <div class="stats-card-customers">
+                    <div class="stats-icon-customers">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="stats-content-customers">
+                        <div class="stats-number-customers"><%= data ? data.length : 0 %></div>
+                        <div class="stats-label-customers">Total Customers</div>
+                        <div class="stats-detail-customers">
+                            <% if (data && data.length > 0) { %>
+                                Active: <%= data.filter(u => !u.isBlocked).length %> | 
+                                Blocked: <%= data.filter(u => u.isBlocked).length %>
+                            <% } else { %>
+                                No customers yet
+                            <% } %>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <div class="right mt-5">
-            <table class="table table-striped">
-                <thead>
-                    <tr>
-                        <th scope="col"><b>Name</b></th>
-                        <th scope="col"><b>Email</b></th>
-                        <th scope="col"><b>Phone No</b></th>
-                        <th scope="col"><b>Action</b></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <% if (data && data.length > 0) { %>
-                        <% for(let i = 0; i < data.length; i++) { %>
+        <!-- Customers Table -->
+        <% if (data && data.length > 0) { %>
+            <div class="table-modern">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th>Customer Details</th>
+                            <th>Contact Information</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% data.forEach((customer, index) => { %>
                             <tr>
-                                <td><%= data[i].name %></td>
-                                <td><%= data[i].email %></td>
-                                <td><%= data[i].phone || 'N/A' %></td>
                                 <td>
-                                    <% if(data[i].isBlocked === false) { %>
-                                        <button 
-                                            class="action-btn block-btn" 
-                                            onclick="toggleBlock('<%= data[i]._id %>', 'block')"
-                                        >
-                                            Block
+                                    <div class="d-flex align-items-center gap-3">
+                                        <div class="customer-avatar">
+                                            <%= customer.name.charAt(0).toUpperCase() %>
+                                        </div>
+                                        <div class="customer-details">
+                                            <div class="customer-name"><%= customer.name %></div>
+                                            <div class="customer-id">ID: #<%= customer._id.toString().slice(-8).toUpperCase() %></div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="contact-info">
+                                        <div class="customer-email">
+                                            <i class="fas fa-envelope me-2"></i>
+                                            <%= customer.email %>
+                                        </div>
+                                        <div class="customer-phone">
+                                            <i class="fas fa-phone me-2"></i>
+                                            <%= customer.phone || 'N/A' %>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="status-badge status-<%= customer.isBlocked ? 'blocked' : 'active' %>">
+                                        <i class="fas fa-circle"></i>
+                                        <%= customer.isBlocked ? 'Blocked' : 'Active' %>
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <% if (!customer.isBlocked) { %>
+                                            <button class="btn btn-sm btn-warning-modern"
+                                                    onclick="toggleBlock('<%= customer._id %>', 'block')"
+                                                    data-bs-toggle="tooltip" 
+                                                    title="Block Customer">
+                                                <i class="fas fa-lock me-1"></i>Block
+                                            </button>
+                                        <% } else { %>
+                                            <button class="btn btn-sm btn-success-modern"
+                                                    onclick="toggleBlock('<%= customer._id %>', 'unblock')"
+                                                    data-bs-toggle="tooltip" 
+                                                    title="Unblock Customer">
+                                                <i class="fas fa-unlock me-1"></i>Unblock
+                                            </button>
+                                        <% } %>
+                                        
+                                        <button class="btn btn-sm btn-outline-modern"
+                                                onclick="viewCustomerDetails('<%= customer._id %>')"
+                                                data-bs-toggle="tooltip" 
+                                                title="View Customer Details">
+                                            <i class="fas fa-eye me-1"></i>View
                                         </button>
-                                    <% } else { %>
-                                        <button 
-                                            class="action-btn unblock-btn" 
-                                            onclick="toggleBlock('<%= data[i]._id %>', 'unblock')"
-                                        >
-                                            Unblock
-                                        </button>
-                                    <% } %>
+                                    </div>
                                 </td>
                             </tr>
-                        <% } %>
-                    <% } else { %>
-                        <tr>
-                            <td colspan="4" class="text-center">No customers found</td>
-                        </tr>
-                    <% } %>
-                </tbody>
-            </table>
-        </div>
+                        <% }) %>
+                    </tbody>
+                </table>
+            </div>
 
-        <div class="container mt-3">
-            <nav aria-label="Page navigation">
-                <ul class="pagination">
-                    <% if (totalPages > 0) { %>
-                        <% for(let i = 1; i <= totalPages; i++) { %>
-                            <li class="page-item <%= (i === currentPage) ? 'active' : '' %>">
-                                <a class="page-link" href="?page=<%= i %>&search=<%= search %>"><%= i %></a>
-                            </li>
-                        <% } %>
-                    <% } %>
-                </ul>
-            </nav>
-        </div>
+            <!-- Pagination -->
+            <% if (totalPages > 1) { %>
+                <div class="d-flex justify-content-center mt-4">
+                    <nav aria-label="Customers pagination">
+                        <ul class="pagination pagination-modern">
+                            <% if (currentPage > 1) { %>
+                                <li class="page-item">
+                                    <a class="page-link" href="?page=<%= currentPage - 1 %>&search=<%= search || '' %>">
+                                        <i class="fas fa-chevron-left"></i>
+                                    </a>
+                                </li>
+                            <% } %>
 
-        
+                            <% for (let i = 1; i <= totalPages; i++) { %>
+                                <li class="page-item <%= i === currentPage ? 'active' : '' %>">
+                                    <a class="page-link" href="?page=<%= i %>&search=<%= search || '' %>">
+                                        <%= i %>
+                                    </a>
+                                </li>
+                            <% } %>
+
+                            <% if (currentPage < totalPages) { %>
+                                <li class="page-item">
+                                    <a class="page-link" href="?page=<%= currentPage + 1 %>&search=<%= search || '' %>">
+                                        <i class="fas fa-chevron-right"></i>
+                                    </a>
+                                </li>
+                            <% } %>
+                        </ul>
+                    </nav>
+                </div>
+            <% } %>
+        <% } else { %>
+            <!-- Empty State -->
+            <div class="card-modern text-center py-5 no-hover">
+                <div class="card-body-modern">
+                    <div class="empty-state">
+                        <i class="fas fa-users text-muted-modern mb-3 empty-icon"></i>
+                        <h5 class="text-muted-modern mb-2">No Customers Found</h5>
+                        <p class="text-muted-modern mb-0">
+                            <% if (search) { %>
+                                No customers match your search criteria. Try adjusting your search terms.
+                            <% } else { %>
+                                No customers have registered yet.
+                            <% } %>
+                        </p>
+                        <% if (search) { %>
+                            <a href="/admin/users" class="btn btn-outline-modern mt-3">
+                                <i class="fas fa-times me-2"></i>Clear Search
+                            </a>
+                        <% } %>
+                    </div>
+                </div>
+            </div>
+        <% } %>
     </div>
+</div>
 
-    <script>
-async function toggleBlock(userId, action) {
-  const confirmMessage = `Are you sure you want to ${action} this customer?`;
-  const successMessage = `Customer has been ${action}ed successfully.`;
+<!-- Customer Details Modal -->
+<div class="modal fade" id="customerDetailsModal" tabindex="-1" aria-labelledby="customerDetailsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content modal-modern">
+            <div class="modal-header modal-header-modern">
+                <h5 class="modal-title fw-semibold" id="customerDetailsModalLabel">
+                    <i class="fas fa-user me-2"></i>Customer Details
+                </h5>
+                <button type="button" class="btn-close btn-close-modern" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body modal-body-modern">
+                <div id="customerDetailsContent">
+                    <!-- Customer details will be loaded here -->
+                    <div class="text-center py-4">
+                        <i class="fas fa-user-circle text-muted-modern mb-3" style="font-size: 4rem;"></i>
+                        <h6 class="text-muted-modern">Customer details view can be implemented here</h6>
+                        <p class="text-muted-modern mb-0">This modal can show detailed customer information, order history, etc.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer modal-footer-modern">
+                <button type="button" class="btn btn-outline-modern" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-2"></i>Close
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 
-  const result = await Swal.fire({
-    title: confirmMessage,
-    icon: 'warning',
-    showCancelButton: true,
-    confirmButtonText: 'Yes',
-    cancelButtonText: 'Cancel',
-    confirmButtonColor: '#d33',
-    cancelButtonColor: '#3085d6',
-  });
-
-  if (result.isConfirmed) {
-    try {
-      const endpoint = action === 'block' ? '/admin/blockCustomer' : '/admin/unblockCustomer';
-      window.location.href = `${endpoint}?id=${userId}`;
-    } catch (error) {
-      console.error(`Error ${action}ing customer:`, error);
-      Swal.fire('Error', `An error occurred while ${action}ing the customer`, 'error');
+<style>
+    /* Customer Management Specific Monochrome Styles */
+    .stats-card-customers {
+        background: var(--bg-primary);
+        border: 1px solid var(--border-light);
+        border-radius: var(--radius-xl);
+        padding: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        transition: all var(--transition-normal);
+        box-shadow: var(--shadow-sm);
+        height: 100%;
     }
-  }
-}
-    
 
-    </script>
-</body>
-</html>
+    .stats-card-customers:hover {
+        box-shadow: var(--shadow-md);
+        transform: translateY(-1px);
+    }
+
+    .stats-icon-customers {
+        width: 60px;
+        height: 60px;
+        border-radius: var(--radius-lg);
+        background: var(--bg-dark);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        color: var(--text-light);
+    }
+
+    .stats-content-customers {
+        flex: 1;
+    }
+
+    .stats-number-customers {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        line-height: 1.2;
+        font-family: 'Courier New', monospace;
+    }
+
+    .stats-label-customers {
+        font-size: 0.875rem;
+        color: var(--text-secondary);
+        margin-bottom: 0.25rem;
+    }
+
+    .stats-detail-customers {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+    }
+
+    .customer-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: var(--bg-dark);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--text-light);
+        font-weight: 600;
+        font-size: 1rem;
+    }
+
+    .customer-details {
+        flex: 1;
+    }
+
+    .customer-name {
+        font-weight: 500;
+        color: var(--text-primary);
+        font-size: 0.875rem;
+        line-height: 1.3;
+        margin-bottom: 0.125rem;
+    }
+
+    .customer-id {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        font-family: 'Courier New', monospace;
+    }
+
+    .contact-info {
+        display: flex;
+        flex-direction: column;
+        gap: 0.375rem;
+    }
+
+    .customer-email,
+    .customer-phone {
+        font-size: 0.875rem;
+        color: var(--text-secondary);
+        display: flex;
+        align-items: center;
+    }
+
+    .customer-email i,
+    .customer-phone i {
+        color: var(--text-muted);
+        font-size: 0.75rem;
+    }
+
+    .status-blocked {
+        background: var(--color-grey-600);
+        color: var(--text-light);
+    }
+
+    .status-active {
+        background: var(--color-grey-800);
+        color: var(--text-light);
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 0.375rem;
+        flex-wrap: wrap;
+    }
+
+    .action-buttons .btn {
+        padding: 0.375rem 0.75rem;
+        border-radius: var(--radius-md);
+        transition: all var(--transition-normal);
+        font-size: 0.75rem;
+    }
+
+    .action-buttons .btn:hover {
+        transform: translateY(-1px);
+        box-shadow: var(--shadow-sm);
+    }
+
+    .btn-warning-modern {
+        background: var(--color-grey-600);
+        color: var(--text-light);
+        border: 1px solid var(--color-grey-600);
+    }
+
+    .btn-warning-modern:hover {
+        background: var(--color-grey-700);
+        border-color: var(--color-grey-700);
+        color: var(--text-light);
+    }
+
+    .btn-success-modern {
+        background: var(--color-grey-700);
+        color: var(--text-light);
+        border: 1px solid var(--color-grey-700);
+    }
+
+    .btn-success-modern:hover {
+        background: var(--color-grey-800);
+        border-color: var(--color-grey-800);
+        color: var(--text-light);
+    }
+
+    .empty-state {
+        padding: 3rem 1rem;
+    }
+
+    .empty-icon {
+        font-size: 4rem;
+    }
+
+    /* Modal Styles */
+    .modal-modern {
+        border: none;
+        border-radius: var(--radius-xl);
+        box-shadow: var(--shadow-xl);
+        background: var(--bg-primary);
+    }
+
+    .modal-header-modern {
+        background: var(--bg-tertiary);
+        border-bottom: 1px solid var(--border-light);
+        border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+        color: var(--text-primary);
+    }
+
+    .modal-body-modern {
+        background: var(--bg-primary);
+        color: var(--text-primary);
+    }
+
+    .modal-footer-modern {
+        background: var(--bg-tertiary);
+        border-top: 1px solid var(--border-light);
+        border-radius: 0 0 var(--radius-xl) var(--radius-xl);
+    }
+
+    .btn-close-modern {
+        filter: none;
+        background: none;
+        border: none;
+        opacity: 0.6;
+    }
+
+    .btn-close-modern:hover {
+        opacity: 1;
+    }
+
+    /* Pagination Styles */
+    .pagination-modern {
+        --bs-pagination-padding-x: 0.75rem;
+        --bs-pagination-padding-y: 0.5rem;
+        --bs-pagination-font-size: 0.875rem;
+        --bs-pagination-color: var(--text-secondary);
+        --bs-pagination-bg: var(--bg-primary);
+        --bs-pagination-border-width: 1px;
+        --bs-pagination-border-color: var(--border-light);
+        --bs-pagination-border-radius: var(--radius-lg);
+        --bs-pagination-hover-color: var(--text-primary);
+        --bs-pagination-hover-bg: var(--bg-tertiary);
+        --bs-pagination-hover-border-color: var(--border-medium);
+        --bs-pagination-focus-color: var(--text-primary);
+        --bs-pagination-focus-bg: var(--bg-tertiary);
+        --bs-pagination-focus-box-shadow: 0 0 0 0.25rem rgb(0 0 0 / 0.1);
+        --bs-pagination-active-color: var(--text-light);
+        --bs-pagination-active-bg: var(--bg-dark);
+        --bs-pagination-active-border-color: var(--bg-dark);
+        --bs-pagination-disabled-color: var(--text-muted);
+        --bs-pagination-disabled-bg: var(--bg-primary);
+        --bs-pagination-disabled-border-color: var(--border-light);
+    }
+
+    .pagination-modern .page-link {
+        border-radius: var(--radius-md);
+        margin: 0 0.125rem;
+        transition: all var(--transition-normal);
+    }
+
+    .pagination-modern .page-item.active .page-link {
+        box-shadow: var(--shadow-sm);
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        .action-buttons {
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .action-buttons .btn {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.7rem;
+        }
+
+        .customer-avatar {
+            width: 32px;
+            height: 32px;
+            font-size: 0.875rem;
+        }
+
+        .contact-info {
+            gap: 0.25rem;
+        }
+
+        .customer-email,
+        .customer-phone {
+            font-size: 0.8rem;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .table-modern {
+            font-size: 0.8rem;
+        }
+
+        .stats-card-customers {
+            flex-direction: column;
+            text-align: center;
+            gap: 0.75rem;
+        }
+
+        .stats-content-customers {
+            text-align: center;
+        }
+    }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+    async function toggleBlock(userId, action) {
+        const confirmMessage = `Are you sure you want to ${action} this customer?`;
+        
+        const result = await Swal.fire({
+            title: 'Confirm Action',
+            text: confirmMessage,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#171717',
+            cancelButtonColor: '#525252',
+            confirmButtonText: `Yes, ${action}!`,
+            cancelButtonText: 'Cancel',
+            background: '#ffffff',
+            color: '#171717'
+        });
+
+        if (result.isConfirmed) {
+            try {
+                const endpoint = action === 'block' ? '/admin/blockCustomer' : '/admin/unblockCustomer';
+                window.location.href = `${endpoint}?id=${userId}`;
+            } catch (error) {
+                console.error(`Error ${action}ing customer:`, error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: `An error occurred while ${action}ing the customer`,
+                    background: '#ffffff',
+                    color: '#171717',
+                    confirmButtonColor: '#525252'
+                });
+            }
+        }
+    }
+
+    function viewCustomerDetails(userId) {
+        // Show the modal with placeholder content
+        const modal = new bootstrap.Modal(document.getElementById('customerDetailsModal'));
+        modal.show();
+    }
+
+    // Initialize tooltips
+    document.addEventListener('DOMContentLoaded', function() {
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+    });
+</script>
+
+<%- include('./partials/footer') %>

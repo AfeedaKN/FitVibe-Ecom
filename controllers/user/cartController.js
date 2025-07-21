@@ -83,6 +83,7 @@ const getCart = async (req, res) => {
     try {
         const user = req.session.user;
         if (!user) {
+
             return res.redirect('/login');
         }
 
@@ -200,6 +201,17 @@ const removeFromCart = async (req, res) => {
         res.status(500).json({ success: false, message: 'Server error' });
     }
 };
+
+
+const cartcount=async(req,res)=>{
+    try {
+        const userId=req.session.user._id
+        const cart=await Cart.find(userId).populate(items.product)
+        const count=await Cart.countDocuments()
+    } catch (error) {
+        
+    }
+}
 
 module.exports = {
     addToCart,

@@ -1,95 +1,552 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>FitVibe - Admin Login</title>
-  <link rel="stylesheet" href="/styles.css"> <!-- Assumes centralized CSS -->
-  <style>
-    .admin-login-section {
-      max-width: 500px;
-      margin: 50px auto;
-      padding: 40px;
-      background: white;
-      border-radius: 10px;
-      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-      text-align: center;
-    }
-    .admin-login-section h2 {
-      font-size: 32px;
-      margin-bottom: 30px;
-      color: #1a1a1a;
-    }
-    .admin-login-form {
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-    }
-    .admin-login-form input {
-      padding: 12px;
-      font-size: 16px;
-      border: 1px solid #ddd;
-      border-radius: 5px;
-      outline: none;
-      transition: border 0.3s;
-    }
-    .admin-login-form input:focus {
-      border-color: #ffd700;
-    }
-    .admin-login-form button {
-      padding: 12px;
-      font-size: 18px;
-      font-weight: bold;
-      background: #ffd700;
-      color: #1a1a1a;
-      border: none;
-      border-radius: 25px;
-      cursor: pointer;
-      transition: background 0.3s;
-    }
-    .admin-login-form button:hover {
-      background: #e6c200;
-    }
-    .error-message {
-      color: red;
-      font-size: 0.75rem;
-      text-align: left;
-    }
-    .admin-login-form .login-link {
-      margin-top: 15px;
-      font-size: 14px;
-      color: #666;
-    }
-    .admin-login-form .login-link a {
-      color: #ffd700;
-      text-decoration: none;
-    }
-    .admin-login-form .login-link a:hover {
-      text-decoration: underline;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FitVibe Admin - Login</title>
+    
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Google Fonts - Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    
+    <style>
+        :root {
+            /* Monochrome Color System */
+            --color-black: #000000;
+            --color-white: #ffffff;
+            --color-grey-50: #fafafa;
+            --color-grey-100: #f5f5f5;
+            --color-grey-200: #e5e5e5;
+            --color-grey-300: #d4d4d4;
+            --color-grey-400: #a3a3a3;
+            --color-grey-500: #737373;
+            --color-grey-600: #525252;
+            --color-grey-700: #404040;
+            --color-grey-800: #262626;
+            --color-grey-900: #171717;
+
+            /* Semantic Colors */
+            --bg-primary: var(--color-white);
+            --bg-secondary: var(--color-grey-50);
+            --bg-tertiary: var(--color-grey-100);
+            --bg-dark: var(--color-grey-900);
+            --bg-darker: var(--color-black);
+
+            --text-primary: var(--color-grey-900);
+            --text-secondary: var(--color-grey-600);
+            --text-muted: var(--color-grey-500);
+            --text-light: var(--color-white);
+
+            --border-light: var(--color-grey-200);
+            --border-medium: var(--color-grey-300);
+            --border-dark: var(--color-grey-400);
+
+            /* Shadows */
+            --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+            --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+
+            /* Border Radius */
+            --radius-sm: 0.25rem;
+            --radius-md: 0.375rem;
+            --radius-lg: 0.5rem;
+            --radius-xl: 0.75rem;
+            --radius-2xl: 1rem;
+
+            /* Transitions */
+            --transition-fast: 0.15s ease;
+            --transition-normal: 0.2s ease;
+            --transition-slow: 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, var(--color-grey-100) 0%, var(--color-grey-200) 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            color: var(--text-primary);
+        }
+
+        .login-container {
+            width: 100%;
+            max-width: 420px;
+        }
+
+        .login-card {
+            background: var(--bg-primary);
+            border-radius: var(--radius-2xl);
+            box-shadow: var(--shadow-xl);
+            border: 1px solid var(--border-light);
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+        }
+
+        .login-header {
+            padding: 2rem 2rem 1rem;
+            text-align: center;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .logo-container {
+            margin-bottom: 1.5rem;
+        }
+
+        .logo-icon {
+            width: 60px;
+            height: 60px;
+            background: var(--bg-dark);
+            border-radius: var(--radius-xl);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+            color: var(--text-light);
+            font-size: 1.75rem;
+            box-shadow: var(--shadow-md);
+        }
+
+        .login-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+            letter-spacing: -0.025em;
+        }
+
+        .login-subtitle {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-bottom: 0;
+        }
+
+        .login-body {
+            padding: 1rem 2rem 2rem;
+            background: var(--bg-primary);
+        }
+
+        .login-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+        }
+
+        .form-group {
+            position: relative;
+        }
+
+        .form-label {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        .form-control-modern {
+            width: 100%;
+            padding: 0.875rem 1rem 0.875rem 3rem;
+            border: 1px solid var(--border-medium);
+            border-radius: var(--radius-lg);
+            font-size: 0.875rem;
+            background: var(--bg-primary);
+            transition: all var(--transition-normal);
+            color: var(--text-primary);
+        }
+
+        .form-control-modern:focus {
+            outline: none;
+            border-color: var(--border-dark);
+            box-shadow: 0 0 0 3px rgb(0 0 0 / 0.1);
+        }
+
+        .form-control-modern::placeholder {
+            color: var(--text-muted);
+        }
+
+        .form-icon {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            font-size: 0.875rem;
+            z-index: 2;
+        }
+
+        .form-group.has-label .form-icon {
+            top: calc(50% + 0.75rem);
+        }
+
+        .btn-login {
+            width: 100%;
+            padding: 0.875rem 1.5rem;
+            background: var(--bg-dark);
+            color: var(--text-light);
+            border: none;
+            border-radius: var(--radius-lg);
+            font-size: 0.875rem;
+            font-weight: 600;
+            transition: all var(--transition-normal);
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .btn-login:hover {
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-md);
+            background: var(--bg-darker);
+        }
+
+        .btn-login:active {
+            transform: translateY(0);
+        }
+
+        .btn-login:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .error-message {
+            background: var(--color-grey-100);
+            color: var(--color-grey-800);
+            padding: 0.75rem 1rem;
+            border-radius: var(--radius-lg);
+            font-size: 0.875rem;
+            border: 1px solid var(--border-medium);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .login-footer {
+            padding: 1rem 2rem 2rem;
+            text-align: center;
+            border-top: 1px solid var(--border-light);
+            background: var(--bg-secondary);
+        }
+
+        .login-link {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .login-link a {
+            color: var(--text-primary);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color var(--transition-normal);
+        }
+
+        .login-link a:hover {
+            color: var(--bg-dark);
+            text-decoration: underline;
+        }
+
+        .loading-spinner {
+            width: 16px;
+            height: 16px;
+            border: 2px solid transparent;
+            border-top: 2px solid currentColor;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 480px) {
+            .login-container {
+                max-width: 100%;
+            }
+
+            .login-header {
+                padding: 1.5rem 1.5rem 0.75rem;
+            }
+
+            .login-body {
+                padding: 0.75rem 1.5rem 1.5rem;
+            }
+
+            .login-footer {
+                padding: 0.75rem 1.5rem 1.5rem;
+            }
+
+            .login-title {
+                font-size: 1.5rem;
+            }
+
+            .logo-icon {
+                width: 50px;
+                height: 50px;
+                font-size: 1.5rem;
+            }
+        }
+
+        /* Animation for card entrance */
+        .login-card {
+            animation: slideUp 0.5s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Focus states */
+        .form-control-modern:focus + .form-icon {
+            color: var(--text-primary);
+        }
+
+        /* Validation states */
+        .form-control-modern.is-invalid {
+            border-color: var(--color-grey-600);
+            box-shadow: 0 0 0 3px rgb(82 82 82 / 0.1);
+        }
+
+        .form-control-modern.is-valid {
+            border-color: var(--color-grey-700);
+            box-shadow: 0 0 0 3px rgb(64 64 64 / 0.1);
+        }
+
+        /* Pattern overlay for subtle texture */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                radial-gradient(circle at 1px 1px, rgba(0,0,0,0.05) 1px, transparent 0);
+            background-size: 20px 20px;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        /* Subtle gradient border */
+        .login-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, var(--border-light), var(--border-medium));
+            border-radius: var(--radius-2xl);
+            padding: 1px;
+            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            mask-composite: exclude;
+            z-index: -1;
+        }
+    </style>
 </head>
 <body>
- 
+    <div class="login-container">
+        <div class="login-card">
+            <!-- Header -->
+            <div class="login-header">
+                <div class="logo-container">
+                    <div class="logo-icon">
+                        <i class="fas fa-dumbbell"></i>
+                    </div>
+                    <h1 class="login-title">FitVibe Admin</h1>
+                    <p class="login-subtitle">Sign in to your admin dashboard</p>
+                </div>
+            </div>
 
- 
-  <div class="admin-login-section">
-    <h2>Admin Login</h2>
-    <form class="admin-login-form" action="/admin/login" method="POST">
-      <input type="email" name="email" placeholder="Email" required />
-      <input type="password" name="password" placeholder="Password" required />
-      <div class="error-message">
-        <% if (message) { %>
-          <%= message %>
-        <% } %>
-      </div>
-      <button type="submit">Login</button>
-      <div class="login-link">
-        Back to <a href="/login">User Login</a>
-      </div>
-    </form>
-  </div>
+            <!-- Body -->
+            <div class="login-body">
+                <!-- Error Message -->
+                <% if (typeof message !== 'undefined' && message) { %>
+                    <div class="error-message">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <%= message %>
+                    </div>
+                <% } %>
 
-  
+                <!-- Login Form -->
+                <form class="login-form" action="/admin/login" method="POST" id="loginForm">
+                    <div class="form-group has-label">
+                        <label for="email" class="form-label">Email Address</label>
+                        <input type="email" 
+                               id="email" 
+                               name="email" 
+                               class="form-control-modern" 
+                               placeholder="Enter your email" 
+                               required 
+                               autocomplete="email">
+                        <i class="fas fa-envelope form-icon"></i>
+                    </div>
+
+                    <div class="form-group has-label">
+                        <label for="password" class="form-label">Password</label>
+                        <input type="password" 
+                               id="password" 
+                               name="password" 
+                               class="form-control-modern" 
+                               placeholder="Enter your password" 
+                               required 
+                               autocomplete="current-password">
+                        <i class="fas fa-lock form-icon"></i>
+                    </div>
+
+                    <button type="submit" class="btn-login" id="loginBtn">
+                        <span class="btn-text">Sign In</span>
+                        <i class="fas fa-arrow-right"></i>
+                    </button>
+                </form>
+            </div>
+
+            <!-- Footer -->
+            <div class="login-footer">
+                <div class="login-link">
+                    <i class="fas fa-arrow-left me-2"></i>
+                    Back to <a href="/login">User Login</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const loginForm = document.getElementById('loginForm');
+            const loginBtn = document.getElementById('loginBtn');
+            const btnText = loginBtn.querySelector('.btn-text');
+            const btnIcon = loginBtn.querySelector('i');
+
+            // Form validation
+            const emailInput = document.getElementById('email');
+            const passwordInput = document.getElementById('password');
+
+            function validateEmail(email) {
+                const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                return re.test(email);
+            }
+
+            function validateForm() {
+                let isValid = true;
+
+                // Email validation
+                if (!emailInput.value.trim()) {
+                    emailInput.classList.add('is-invalid');
+                    isValid = false;
+                } else if (!validateEmail(emailInput.value)) {
+                    emailInput.classList.add('is-invalid');
+                    isValid = false;
+                } else {
+                    emailInput.classList.remove('is-invalid');
+                    emailInput.classList.add('is-valid');
+                }
+
+                // Password validation
+                if (!passwordInput.value.trim()) {
+                    passwordInput.classList.add('is-invalid');
+                    isValid = false;
+                } else if (passwordInput.value.length < 6) {
+                    passwordInput.classList.add('is-invalid');
+                    isValid = false;
+                } else {
+                    passwordInput.classList.remove('is-invalid');
+                    passwordInput.classList.add('is-valid');
+                }
+
+                return isValid;
+            }
+
+            // Real-time validation
+            emailInput.addEventListener('input', function() {
+                if (this.value.trim() && validateEmail(this.value)) {
+                    this.classList.remove('is-invalid');
+                    this.classList.add('is-valid');
+                } else {
+                    this.classList.remove('is-valid');
+                    if (this.value.trim()) {
+                        this.classList.add('is-invalid');
+                    }
+                }
+            });
+
+            passwordInput.addEventListener('input', function() {
+                if (this.value.length >= 6) {
+                    this.classList.remove('is-invalid');
+                    this.classList.add('is-valid');
+                } else {
+                    this.classList.remove('is-valid');
+                    if (this.value.length > 0) {
+                        this.classList.add('is-invalid');
+                    }
+                }
+            });
+
+            // Form submission
+            loginForm.addEventListener('submit', function(e) {
+                if (!validateForm()) {
+                    e.preventDefault();
+                    return;
+                }
+
+                // Show loading state
+                loginBtn.disabled = true;
+                btnText.textContent = 'Signing In...';
+                btnIcon.className = 'loading-spinner';
+            });
+
+            // Auto-focus first input
+            emailInput.focus();
+
+            // Handle Enter key navigation
+            emailInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    passwordInput.focus();
+                }
+            });
+
+            passwordInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    loginForm.dispatchEvent(new Event('submit'));
+                }
+            });
+
+            // Clear validation states on focus
+            [emailInput, passwordInput].forEach(input => {
+                input.addEventListener('focus', function() {
+                    this.classList.remove('is-invalid', 'is-valid');
+                });
+            });
+        });
+    </script>
 </body>
 </html>

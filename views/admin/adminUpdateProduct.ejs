@@ -1,299 +1,702 @@
-<!DOCTYPE html>
-<html lang="en">
+<%- include('./partials/header', { pageTitle: 'Edit Product' }) %>
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Edit Product - FitVibe Admin</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="/css/admin/products.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css">
-</head>
+<%- include('./partials/sidebar', { page: 'products' }) %>
 
-<body>
-    <%- include('./partials/sidebar', { page: 'products' }) %>
-
-        <div class="main-content">
-
-            <%- include('./partials/header', { pageTitle: 'Edit Product' , adminName: admin.name || 'Admin' ,
-                breadcrumbs: [ { name: 'Dashboard' , url: '/admin/dashboard' }, { name: 'Products' ,
-                url: '/admin/products' }, { name: 'Edit Product' , url: '#' } ] }) %>
-
-                <% if (success_msg) { %>
-                    <div class="alert alert-success alert-dismissible fade show" role="alert">
-                        <%= success_msg %>
-                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+<div class="main-content">
+    <!-- Top Header -->
+    <header class="top-header">
+        <div class="header-content">
+            <div class="header-left">
+                <button class="sidebar-toggle" onclick="toggleSidebar()">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <div>
+                    <h1 class="page-title">Edit Product</h1>
+                    <div class="breadcrumbs">
+                        <a href="/admin/dashboard">Dashboard</a>
+                        <span class="breadcrumb-separator">/</span>
+                        <a href="/admin/products">Products</a>
+                        <span class="breadcrumb-separator">/</span>
+                        <span>Edit Product</span>
                     </div>
-                    <% } %>
-
-                        
-                        <% if (error_msg) { %>
-                            <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                                <%= error_msg %>
-                                    <button type="button" class="btn-close" data-bs-dismiss="alert"
-                                        aria-label="Close"></button>
-                            </div>
-                            <% } %>
-
-                                <form id="editProductForm" action="/admin/editproducts" method="POST"
-                                    enctype="multipart/form-data">
-                                    <input type="hidden" name="productId" value="<%= product._id %>">
-
-                                    <div class="row">
-                                        
-                                        <div class="col-lg-8">
-                                            <div class="card mb-4">
-                                                <div class="card-header">
-                                                    <h5 class="mb-0">Product Information</h5>
-                                                </div>
-                                                <div class="card-body">
-                                                    <div class="row">
-                                                        <div class="col-md-6 mb-3">
-                                                            <label for="name" class="form-label">Product Name *</label>
-                                                            <input type="text" class="form-control" id="name"
-                                                                name="name" value="<%= product.name %>" required>
-                                                            <div class="invalid-feedback">Please provide a product name.
-                                                            </div>
-                                                        </div>
-                                                        <div class="col-md-6 mb-3">
-                                                            <label for="category" class="form-label">Category *</label>
-                                                            <select class="form-select" id="category" name="category"
-                                                                required>
-                                                                <option value="">Select Category</option>
-                                                                <% categories.forEach(category=> { %>
-                                                                    <option value="<%= category._id %>"
-                                                                        <%=product.categoryId._id.toString()===category._id.toString()
-                                                                        ? 'selected' : '' %>>
-                                                                        <%= category.name %>
-                                                                    </option>
-                                                                    <% }) %>
-                                                            </select>
-                                                            <div class="invalid-feedback">Please select a category.
-                                                            </div>
-                                                        </div>
-                                                    </div>
-
-                                                    <div class="mb-3">
-                                                        <label for="description" class="form-label">Description
-                                                            *</label>
-                                                        <textarea class="form-control" id="description"
-                                                            name="description" rows="4"
-                                                            required><%= product.description %></textarea>
-                                                        <div class="invalid-feedback">Please provide a description.
-                                                        </div>
-                                                    </div>
-
-                                                    <div class="row">
-                                                        <div class="col-md-4 mb-3">
-                                                            <label for="brand" class="form-label">Brand</label>
-                                                            <input type="text" class="form-control" id="brand"
-                                                                name="brand" value="<%= product.brand || '' %>">
-                                                        </div>
-                                                        <div class="col-md-4 mb-3">
-                                                            <label for="color" class="form-label">Color *</label>
-                                                            <input type="text" class="form-control" id="color"
-                                                                name="color" value="<%= product.color %>" required>
-                                                            <div class="invalid-feedback">Please provide a color.</div>
-                                                        </div>
-                                                        <div class="col-md-4 mb-3">
-                                                            <label for="fabric" class="form-label">Fabric</label>
-                                                            <input type="text" class="form-control" id="fabric"
-                                                                name="fabric" value="<%= product.fabric || '' %>">
-                                                        </div>
-                                                    </div>
-
-                                                    <div class="row">
-                                                        <div class="col-md-6 mb-3">
-                                                            <label for="sku" class="form-label">SKU</label>
-                                                            <input type="text" class="form-control" id="sku" name="sku"
-                                                                value="<%= product.sku || '' %>">
-                                                        </div>
-                                                        <div class="col-md-6 mb-3">
-                                                            <label for="offer" class="form-label">Product Offer
-                                                                (%)</label>
-                                                            <input type="number" class="form-control" id="offer"
-                                                                name="offer" min="0" max="100"
-                                                                value="<%= product.offer || 0 %>">
-                                                        </div>
-                                                    </div>
-
-                                                    <div class="mb-3">
-                                                        <label for="tags" class="form-label">Tags (comma
-                                                            separated)</label>
-                                                        <input type="text" class="form-control" id="tags" name="tags"
-                                                            value="<%= product.tags ? product.tags.join(', ') : '' %>"
-                                                            placeholder="casual, summer, cotton">
-                                                    </div>
-
-                                                    <div class="mb-3">
-                                                        <div class="form-check">
-                                                            <input class="form-check-input" type="checkbox"
-                                                                id="isActive" name="isActive" <%=product.isActive
-                                                                ? 'checked' : '' %>>
-                                                            <label class="form-check-label" for="isActive">
-                                                                Product is Active
-                                                            </label>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            
-                                            <div class="card mb-4">
-                                                <div class="card-header">
-                                                    <h5 class="mb-0">Product Variants</h5>
-                                                </div>
-                                                <div class="card-body">
-                                                    <div class="row">
-                                                        <% ['S', 'M' , 'L' , 'XL' ].forEach((size, index)=> { %>
-                                                            <% const variant=product.variants.find(v=> v.size === size)
-                                                                %>
-                                                                <div class="col-md-3 mb-3">
-                                                                    <label class="form-label">Size <%= size %></label>
-                                                                    <div class="variant-group">
-                                                                        <input type="number" class="form-control mb-2"
-                                                                            name="varientPrice[<%= size %>]"
-                                                                            placeholder="Price" min="0" step="0.01"
-                                                                            value="<%= variant ? variant.varientPrice : '' %>">
-                                                                        <input type="number" class="form-control"
-                                                                            name="sizes[<%= size %>]"
-                                                                            placeholder="Quantity" min="0"
-                                                                            value="<%= variant ? variant.varientquatity : '' %>">
-                                                                    </div>
-                                                                </div>
-                                                                <% }) %>
-                                                    </div>
-                                                    <small class="text-muted">Enter price and quantity for each size.
-                                                        Leave empty for unavailable sizes.</small>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        
-                                        <div class="col-lg-4">
-                                           
-                                            <div class="card mb-4">
-                                                <div class="card-header">
-                                                    <h5 class="mb-0">Current Images</h5>
-                                                </div>
-                                                <div class="card-body">
-                                                    <div class="row" id="currentImagesContainer">
-                                                        <% if (product.images && product.images.length> 0) { %>
-                                                            <% product.images.forEach((image, index)=> { %>
-                                                                <div class="col-6 mb-3" data-image-index="<%= index %>">
-                                                                    <div class="image-item">
-                                                                        <img src="<%= image.thumbnail || image.url %>"
-                                                                            alt="Product Image"
-                                                                            class="img-fluid rounded">
-                                                                        <div class="image-overlay">
-                                                                            <% if (image.isMain) { %>
-                                                                                <span
-                                                                                    class="badge bg-primary">Main</span>
-                                                                                <% } %>
-                                                                                    <button type="button"
-                                                                                        class="btn btn-sm btn-danger"
-                                                                                        onclick="removeCurrentImage(<%= index %>)">
-                                                                                        <i class="fas fa-trash"></i>
-                                                                                    </button>
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                                <% }) %>
-                                                                    <% } else { %>
-                                                                        <p class="text-muted">No images available</p>
-                                                                        <% } %>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                           
-                                            <div class="card mb-4">
-                                                <div class="card-header">
-                                                    <h5 class="mb-0">Upload New Images</h5>
-                                                </div>
-                                                <div class="card-body">
-                                                    <div class="mb-3">
-                                                        <label for="productImages" class="form-label">Add More
-                                                            Images</label>
-                                                        <input type="file" class="form-control" id="productImages"
-                                                            name="productImages" multiple accept="image/*">
-                                                        <small class="text-muted">Select multiple images to add to the
-                                                            product.</small>
-                                                    </div>
-
-                                                    
-                                                    <div id="imagePreviewContainer" class="mt-3">
-                                                        
-                                                    </div>
-
-                                                    
-                                                    <div id="croppedImagesContainer" style="display: none;">
-                                                       
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            
-                                            <div class="card">
-                                                <div class="card-body">
-                                                    <div class="d-grid gap-2">
-                                                        <button type="submit" class="btn btn-success" id="submitBtn">
-                                                            <i class="fas fa-save"></i> Update Product
-                                                        </button>
-                                                        <a href="/admin/products" class="btn btn-secondary">
-                                                            <i class="fas fa-arrow-left"></i> Back to Products
-                                                        </a>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </form>
-        </div>
-
-       
-        <div class="modal fade" id="cropModal" tabindex="-1" aria-hidden="true">
-            <div class="modal-dialog modal-lg">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title">Crop Image</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+            </div>
+            <div class="header-right">
+                <a href="/admin/products" class="btn btn-outline-modern">
+                    <i class="fas fa-arrow-left me-2"></i>Back to Products
+                </a>
+                <div class="admin-profile">
+                    <div class="admin-avatar">
+                        A
                     </div>
-                    <div class="modal-body">
-                        <div class="crop-container">
-                            <img id="cropImage" style="max-width: 100%;">
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <button type="button" class="btn btn-primary" id="cropConfirm">Crop & Save</button>
+                    <div class="admin-info">
+                        <div class="admin-name">Admin</div>
+                        <div class="admin-role">Administrator</div>
                     </div>
                 </div>
             </div>
         </div>
+    </header>
 
-       
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
-        <script src="/js/admin/productManagement.js"></script>
-        <script>
-           
-            document.addEventListener('DOMContentLoaded', function () {
-                initializeImageCropping();
-                initializeFormValidation();
+    <!-- Content Area -->
+    <div class="content-area">
+        <!-- Alert Messages -->
+        <% if (success_msg) { %>
+            <div class="alert alert-success alert-dismissible fade show alert-modern alert-success-modern" role="alert">
+                <i class="fas fa-check-circle me-2"></i>
+                <%= success_msg %>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close" style="filter: invert(1);"></button>
+            </div>
+        <% } %>
+
+        <% if (error_msg) { %>
+            <div class="alert alert-danger alert-dismissible fade show alert-modern alert-danger-modern" role="alert">
+                <i class="fas fa-exclamation-circle me-2"></i>
+                <%= error_msg %>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close" style="filter: invert(1);"></button>
+            </div>
+        <% } %>
+
+        <!-- Edit Product Form -->
+        <form id="editProductForm" action="/admin/editproducts" method="POST" enctype="multipart/form-data" class="needs-validation" novalidate>
+            <input type="hidden" name="productId" value="<%= product._id %>">
+
+            <div class="row g-4">
+                <!-- Left Column - Product Information -->
+                <div class="col-lg-8">
+                    <!-- Basic Information -->
+                    <div class="card-modern mb-4 no-hover">
+                        <div class="card-header-modern">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-info-circle me-2"></i>Product Information
+                            </h5>
+                        </div>
+                        <div class="card-body-modern">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label for="name" class="form-label fw-medium">Product Name *</label>
+                                    <input type="text" 
+                                           class="form-control form-control-modern" 
+                                           id="name" 
+                                           name="name" 
+                                           value="<%= product.name %>" 
+                                           required>
+                                    <div class="invalid-feedback">Please provide a product name.</div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="category" class="form-label fw-medium">Category *</label>
+                                    <select class="form-select form-select-modern" id="category" name="category" required>
+                                        <option value="">Select Category</option>
+                                        <% categories.forEach(category => { %>
+                                            <option value="<%= category._id %>" 
+                                                    <%= product.categoryId._id.toString() === category._id.toString() ? 'selected' : '' %>>
+                                                <%= category.name %>
+                                            </option>
+                                        <% }) %>
+                                    </select>
+                                    <div class="invalid-feedback">Please select a category.</div>
+                                </div>
+                            </div>
+
+                            <div class="row g-3 mt-2">
+                                <div class="col-12">
+                                    <label for="description" class="form-label fw-medium">Description *</label>
+                                    <textarea class="form-control form-control-modern" 
+                                              id="description" 
+                                              name="description" 
+                                              rows="4" 
+                                              required><%= product.description %></textarea>
+                                    <div class="invalid-feedback">Please provide a description.</div>
+                                </div>
+                            </div>
+
+                            <div class="row g-3 mt-2">
+                                <div class="col-md-4">
+                                    <label for="brand" class="form-label fw-medium">Brand</label>
+                                    <input type="text" 
+                                           class="form-control form-control-modern" 
+                                           id="brand" 
+                                           name="brand" 
+                                           value="<%= product.brand || '' %>">
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="color" class="form-label fw-medium">Color *</label>
+                                    <input type="text" 
+                                           class="form-control form-control-modern" 
+                                           id="color" 
+                                           name="color" 
+                                           value="<%= product.color %>" 
+                                           required>
+                                    <div class="invalid-feedback">Please provide a color.</div>
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="fabric" class="form-label fw-medium">Fabric</label>
+                                    <input type="text" 
+                                           class="form-control form-control-modern" 
+                                           id="fabric" 
+                                           name="fabric" 
+                                           value="<%= product.fabric || '' %>">
+                                </div>
+                            </div>
+
+                            <div class="row g-3 mt-2">
+                                <div class="col-md-6">
+                                    <label for="sku" class="form-label fw-medium">SKU</label>
+                                    <input type="text" 
+                                           class="form-control form-control-modern" 
+                                           id="sku" 
+                                           name="sku" 
+                                           value="<%= product.sku || '' %>">
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="offer" class="form-label fw-medium">Product Offer (%)</label>
+                                    <input type="number" 
+                                           class="form-control form-control-modern" 
+                                           id="offer" 
+                                           name="offer" 
+                                           min="0" 
+                                           max="100" 
+                                           value="<%= product.offer || 0 %>">
+                                </div>
+                            </div>
+
+                            <div class="row g-3 mt-2">
+                                <div class="col-12">
+                                    <label for="tags" class="form-label fw-medium">Tags (comma separated)</label>
+                                    <input type="text" 
+                                           class="form-control form-control-modern" 
+                                           id="tags" 
+                                           name="tags" 
+                                           value="<%= product.tags ? product.tags.join(', ') : '' %>" 
+                                           placeholder="casual, summer, cotton">
+                                </div>
+                            </div>
+
+                            <div class="row g-3 mt-2">
+                                <div class="col-12">
+                                    <div class="form-check">
+                                        <input class="form-check-input" 
+                                               type="checkbox" 
+                                               id="isActive" 
+                                               name="isActive" 
+                                               <%= product.isActive ? 'checked' : '' %>>
+                                        <label class="form-check-label fw-medium" for="isActive">
+                                            Product is Active
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Product Variants -->
+                    <div class="card-modern mb-4 no-hover">
+                        <div class="card-header-modern">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-layer-group me-2"></i>Product Variants
+                            </h5>
+                        </div>
+                        <div class="card-body-modern">
+                            <div class="row g-3">
+                                <% ['S', 'M', 'L', 'XL'].forEach((size, index) => { %>
+                                    <% const variant = product.variants.find(v => v.size === size) %>
+                                    <div class="col-md-6 col-lg-3">
+                                        <div class="variant-card">
+                                            <label class="form-label fw-medium text-center d-block">Size <%= size %></label>
+                                            <div class="variant-inputs">
+                                                <div class="mb-2">
+                                                    <input type="number" 
+                                                           class="form-control form-control-modern" 
+                                                           name="varientPrice[<%= size %>]" 
+                                                           placeholder="Price (₹)" 
+                                                           min="0" 
+                                                           step="0.01" 
+                                                           value="<%= variant ? variant.varientPrice : '' %>">
+                                                </div>
+                                                <div>
+                                                    <input type="number" 
+                                                           class="form-control form-control-modern" 
+                                                           name="sizes[<%= size %>]" 
+                                                           placeholder="Quantity" 
+                                                           min="0" 
+                                                           value="<%= variant ? variant.varientquatity : '' %>">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                <% }) %>
+                            </div>
+                            <div class="mt-3">
+                                <small class="text-muted-modern">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    Enter price and quantity for each size. Leave empty for unavailable sizes.
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column - Images and Actions -->
+                <div class="col-lg-4">
+                    <!-- Current Images -->
+                    <div class="card-modern mb-4 no-hover">
+                        <div class="card-header-modern">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-images me-2"></i>Current Images
+                            </h5>
+                        </div>
+                        <div class="card-body-modern">
+                            <div class="row g-2" id="currentImagesContainer">
+                                <% if (product.images && product.images.length > 0) { %>
+                                    <% product.images.forEach((image, index) => { %>
+                                        <div class="col-6" data-image-index="<%= index %>">
+                                            <div class="image-item">
+                                                <img src="<%= image.thumbnail || image.url %>" 
+                                                     alt="Product Image" 
+                                                     class="img-fluid rounded-modern">
+                                                <div class="image-overlay">
+                                                    <% if (image.isMain) { %>
+                                                        <span class="badge bg-dark">Main</span>
+                                                    <% } %>
+                                                    <button type="button" 
+                                                            class="btn btn-sm btn-danger-modern" 
+                                                            onclick="removeCurrentImage(<%= index %>)"
+                                                            data-bs-toggle="tooltip" 
+                                                            title="Remove Image">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    <% }) %>
+                                <% } else { %>
+                                    <div class="col-12">
+                                        <div class="text-center py-4">
+                                            <i class="fas fa-image text-muted-modern mb-2" style="font-size: 2rem;"></i>
+                                            <p class="text-muted-modern mb-0">No images available</p>
+                                        </div>
+                                    </div>
+                                <% } %>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Upload New Images -->
+                    <div class="card-modern mb-4 no-hover">
+                        <div class="card-header-modern">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-upload me-2"></i>Upload New Images
+                            </h5>
+                        </div>
+                        <div class="card-body-modern">
+                            <div class="mb-3">
+                                <label for="productImages" class="form-label fw-medium">Add More Images</label>
+                                <input type="file" 
+                                       class="form-control form-control-modern" 
+                                       id="productImages" 
+                                       name="productImages" 
+                                       multiple 
+                                       accept="image/*">
+                                <small class="text-muted-modern">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    Select multiple images to add to the product.
+                                </small>
+                            </div>
+
+                            <!-- Image Preview Container -->
+                            <div id="imagePreviewContainer" class="mt-3">
+                                <!-- Preview images will be shown here -->
+                            </div>
+
+                            <!-- Cropped Images Container -->
+                            <div id="croppedImagesContainer" style="display: none;">
+                                <!-- Cropped images will be stored here -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="card-modern no-hover">
+                        <div class="card-body-modern">
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-primary-modern" id="submitBtn">
+                                    <i class="fas fa-save me-2"></i>Update Product
+                                </button>
+                                <a href="/admin/products" class="btn btn-outline-modern">
+                                    <i class="fas fa-arrow-left me-2"></i>Back to Products
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Crop Modal -->
+<div class="modal fade" id="cropModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content modal-modern">
+            <div class="modal-header modal-header-modern">
+                <h5 class="modal-title fw-semibold">
+                    <i class="fas fa-crop me-2"></i>Crop Image
+                </h5>
+                <button type="button" class="btn-close btn-close-modern" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body modal-body-modern">
+                <div class="crop-container">
+                    <img id="cropImage" style="max-width: 100%;">
+                </div>
+            </div>
+            <div class="modal-footer modal-footer-modern">
+                <button type="button" class="btn btn-outline-modern" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-2"></i>Cancel
+                </button>
+                <button type="button" class="btn btn-primary-modern" id="cropConfirm">
+                    <i class="fas fa-crop me-2"></i>Crop & Save
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Edit Product Specific Monochrome Styles */
+    .variant-card {
+        background: var(--bg-tertiary);
+        border: 1px solid var(--border-light);
+        border-radius: var(--radius-lg);
+        padding: 1rem;
+        text-align: center;
+        transition: all var(--transition-normal);
+    }
+
+    .variant-card:hover {
+        background: var(--bg-secondary);
+        box-shadow: var(--shadow-sm);
+    }
+
+    .variant-inputs {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .image-item {
+        position: relative;
+        border-radius: var(--radius-lg);
+        overflow: hidden;
+        background: var(--bg-tertiary);
+        border: 1px solid var(--border-light);
+    }
+
+    .image-item img {
+        width: 100%;
+        height: 120px;
+        object-fit: cover;
+        transition: transform var(--transition-normal);
+    }
+
+    .image-item:hover img {
+        transform: scale(1.05);
+    }
+
+    .image-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.7);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        opacity: 0;
+        transition: opacity var(--transition-normal);
+    }
+
+    .image-item:hover .image-overlay {
+        opacity: 1;
+    }
+
+    .image-overlay .badge {
+        position: absolute;
+        top: 0.5rem;
+        left: 0.5rem;
+        background: var(--bg-dark) !important;
+        color: var(--text-light);
+    }
+
+    .image-overlay .btn {
+        position: absolute;
+        top: 0.5rem;
+        right: 0.5rem;
+    }
+
+    .crop-container {
+        max-height: 400px;
+        overflow: hidden;
+        border-radius: var(--radius-lg);
+    }
+
+    /* Form Enhancements */
+    .form-label {
+        color: var(--text-primary);
+        font-size: 0.875rem;
+    }
+
+    .form-check-label {
+        color: var(--text-primary);
+        font-size: 0.875rem;
+    }
+
+    .form-check-input:checked {
+        background-color: var(--bg-dark);
+        border-color: var(--bg-dark);
+    }
+
+    .invalid-feedback {
+        color: var(--color-grey-600);
+        font-size: 0.75rem;
+    }
+
+    .was-validated .form-control:invalid {
+        border-color: var(--color-grey-600);
+        box-shadow: 0 0 0 0.25rem rgb(82 82 82 / 0.25);
+    }
+
+    .was-validated .form-control:valid {
+        border-color: var(--color-grey-700);
+        box-shadow: 0 0 0 0.25rem rgb(64 64 64 / 0.25);
+    }
+
+    /* Loading State */
+    .btn-loading {
+        position: relative;
+        color: transparent;
+    }
+
+    .btn-loading::after {
+        content: '';
+        position: absolute;
+        width: 16px;
+        height: 16px;
+        top: 50%;
+        left: 50%;
+        margin-left: -8px;
+        margin-top: -8px;
+        border: 2px solid transparent;
+        border-top-color: currentColor;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        .variant-card {
+            padding: 0.75rem;
+        }
+
+        .image-item img {
+            height: 100px;
+        }
+
+        .variant-inputs {
+            gap: 0.375rem;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .row.g-3 {
+            --bs-gutter-x: 1rem;
+        }
+
+        .variant-card {
+            padding: 0.5rem;
+        }
+
+        .image-item img {
+            height: 80px;
+        }
+    }
+</style>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        initializeImageCropping();
+        initializeFormValidation();
+        initializeTooltips();
+    });
+
+    function initializeTooltips() {
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+    }
+
+    function initializeFormValidation() {
+        const form = document.getElementById('editProductForm');
+        const submitBtn = document.getElementById('submitBtn');
+
+        form.addEventListener('submit', function(event) {
+            if (!form.checkValidity()) {
+                event.preventDefault();
+                event.stopPropagation();
+            } else {
+                // Show loading state
+                submitBtn.classList.add('btn-loading');
+                submitBtn.disabled = true;
+            }
+            form.classList.add('was-validated');
+        });
+
+        // Real-time validation
+        const inputs = form.querySelectorAll('input[required], select[required], textarea[required]');
+        inputs.forEach(input => {
+            input.addEventListener('blur', function() {
+                if (this.checkValidity()) {
+                    this.classList.remove('is-invalid');
+                    this.classList.add('is-valid');
+                } else {
+                    this.classList.remove('is-valid');
+                    this.classList.add('is-invalid');
+                }
             });
 
-            
-            function removeCurrentImage(index) {
-                if (confirm('Are you sure you want to remove this image?')) {
-                    const imageItem = document.querySelector(`[data-image-index="${index}"]`);
-                    if (imageItem) {
-                        imageItem.remove();
-                    }
+            input.addEventListener('input', function() {
+                if (this.classList.contains('is-invalid') && this.checkValidity()) {
+                    this.classList.remove('is-invalid');
+                    this.classList.add('is-valid');
+                }
+            });
+        });
+    }
+
+    function initializeImageCropping() {
+        const fileInput = document.getElementById('productImages');
+        const previewContainer = document.getElementById('imagePreviewContainer');
+        let cropper;
+
+        fileInput.addEventListener('change', function(e) {
+            const files = Array.from(e.target.files);
+            previewContainer.innerHTML = '';
+
+            files.forEach((file, index) => {
+                if (file.type.startsWith('image/')) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const previewDiv = document.createElement('div');
+                        previewDiv.className = 'col-6 mb-2';
+                        previewDiv.innerHTML = `
+                            <div class="image-item">
+                                <img src="${e.target.result}" alt="Preview" class="img-fluid rounded-modern">
+                                <div class="image-overlay">
+                                    <button type="button" class="btn btn-sm btn-primary-modern" onclick="cropImage(${index}, '${e.target.result}')">
+                                        <i class="fas fa-crop"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-danger-modern" onclick="removePreviewImage(${index})">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        `;
+                        previewContainer.appendChild(previewDiv);
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+        });
+    }
+
+    function removeCurrentImage(index) {
+        Swal.fire({
+            title: 'Remove Image',
+            text: 'Are you sure you want to remove this image?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#525252',
+            cancelButtonColor: '#a3a3a3',
+            confirmButtonText: 'Yes, remove it!',
+            background: '#ffffff',
+            color: '#171717'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                const imageItem = document.querySelector(`[data-image-index="${index}"]`);
+                if (imageItem) {
+                    imageItem.remove();
+                    showToast('Image removed successfully', 'success');
                 }
             }
-        </script>
-</body>
+        });
+    }
 
-</html>
+    function removePreviewImage(index) {
+        const previewItems = document.querySelectorAll('#imagePreviewContainer .col-6');
+        if (previewItems[index]) {
+            previewItems[index].remove();
+        }
+    }
+
+    function cropImage(index, imageSrc) {
+        const modal = new bootstrap.Modal(document.getElementById('cropModal'));
+        const cropImage = document.getElementById('cropImage');
+        
+        cropImage.src = imageSrc;
+        modal.show();
+
+        // Initialize cropper when modal is shown
+        document.getElementById('cropModal').addEventListener('shown.bs.modal', function() {
+            if (cropper) {
+                cropper.destroy();
+            }
+            cropper = new Cropper(cropImage, {
+                aspectRatio: 1,
+                viewMode: 1,
+                autoCropArea: 0.8,
+                responsive: true,
+                background: false
+            });
+        });
+
+        // Handle crop confirmation
+        document.getElementById('cropConfirm').onclick = function() {
+            if (cropper) {
+                const canvas = cropper.getCroppedCanvas({
+                    width: 400,
+                    height: 400
+                });
+                
+                // Update the preview image
+                const previewItems = document.querySelectorAll('#imagePreviewContainer img');
+                if (previewItems[index]) {
+                    previewItems[index].src = canvas.toDataURL();
+                }
+                
+                modal.hide();
+                showToast('Image cropped successfully', 'success');
+            }
+        };
+    }
+
+    // Utility function for showing toast notifications
+    function showToast(message, type = 'success') {
+        // This function should be defined in your footer.ejs
+        if (typeof window.showToast === 'function') {
+            window.showToast(message, type);
+        } else {
+            alert(message);
+        }
+    }
+</script>
+
+<%- include('./partials/footer') %>

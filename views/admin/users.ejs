@@ -1,88 +1,560 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>User List - FitVibe</title>
-    <link rel="stylesheet" href="/css/style.css">
-</head>
-<body>
-    <%- include('partials/sidePartial', { page: 'users' }) %>
+<%- include('./partials/header', { pageTitle: 'Customer Management' }) %>
 
-    <div class="main-content">
-        <header>
-            <h1>Customers</h1>
-        </header>
+<%- include('./partials/sidebar', { page: 'users' }) %>
 
-        <div class="filters">
-            <input type="text" id="search" placeholder="Search users..." value="<%= search %>">
-            <button onclick="searchUsers()">Search</button>
+<div class="main-content">
+    <!-- Top Header -->
+    <header class="top-header">
+        <div class="header-content">
+            <div class="header-left">
+                <button class="sidebar-toggle" onclick="toggleSidebar()">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <div>
+                    <h1 class="page-title">Customer Management</h1>
+                    <div class="breadcrumbs">
+                        <a href="/admin/dashboard">Dashboard</a>
+                        <span class="breadcrumb-separator">/</span>
+                        <span>Customers</span>
+                    </div>
+                </div>
+            </div>
+            <div class="header-right">
+                <div class="admin-profile">
+                    <div class="admin-avatar">
+                        A
+                    </div>
+                    <div class="admin-info">
+                        <div class="admin-name">Admin</div>
+                        <div class="admin-role">Administrator</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Content Area -->
+    <div class="content-area">
+        <!-- Search and Stats -->
+        <div class="row g-4 mb-4">
+            <!-- Search Bar -->
+            <div class="col-lg-8">
+                <div class="card-modern no-hover">
+                    <div class="card-body-modern">
+                        <div class="d-flex gap-3">
+                            <div class="position-relative flex-grow-1">
+                                <input type="text" 
+                                       id="search" 
+                                       class="form-control form-control-modern ps-5" 
+                                       placeholder="Search customers by name, email, or phone..." 
+                                       value="<%= search || '' %>">
+                                <i class="fas fa-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted-modern"></i>
+                            </div>
+                            <button onclick="searchUsers()" class="btn btn-primary-modern">
+                                <i class="fas fa-search me-2"></i>Search
+                            </button>
+                            <a href="/admin/users" class="btn btn-outline-modern">
+                                <i class="fas fa-times me-2"></i>Clear
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Customer Stats -->
+            <div class="col-lg-4">
+                <div class="stats-card-customers">
+                    <div class="stats-icon-customers">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="stats-content-customers">
+                        <div class="stats-number-customers"><%= users.length %></div>
+                        <div class="stats-label-customers">Total Customers</div>
+                        <div class="stats-detail-customers">
+                            Active: <%= users.filter(u => !u.isBlocked).length %> | 
+                            Blocked: <%= users.filter(u => u.isBlocked).length %>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <table>
-            <thead>
-                <tr>
-                    <th>User ID</th>
-                    <th>Name</th>
-                    <th>Email</th>
-                    <th>Phone</th>
-                    <th>Status</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
-            <tbody>
-                <% users.forEach(user => { %>
-                <tr>
-                    <td>#<%= user._id %></td>
-                    <td><%= user.name %></td>
-                    <td><%= user.email %></td>
-                    <td><%= user.phone %></td>
-                    <td><%= user.isBlocked ? 'Blocked' : 'Active' %></td>
-                    <td>
-                        <button 
-                            class="action-btn <%= user.isBlocked ? 'unblock-btn' : 'block-btn' %>" 
-                            onclick="toggleBlock('<%= user._id %>')"
-                        >
-                            <%= user.isBlocked ? 'Unblock' : 'Block' %>
-                        </button>
-                    </td>
-                </tr>
-                <% }) %>
-            </tbody>
-        </table>
+        <!-- Customers Table -->
+        <% if (users && users.length > 0) { %>
+            <div class="table-modern">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th>Customer ID</th>
+                            <th>Customer Details</th>
+                            <th>Contact Information</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% users.forEach((user, index) => { %>
+                            <tr>
+                                <td>
+                                    <div class="customer-id">#<%= user._id.toString().slice(-8).toUpperCase() %></div>
+                                </td>
+                                <td>
+                                    <div class="d-flex align-items-center gap-3">
+                                        <div class="customer-avatar">
+                                            <%= user.name.charAt(0).toUpperCase() %>
+                                        </div>
+                                        <div class="customer-details">
+                                            <div class="customer-name"><%= user.name %></div>
+                                            <div class="customer-joined">
+                                                Joined <%= new Date(user.createdAt || Date.now()).toLocaleDateString('en-IN', { 
+                                                    year: 'numeric', 
+                                                    month: 'short', 
+                                                    day: 'numeric' 
+                                                }) %>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="contact-info">
+                                        <div class="customer-email">
+                                            <i class="fas fa-envelope me-2"></i>
+                                            <%= user.email %>
+                                        </div>
+                                        <div class="customer-phone">
+                                            <i class="fas fa-phone me-2"></i>
+                                            <%= user.phone || 'N/A' %>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="status-badge status-<%= user.isBlocked ? 'blocked' : 'active' %>">
+                                        <i class="fas fa-circle"></i>
+                                        <%= user.isBlocked ? 'Blocked' : 'Active' %>
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <button class="btn btn-sm <%= user.isBlocked ? 'btn-success-modern' : 'btn-warning-modern' %>"
+                                                onclick="toggleBlock('<%= user._id %>')"
+                                                data-bs-toggle="tooltip" 
+                                                title="<%= user.isBlocked ? 'Unblock Customer' : 'Block Customer' %>">
+                                            <i class="fas <%= user.isBlocked ? 'fa-unlock' : 'fa-lock' %>"></i>
+                                            <%= user.isBlocked ? 'Unblock' : 'Block' %>
+                                        </button>
+                                        
+                                        <button class="btn btn-sm btn-outline-modern"
+                                                onclick="viewCustomerDetails('<%= user._id %>')"
+                                                data-bs-toggle="tooltip" 
+                                                title="View Customer Details">
+                                            <i class="fas fa-eye"></i>
+                                            View
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        <% }) %>
+                    </tbody>
+                </table>
+            </div>
 
-        <div class="pagination">
-            <% for (let i = 1; i <= totalPages; i++) { %>
-                <a href="/admin/users?page=<%= i %>&search=<%= search %>" class="<%= page === i ? 'active' : '' %>"><%= i %></a>
+            <!-- Pagination -->
+            <% if (totalPages > 1) { %>
+                <div class="d-flex justify-content-center mt-4">
+                    <nav aria-label="Customers pagination">
+                        <ul class="pagination pagination-modern">
+                            <% if (page > 1) { %>
+                                <li class="page-item">
+                                    <a class="page-link" href="/admin/users?page=<%= page - 1 %>&search=<%= search || '' %>">
+                                        <i class="fas fa-chevron-left"></i>
+                                    </a>
+                                </li>
+                            <% } %>
+
+                            <% for (let i = 1; i <= totalPages; i++) { %>
+                                <li class="page-item <%= i === page ? 'active' : '' %>">
+                                    <a class="page-link" href="/admin/users?page=<%= i %>&search=<%= search || '' %>">
+                                        <%= i %>
+                                    </a>
+                                </li>
+                            <% } %>
+
+                            <% if (page < totalPages) { %>
+                                <li class="page-item">
+                                    <a class="page-link" href="/admin/users?page=<%= page + 1 %>&search=<%= search || '' %>">
+                                        <i class="fas fa-chevron-right"></i>
+                                    </a>
+                                </li>
+                            <% } %>
+                        </ul>
+                    </nav>
+                </div>
             <% } %>
+        <% } else { %>
+            <!-- Empty State -->
+            <div class="card-modern text-center py-5 no-hover">
+                <div class="card-body-modern">
+                    <div class="empty-state">
+                        <i class="fas fa-users text-muted-modern mb-3 empty-icon"></i>
+                        <h5 class="text-muted-modern mb-2">No Customers Found</h5>
+                        <p class="text-muted-modern mb-0">
+                            <% if (search) { %>
+                                No customers match your search criteria. Try adjusting your search terms.
+                            <% } else { %>
+                                No customers have registered yet.
+                            <% } %>
+                        </p>
+                        <% if (search) { %>
+                            <a href="/admin/users" class="btn btn-outline-modern mt-3">
+                                <i class="fas fa-times me-2"></i>Clear Search
+                            </a>
+                        <% } %>
+                    </div>
+                </div>
+            </div>
+        <% } %>
+    </div>
+</div>
+
+<!-- Customer Details Modal -->
+<div class="modal fade" id="customerDetailsModal" tabindex="-1" aria-labelledby="customerDetailsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content modal-modern">
+            <div class="modal-header modal-header-modern">
+                <h5 class="modal-title fw-semibold" id="customerDetailsModalLabel">
+                    <i class="fas fa-user me-2"></i>Customer Details
+                </h5>
+                <button type="button" class="btn-close btn-close-modern" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body modal-body-modern">
+                <div id="customerDetailsContent">
+                    <!-- Customer details will be loaded here -->
+                </div>
+            </div>
+            <div class="modal-footer modal-footer-modern">
+                <button type="button" class="btn btn-outline-modern" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-2"></i>Close
+                </button>
+            </div>
         </div>
     </div>
+</div>
 
-    <script>
-        function searchUsers() {
-            const search = document.getElementById('search').value;
-            window.location.href = `/admin/users?search=${search}`;
+<style>
+    /* Customer Management Specific Monochrome Styles */
+    .stats-card-customers {
+        background: var(--bg-primary);
+        border: 1px solid var(--border-light);
+        border-radius: var(--radius-xl);
+        padding: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        transition: all var(--transition-normal);
+        box-shadow: var(--shadow-sm);
+        height: 100%;
+    }
+
+    .stats-card-customers:hover {
+        box-shadow: var(--shadow-md);
+        transform: translateY(-1px);
+    }
+
+    .stats-icon-customers {
+        width: 60px;
+        height: 60px;
+        border-radius: var(--radius-lg);
+        background: var(--bg-dark);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        color: var(--text-light);
+    }
+
+    .stats-content-customers {
+        flex: 1;
+    }
+
+    .stats-number-customers {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        line-height: 1.2;
+        font-family: 'Courier New', monospace;
+    }
+
+    .stats-label-customers {
+        font-size: 0.875rem;
+        color: var(--text-secondary);
+        margin-bottom: 0.25rem;
+    }
+
+    .stats-detail-customers {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+    }
+
+    .customer-id {
+        font-family: 'Courier New', monospace;
+        font-weight: 600;
+        color: var(--text-primary);
+        font-size: 0.875rem;
+    }
+
+    .customer-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: var(--bg-dark);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--text-light);
+        font-weight: 600;
+        font-size: 1rem;
+    }
+
+    .customer-details {
+        flex: 1;
+    }
+
+    .customer-name {
+        font-weight: 500;
+        color: var(--text-primary);
+        font-size: 0.875rem;
+        line-height: 1.3;
+        margin-bottom: 0.125rem;
+    }
+
+    .customer-joined {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+    }
+
+    .contact-info {
+        display: flex;
+        flex-direction: column;
+        gap: 0.375rem;
+    }
+
+    .customer-email,
+    .customer-phone {
+        font-size: 0.875rem;
+        color: var(--text-secondary);
+        display: flex;
+        align-items: center;
+    }
+
+    .customer-email i,
+    .customer-phone i {
+        color: var(--text-muted);
+        font-size: 0.75rem;
+    }
+
+    .status-blocked {
+        background: var(--color-grey-600);
+        color: var(--text-light);
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 0.375rem;
+        flex-wrap: wrap;
+    }
+
+    .action-buttons .btn {
+        padding: 0.375rem 0.75rem;
+        border-radius: var(--radius-md);
+        transition: all var(--transition-normal);
+        font-size: 0.75rem;
+    }
+
+    .action-buttons .btn:hover {
+        transform: translateY(-1px);
+        box-shadow: var(--shadow-sm);
+    }
+
+    .empty-state {
+        padding: 3rem 1rem;
+    }
+
+    .empty-icon {
+        font-size: 4rem;
+    }
+
+    /* Modal Styles */
+    .modal-modern {
+        border: none;
+        border-radius: var(--radius-xl);
+        box-shadow: var(--shadow-xl);
+        background: var(--bg-primary);
+    }
+
+    .modal-header-modern {
+        background: var(--bg-tertiary);
+        border-bottom: 1px solid var(--border-light);
+        border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+        color: var(--text-primary);
+    }
+
+    .modal-body-modern {
+        background: var(--bg-primary);
+        color: var(--text-primary);
+    }
+
+    .modal-footer-modern {
+        background: var(--bg-tertiary);
+        border-top: 1px solid var(--border-light);
+        border-radius: 0 0 var(--radius-xl) var(--radius-xl);
+    }
+
+    .btn-close-modern {
+        filter: none;
+        background: none;
+        border: none;
+        opacity: 0.6;
+    }
+
+    .btn-close-modern:hover {
+        opacity: 1;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        .action-buttons {
+            flex-direction: column;
+            gap: 0.25rem;
         }
 
-        async function toggleBlock(userId) {
-            try {
-                const response = await fetch(`/admin/block-user/${userId}`, {
-                    method: 'PATCH',
-                    headers: { 'Content-Type': 'application/json' }
-                });
-                const result = await response.json();
-                if (result.success) {
-                    alert(result.message);
-                    window.location.reload();
-                } else {
- 
+        .action-buttons .btn {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.7rem;
+        }
 
-System: alert(result.message || 'Failed to toggle user status');
-                }
-            } catch (error) {
-                alert('Error toggling user status');
+        .customer-avatar {
+            width: 32px;
+            height: 32px;
+            font-size: 0.875rem;
+        }
+
+        .contact-info {
+            gap: 0.25rem;
+        }
+
+        .customer-email,
+        .customer-phone {
+            font-size: 0.8rem;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .table-modern {
+            font-size: 0.8rem;
+        }
+
+        .stats-card-customers {
+            flex-direction: column;
+            text-align: center;
+            gap: 0.75rem;
+        }
+
+        .stats-content-customers {
+            text-align: center;
+        }
+    }
+</style>
+
+<script>
+    function searchUsers() {
+        const search = document.getElementById('search').value;
+        window.location.href = `/admin/users?search=${encodeURIComponent(search)}`;
+    }
+
+    // Allow Enter key to trigger search
+    document.getElementById('search').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            searchUsers();
+        }
+    });
+
+    async function toggleBlock(userId) {
+        try {
+            const result = await Swal.fire({
+                title: 'Confirm Action',
+                text: 'Are you sure you want to change this customer\'s status?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#171717',
+                cancelButtonColor: '#525252',
+                confirmButtonText: 'Yes, proceed!',
+                background: '#ffffff',
+                color: '#171717'
+            });
+
+            if (!result.isConfirmed) {
+                return;
             }
+
+            const response = await fetch(`/admin/block-user/${userId}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' }
+            });
+            
+            const responseData = await response.json();
+            
+            if (responseData.success) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Success',
+                    text: responseData.message,
+                    background: '#ffffff',
+                    color: '#171717',
+                    confirmButtonColor: '#171717'
+                }).then(() => {
+                    window.location.reload();
+                });
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: responseData.message || 'Failed to toggle user status',
+                    background: '#ffffff',
+                    color: '#171717',
+                    confirmButtonColor: '#525252'
+                });
+            }
+        } catch (error) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Error toggling user status',
+                background: '#ffffff',
+                color: '#171717',
+                confirmButtonColor: '#525252'
+            });
         }
-    </script>
-</body>
-</html>
+    }
+
+    function viewCustomerDetails(userId) {
+        // This is a placeholder function - you can implement customer details view
+        Swal.fire({
+            icon: 'info',
+            title: 'Customer Details',
+            text: 'Customer details view functionality can be implemented here.',
+            background: '#ffffff',
+            color: '#171717',
+            confirmButtonColor: '#171717'
+        });
+    }
+
+    // Initialize tooltips
+    document.addEventListener('DOMContentLoaded', function() {
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+    });
+</script>
+
+<%- include('./partials/footer') %>

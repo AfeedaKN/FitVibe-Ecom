@@ -1,115 +1,324 @@
-<footer>
-    <p>© 2025 FitVibe. All rights reserved.</p>
-    <div class="footer-links">
-        <a href="/about">About Us</a>
-        <a href="/contact">Contact</a>
-        <a href="/privacy">Privacy Policy</a>
-        <a href="/terms">Terms of Service</a>
-    </div>
-    <div class="social-icons">
-        <a href="#">Facebook</a>
-        <a href="#">Instagram</a>
-        <a href="#">Twitter</a>
-    </div>
-</footer>
+        </div> <!-- End main-content -->
+    </div> <!-- End admin-layout -->
 
-<style>
-    footer {
-        background-color: #2c3e50;
-        color: #ecf0f1;
-        padding: 20px;
-        text-align: center;
-        position: relative;
-        margin-left: 250px;
-        width: calc(100% - 250px);
-        margin-top: 20px;
-    }
-    .footer-links a {
-        color: #ecf0f1;
-        margin: 0 10px;
-        text-decoration: none;
-        font-size: 0.9rem;
-    }
-    .footer-links a:hover {
-        text-decoration: underline;
-    }
-    .social-icons {
-        margin-top: 10px;
-    }
-    .social-icons a {
-        color: #ecf0f1;
-        margin: 0 10px;
-        text-decoration: none;
-        font-size: 0.9rem;
-    }
-    .social-icons a:hover {
-        text-decoration: underline;
-    }
-    @media (max-width: 768px) {
-        footer {
-            margin-left: 0;
-            width: 100%;
-        }
-        .footer-links a, .social-icons a {
-            font-size: 0.8rem;
-            margin: 0 5px;
-        }
-    }
-</style><footer>
-    <p>© 2025 FitVibe. All rights reserved.</p>
-    <div class="footer-links">
-        <a href="/about">About Us</a>
-        <a href="/contact">Contact</a>
-        <a href="/privacy">Privacy Policy</a>
-        <a href="/terms">Terms of Service</a>
-    </div>
-    <div class="social-icons">
-        <a href="#">Facebook</a>
-        <a href="#">Instagram</a>
-        <a href="#">Twitter</a>
-    </div>
-</footer>
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Common Admin Scripts -->
+    <script>
+        // Global Admin Functions
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize tooltips
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
 
-<style>
-    footer {
-        background-color: #2c3e50;
-        color: #ecf0f1;
-        padding: 20px;
-        text-align: center;
-        position: relative;
-        margin-left: 250px;
-        width: calc(100% - 250px);
-        margin-top: 20px;
-    }
-    .footer-links a {
-        color: #ecf0f1;
-        margin: 0 10px;
-        text-decoration: none;
-        font-size: 0.9rem;
-    }
-    .footer-links a:hover {
-        text-decoration: underline;
-    }
-    .social-icons {
-        margin-top: 10px;
-    }
-    .social-icons a {
-        color: #ecf0f1;
-        margin: 0 10px;
-        text-decoration: none;
-        font-size: 0.9rem;
-    }
-    .social-icons a:hover {
-        text-decoration: underline;
-    }
-    @media (max-width: 768px) {
-        footer {
-            margin-left: 0;
-            width: 100%;
+            // Initialize popovers
+            var popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'));
+            var popoverList = popoverTriggerList.map(function (popoverTriggerEl) {
+                return new bootstrap.Popover(popoverTriggerEl);
+            });
+
+            // Sidebar toggle for mobile
+            const sidebarToggle = document.querySelector('.sidebar-toggle');
+            if (sidebarToggle) {
+                sidebarToggle.addEventListener('click', toggleSidebar);
+            }
+
+            // Auto-hide alerts after 5 seconds
+            const alerts = document.querySelectorAll('.alert');
+            alerts.forEach(alert => {
+                if (!alert.classList.contains('alert-permanent')) {
+                    setTimeout(() => {
+                        const bsAlert = new bootstrap.Alert(alert);
+                        bsAlert.close();
+                    }, 5000);
+                }
+            });
+
+            // Form validation enhancement
+            const forms = document.querySelectorAll('.needs-validation');
+            forms.forEach(form => {
+                form.addEventListener('submit', function(event) {
+                    if (!form.checkValidity()) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                    }
+                    form.classList.add('was-validated');
+                });
+            });
+
+            // Search input enhancement
+            const searchInputs = document.querySelectorAll('input[type="search"], .search-input');
+            searchInputs.forEach(input => {
+                const clearBtn = input.parentElement.querySelector('.search-clear');
+                if (clearBtn) {
+                    clearBtn.addEventListener('click', () => {
+                        input.value = '';
+                        input.focus();
+                        // Trigger search if it's a live search
+                        if (input.dataset.liveSearch) {
+                            input.dispatchEvent(new Event('input'));
+                        }
+                    });
+                }
+            });
+
+            // Table row click enhancement
+            const clickableRows = document.querySelectorAll('.table-row-clickable');
+            clickableRows.forEach(row => {
+                row.addEventListener('click', function(e) {
+                    if (e.target.tagName !== 'BUTTON' && e.target.tagName !== 'A' && !e.target.closest('button') && !e.target.closest('a')) {
+                        const link = row.dataset.href;
+                        if (link) {
+                            window.location.href = link;
+                        }
+                    }
+                });
+            });
+
+            // Add hover effects to cards
+            const cards = document.querySelectorAll('.card-modern');
+            cards.forEach(card => {
+                if (!card.classList.contains('no-hover')) {
+                    card.classList.add('hover-lift');
+                }
+            });
+        });
+
+        // Utility Functions
+        function showToast(message, type = 'success') {
+            const toastContainer = document.getElementById('toastContainer') || createToastContainer();
+            const toast = createToast(message, type);
+            toastContainer.appendChild(toast);
+            
+            const bsToast = new bootstrap.Toast(toast);
+            bsToast.show();
+            
+            toast.addEventListener('hidden.bs.toast', () => {
+                toast.remove();
+            });
         }
-        .footer-links a, .social-icons a {
-            font-size: 0.8rem;
-            margin: 0 5px;
+
+        function createToastContainer() {
+            const container = document.createElement('div');
+            container.id = 'toastContainer';
+            container.className = 'toast-container position-fixed top-0 end-0 p-3';
+            container.style.zIndex = '1055';
+            document.body.appendChild(container);
+            return container;
         }
-    }
-</style>
+
+        function createToast(message, type) {
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.setAttribute('role', 'alert');
+            toast.setAttribute('aria-live', 'assertive');
+            toast.setAttribute('aria-atomic', 'true');
+            
+            const iconMap = {
+                success: 'fas fa-check-circle',
+                error: 'fas fa-exclamation-circle',
+                warning: 'fas fa-exclamation-triangle',
+                info: 'fas fa-info-circle'
+            };
+            
+            const colorMap = {
+                success: 'var(--color-grey-800)',
+                error: 'var(--color-grey-600)',
+                warning: 'var(--color-grey-700)',
+                info: 'var(--color-grey-500)'
+            };
+            
+            toast.innerHTML = `
+                <div class="toast-header" style="background: var(--bg-primary); border-bottom: 1px solid var(--border-light);">
+                    <i class="${iconMap[type] || iconMap.info} me-2" style="color: ${colorMap[type] || colorMap.info};"></i>
+                    <strong class="me-auto" style="color: var(--text-primary);">${type.charAt(0).toUpperCase() + type.slice(1)}</strong>
+                    <button type="button" class="btn-close" data-bs-dismiss="toast" style="filter: invert(1);"></button>
+                </div>
+                <div class="toast-body" style="background: var(--bg-primary); color: var(--text-primary);">
+                    ${message}
+                </div>
+            `;
+            
+            toast.style.background = 'var(--bg-primary)';
+            toast.style.border = '1px solid var(--border-light)';
+            toast.style.borderRadius = 'var(--radius-lg)';
+            toast.style.boxShadow = 'var(--shadow-lg)';
+            
+            return toast;
+        }
+
+        function confirmAction(message, callback, options = {}) {
+            const defaultOptions = {
+                title: 'Confirm Action',
+                confirmText: 'Confirm',
+                cancelText: 'Cancel',
+                type: 'warning'
+            };
+            
+            const config = { ...defaultOptions, ...options };
+            
+            Swal.fire({
+                title: config.title,
+                text: message,
+                icon: config.type,
+                showCancelButton: true,
+                confirmButtonColor: config.type === 'danger' ? '#525252' : '#171717',
+                cancelButtonColor: '#a3a3a3',
+                confirmButtonText: config.confirmText,
+                cancelButtonText: config.cancelText,
+                reverseButtons: true,
+                background: '#ffffff',
+                color: '#171717',
+                customClass: {
+                    popup: 'rounded-modern',
+                    confirmButton: 'btn-modern',
+                    cancelButton: 'btn-modern'
+                }
+            }).then((result) => {
+                if (result.isConfirmed && callback) {
+                    callback();
+                }
+            });
+        }
+
+        function showLoading(element, text = 'Loading...') {
+            const originalContent = element.innerHTML;
+            element.innerHTML = `
+                <span class="loading-spinner me-2" role="status" aria-hidden="true"></span>
+                ${text}
+            `;
+            element.disabled = true;
+            
+            return function hideLoading() {
+                element.innerHTML = originalContent;
+                element.disabled = false;
+            };
+        }
+
+        // Format currency
+        function formatCurrency(amount, currency = '₹') {
+            return currency + parseFloat(amount).toFixed(2);
+        }
+
+        // Format date
+        function formatDate(date, options = {}) {
+            const defaultOptions = {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+            };
+            
+            return new Date(date).toLocaleDateString('en-IN', { ...defaultOptions, ...options });
+        }
+
+        // Debounce function for search inputs
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+
+        // Theme utilities for monochrome design
+        function addMonochromeClasses() {
+            // Add monochrome classes to Bootstrap components
+            const buttons = document.querySelectorAll('.btn:not(.btn-modern):not(.btn-primary-modern):not(.btn-outline-modern):not(.btn-ghost-modern):not(.btn-white-modern)');
+            buttons.forEach(btn => {
+                if (btn.classList.contains('btn-primary')) {
+                    btn.classList.remove('btn-primary');
+                    btn.classList.add('btn-primary-modern');
+                } else if (btn.classList.contains('btn-outline-primary')) {
+                    btn.classList.remove('btn-outline-primary');
+                    btn.classList.add('btn-outline-modern');
+                } else if (btn.classList.contains('btn-secondary')) {
+                    btn.classList.remove('btn-secondary');
+                    btn.classList.add('btn-white-modern');
+                }
+            });
+
+            // Update form controls
+            const formControls = document.querySelectorAll('.form-control:not(.form-control-modern)');
+            formControls.forEach(control => {
+                control.classList.add('form-control-modern');
+            });
+
+            const formSelects = document.querySelectorAll('.form-select:not(.form-select-modern)');
+            formSelects.forEach(select => {
+                select.classList.add('form-select-modern');
+            });
+
+            // Update cards
+            const cards = document.querySelectorAll('.card:not(.card-modern)');
+            cards.forEach(card => {
+                card.classList.add('card-modern');
+            });
+
+            // Update alerts
+            const alerts = document.querySelectorAll('.alert');
+            alerts.forEach(alert => {
+                if (alert.classList.contains('alert-success')) {
+                    alert.classList.add('alert-success-modern');
+                } else if (alert.classList.contains('alert-danger')) {
+                    alert.classList.add('alert-danger-modern');
+                } else if (alert.classList.contains('alert-warning')) {
+                    alert.classList.add('alert-warning-modern');
+                } else if (alert.classList.contains('alert-info')) {
+                    alert.classList.add('alert-info-modern');
+                }
+                alert.classList.add('alert-modern');
+            });
+        }
+
+        // Apply monochrome theme on load
+        document.addEventListener('DOMContentLoaded', function() {
+            addMonochromeClasses();
+        });
+
+        // Accessibility improvements
+        function enhanceAccessibility() {
+            // Add focus rings to interactive elements
+            const interactiveElements = document.querySelectorAll('button, a, input, select, textarea');
+            interactiveElements.forEach(element => {
+                element.classList.add('focus-ring');
+            });
+
+            // Add ARIA labels where missing
+            const buttons = document.querySelectorAll('button:not([aria-label]):not([aria-labelledby])');
+            buttons.forEach(button => {
+                const icon = button.querySelector('i');
+                if (icon && !button.textContent.trim()) {
+                    const iconClass = icon.className;
+                    if (iconClass.includes('fa-edit')) {
+                        button.setAttribute('aria-label', 'Edit');
+                    } else if (iconClass.includes('fa-trash')) {
+                        button.setAttribute('aria-label', 'Delete');
+                    } else if (iconClass.includes('fa-eye')) {
+                        button.setAttribute('aria-label', 'View');
+                    } else if (iconClass.includes('fa-plus')) {
+                        button.setAttribute('aria-label', 'Add');
+                    }
+                }
+            });
+        }
+
+        // Apply accessibility enhancements
+        document.addEventListener('DOMContentLoaded', function() {
+            enhanceAccessibility();
+        });
+    </script>
+
+    <!-- Custom Page Scripts -->
+    <% if (typeof pageScripts !== 'undefined' && pageScripts) { %>
+        <%- pageScripts %>
+    <% } %>
+
+</body>
+</html>

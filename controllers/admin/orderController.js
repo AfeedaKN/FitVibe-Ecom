@@ -7,7 +7,7 @@ const Wallet = require("../../models/walletShema");
 const loadOrders = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
-    const limit = 10;
+    const limit = 5;
     const skip = (page - 1) * limit;
 
     const totalOrders = await Order.countDocuments();

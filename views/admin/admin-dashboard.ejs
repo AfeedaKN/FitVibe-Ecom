@@ -1,102 +1,725 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard</title>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <style>
-        .sidebar {
-            transition: transform 0.3s ease-in-out;
-        }
-        .abc{
-            padding-left: 260px;
-        }
-        @media (max-width: 768px) {
-            .sidebar {
-                transform: translateX(-100%);
-            }
-            .sidebar.open {
-                transform: translateX(0);
-            }
-        }
-    </style>
-</head>
-<body class="bg-gray-100 font-sans abc">
-    <!-- Header Partial -->
+<%- include('./partials/header', { pageTitle: 'Dashboard' }) %>
 
-    <div class="flex h-screen">
-    <%- include('./partials/sidebar', { page: 'dashboard' }) %>
+<%- include('./partials/sidebar', { page: 'dashboard' }) %>
 
-        <!-- Main Content -->
-        <main class="flex-1 p-6 overflow-y-auto">
-            <div class="flex justify-between items-center mb-6">
-                <h1 class="text-2xl font-bold text-gray-800">Admin Dashboard</h1>
-                <button id="sidebarToggle" class="md:hidden text-gray-800 focus:outline-none">
-                    <i class="fas fa-bars text-xl"></i>
+<div class="main-content">
+    <!-- Top Header -->
+    <header class="top-header">
+        <div class="header-content">
+            <div class="header-left">
+                <button class="sidebar-toggle" onclick="toggleSidebar()">
+                    <i class="fas fa-bars"></i>
                 </button>
-            </div>
-
-            <!-- Dashboard Widgets -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                <!-- Widget 1: Users -->
-                <div class="bg-white p-6 rounded-lg shadow-md">
-                    <h2 class="text-lg font-semibold text-gray-700">Total Users</h2>
-                    <p class="text-3xl font-bold text-blue-600">1,234</p>
-                    <p class="text-sm text-gray-500">+5% from last month</p>
-                </div>
-
-                <!-- Widget 2: Revenue -->
-                <div class="bg-white p-6 rounded-lg shadow-md">
-                    <h2 class="text-lg font-semibold text-gray-700">Revenue</h2>
-                    <p class="text-3xl font-bold text-green-600">$12,345</p>
-                    <p class="text-sm text-gray-500">+10% from last month</p>
-                </div>
-
-                <!-- Widget 3: Orders -->
-                <div class="bg-white p-6 rounded-lg shadow-md">
-                    <h2 class="text-lg font-semibold text-gray-700">Orders</h2>
-                    <p class="text-3xl font-bold text-purple-600">567</p>
-                    <p class="text-sm text-gray-500">+3% from last month</p>
+                <div>
+                    <h1 class="page-title">Dashboard</h1>
+                    <div class="breadcrumbs">
+                        <span>Overview</span>
+                    </div>
                 </div>
             </div>
-
-            <!-- Recent Activity Table -->
-            <div class="mt-8 bg-white p-6 rounded-lg shadow-md">
-                <h2 class="text-lg font-semibold text-gray-700 mb-4">Recent Activity</h2>
-                <table class="w-full text-left">
-                    <thead>
-                        <tr class="text-gray-600">
-                            <th class="p-3">User</th>
-                            <th class="p-3">Action</th>
-                            <th class="p-3">Date</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr class="border-t">
-                            <td class="p-3">John Doe</td>
-                            <td class="p-3">Updated Profile</td>
-                            <td class="p-3">2025-07-08</td>
-                        </tr>
-                        <tr class="border-t">
-                            <td class="p-3">Jane Smith</td>
-                            <td class="p-3">Placed Order</td>
-                            <td class="p-3">2025-07-07</td>
-                        </tr>
-                    </tbody>
-                </table>
+            <div class="header-right">
+                <div class="admin-profile">
+                    <div class="admin-avatar">
+                        A
+                    </div>
+                    <div class="admin-info">
+                        <div class="admin-name">Admin</div>
+                        <div class="admin-role">Administrator</div>
+                    </div>
+                </div>
             </div>
-        </main>
+        </div>
+    </header>
+
+    <!-- Content Area -->
+    <div class="content-area">
+        <!-- Stats Cards -->
+        <div class="row g-4 mb-4">
+            <div class="col-xl-3 col-md-6">
+                <div class="stats-card">
+                    <div class="stats-icon stats-icon-primary">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="stats-content">
+                        <div class="stats-number">1,234</div>
+                        <div class="stats-label">Total Customers</div>
+                        <div class="stats-change stats-change-positive">
+                            <i class="fas fa-arrow-up"></i>
+                            <span>+5.2% from last month</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-3 col-md-6">
+                <div class="stats-card">
+                    <div class="stats-icon stats-icon-success">
+                        <i class="fas fa-rupee-sign"></i>
+                    </div>
+                    <div class="stats-content">
+                        <div class="stats-number">₹2,45,678</div>
+                        <div class="stats-label">Total Revenue</div>
+                        <div class="stats-change stats-change-positive">
+                            <i class="fas fa-arrow-up"></i>
+                            <span>+12.5% from last month</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-3 col-md-6">
+                <div class="stats-card">
+                    <div class="stats-icon stats-icon-warning">
+                        <i class="fas fa-shopping-cart"></i>
+                    </div>
+                    <div class="stats-content">
+                        <div class="stats-number">567</div>
+                        <div class="stats-label">Total Orders</div>
+                        <div class="stats-change stats-change-positive">
+                            <i class="fas fa-arrow-up"></i>
+                            <span>+8.1% from last month</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-3 col-md-6">
+                <div class="stats-card">
+                    <div class="stats-icon stats-icon-info">
+                        <i class="fas fa-box"></i>
+                    </div>
+                    <div class="stats-content">
+                        <div class="stats-number">89</div>
+                        <div class="stats-label">Total Products</div>
+                        <div class="stats-change stats-change-negative">
+                            <i class="fas fa-arrow-down"></i>
+                            <span>-2.3% from last month</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts and Tables Row -->
+        <div class="row g-4 mb-4">
+            <!-- Sales Chart -->
+            <div class="col-xl-8">
+                <div class="card-modern no-hover">
+                    <div class="card-header-modern">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h5 class="card-title mb-0">Sales Overview</h5>
+                            <div class="dropdown">
+                                <button class="btn btn-ghost-modern btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                    Last 7 days
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-modern">
+                                    <li><a class="dropdown-item" href="#">Last 7 days</a></li>
+                                    <li><a class="dropdown-item" href="#">Last 30 days</a></li>
+                                    <li><a class="dropdown-item" href="#">Last 3 months</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body-modern">
+                        <div class="chart-container">
+                            <canvas id="salesChart" height="300"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Order Status Distribution -->
+            <div class="col-xl-4">
+                <div class="card-modern no-hover">
+                    <div class="card-header-modern">
+                        <h5 class="card-title mb-0">Order Status</h5>
+                    </div>
+                    <div class="card-body-modern">
+                        <div class="order-status-list">
+                            <div class="status-item">
+                                <div class="status-info">
+                                    <span class="status-badge status-pending">
+                                        <i class="fas fa-circle"></i>
+                                        Pending
+                                    </span>
+                                    <span class="status-count">24</span>
+                                </div>
+                                <div class="status-progress">
+                                    <div class="progress progress-modern">
+                                        <div class="progress-bar progress-bar-modern" style="width: 30%"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="status-item">
+                                <div class="status-info">
+                                    <span class="status-badge status-processing">
+                                        <i class="fas fa-circle"></i>
+                                        Processing
+                                    </span>
+                                    <span class="status-count">18</span>
+                                </div>
+                                <div class="status-progress">
+                                    <div class="progress progress-modern">
+                                        <div class="progress-bar progress-bar-modern" style="width: 22%"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="status-item">
+                                <div class="status-info">
+                                    <span class="status-badge status-shipped">
+                                        <i class="fas fa-circle"></i>
+                                        Shipped
+                                    </span>
+                                    <span class="status-count">32</span>
+                                </div>
+                                <div class="status-progress">
+                                    <div class="progress progress-modern">
+                                        <div class="progress-bar progress-bar-modern" style="width: 40%"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="status-item">
+                                <div class="status-info">
+                                    <span class="status-badge status-delivered">
+                                        <i class="fas fa-circle"></i>
+                                        Delivered
+                                    </span>
+                                    <span class="status-count">156</span>
+                                </div>
+                                <div class="status-progress">
+                                    <div class="progress progress-modern">
+                                        <div class="progress-bar progress-bar-modern" style="width: 85%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Activity and Top Products -->
+        <div class="row g-4">
+            <!-- Recent Orders -->
+            <div class="col-xl-8">
+                <div class="card-modern no-hover">
+                    <div class="card-header-modern">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h5 class="card-title mb-0">Recent Orders</h5>
+                            <a href="/admin/orders" class="btn btn-outline-modern btn-sm">
+                                View All
+                                <i class="fas fa-arrow-right ms-2"></i>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="card-body-modern p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0 table-dashboard">
+                                <thead class="table-header-modern">
+                                    <tr>
+                                        <th>Order ID</th>
+                                        <th>Customer</th>
+                                        <th>Status</th>
+                                        <th>Amount</th>
+                                        <th>Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>
+                                            <span class="fw-medium order-id-dashboard">#ORD-001</span>
+                                        </td>
+                                        <td>
+                                            <div class="d-flex align-items-center gap-2">
+                                                <div class="user-avatar-sm">J</div>
+                                                <span>John Doe</span>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="status-badge status-processing">
+                                                <i class="fas fa-circle"></i>
+                                                Processing
+                                            </span>
+                                        </td>
+                                        <td class="amount-dashboard">₹2,499</td>
+                                        <td class="text-muted-modern">2 hours ago</td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <span class="fw-medium order-id-dashboard">#ORD-002</span>
+                                        </td>
+                                        <td>
+                                            <div class="d-flex align-items-center gap-2">
+                                                <div class="user-avatar-sm">S</div>
+                                                <span>Sarah Wilson</span>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="status-badge status-shipped">
+                                                <i class="fas fa-circle"></i>
+                                                Shipped
+                                            </span>
+                                        </td>
+                                        <td class="amount-dashboard">₹1,899</td>
+                                        <td class="text-muted-modern">5 hours ago</td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <span class="fw-medium order-id-dashboard">#ORD-003</span>
+                                        </td>
+                                        <td>
+                                            <div class="d-flex align-items-center gap-2">
+                                                <div class="user-avatar-sm">M</div>
+                                                <span>Mike Johnson</span>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="status-badge status-delivered">
+                                                <i class="fas fa-circle"></i>
+                                                Delivered
+                                            </span>
+                                        </td>
+                                        <td class="amount-dashboard">₹3,299</td>
+                                        <td class="text-muted-modern">1 day ago</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Top Products -->
+            <div class="col-xl-4">
+                <div class="card-modern no-hover">
+                    <div class="card-header-modern">
+                        <h5 class="card-title mb-0">Top Products</h5>
+                    </div>
+                    <div class="card-body-modern">
+                        <div class="top-products-list">
+                            <div class="product-item">
+                                <div class="product-info">
+                                    <div class="product-image">
+                                        <i class="fas fa-dumbbell"></i>
+                                    </div>
+                                    <div class="product-details">
+                                        <div class="product-name">Premium Dumbbells</div>
+                                        <div class="product-sales">156 sold</div>
+                                    </div>
+                                </div>
+                                <div class="product-revenue">₹45,680</div>
+                            </div>
+
+                            <div class="product-item">
+                                <div class="product-info">
+                                    <div class="product-image">
+                                        <i class="fas fa-running"></i>
+                                    </div>
+                                    <div class="product-details">
+                                        <div class="product-name">Running Shoes</div>
+                                        <div class="product-sales">89 sold</div>
+                                    </div>
+                                </div>
+                                <div class="product-revenue">₹32,450</div>
+                            </div>
+
+                            <div class="product-item">
+                                <div class="product-info">
+                                    <div class="product-image">
+                                        <i class="fas fa-tshirt"></i>
+                                    </div>
+                                    <div class="product-details">
+                                        <div class="product-name">Workout T-Shirt</div>
+                                        <div class="product-sales">234 sold</div>
+                                    </div>
+                                </div>
+                                <div class="product-revenue">₹28,900</div>
+                            </div>
+
+                            <div class="product-item">
+                                <div class="product-info">
+                                    <div class="product-image">
+                                        <i class="fas fa-weight-hanging"></i>
+                                    </div>
+                                    <div class="product-details">
+                                        <div class="product-name">Resistance Bands</div>
+                                        <div class="product-sales">67 sold</div>
+                                    </div>
+                                </div>
+                                <div class="product-revenue">₹18,750</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
+</div>
 
-    <script>
-        const sidebarToggle = document.getElementById('sidebarToggle');
-        const sidebar = document.querySelector('.sidebar');
-        
-        sidebarToggle.addEventListener('click', () => {
-            sidebar.classList.toggle('open');
-        });
-    </script>
-</body>
-</html>
+<style>
+    /* Dashboard Specific Monochrome Styles */
+    .stats-card {
+        background: var(--bg-primary);
+        border: 1px solid var(--border-light);
+        border-radius: var(--radius-xl);
+        padding: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        transition: all var(--transition-normal);
+        box-shadow: var(--shadow-sm);
+    }
+
+    .stats-card:hover {
+        box-shadow: var(--shadow-md);
+        transform: translateY(-2px);
+    }
+
+    .stats-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: var(--radius-lg);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        color: var(--text-light);
+    }
+
+    .stats-icon-primary {
+        background: var(--bg-dark);
+    }
+
+    .stats-icon-success {
+        background: var(--color-grey-700);
+    }
+
+    .stats-icon-warning {
+        background: var(--color-grey-600);
+    }
+
+    .stats-icon-info {
+        background: var(--color-grey-500);
+    }
+
+    .stats-content {
+        flex: 1;
+    }
+
+    .stats-number {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        line-height: 1.2;
+        font-family: 'Courier New', monospace;
+    }
+
+    .stats-label {
+        font-size: 0.875rem;
+        color: var(--text-secondary);
+        margin-bottom: 0.25rem;
+    }
+
+    .stats-change {
+        font-size: 0.75rem;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+    .stats-change-positive {
+        color: var(--color-grey-700);
+    }
+
+    .stats-change-negative {
+        color: var(--color-grey-500);
+    }
+
+    .chart-container {
+        position: relative;
+        height: 300px;
+        width: 100%;
+    }
+
+    .order-status-list {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .status-item {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .status-info {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .status-count {
+        font-weight: 600;
+        color: var(--text-primary);
+        font-family: 'Courier New', monospace;
+    }
+
+    .status-progress {
+        width: 100%;
+    }
+
+    .progress-modern {
+        height: 6px;
+        background-color: var(--bg-tertiary);
+        border-radius: 3px;
+        overflow: hidden;
+    }
+
+    .progress-bar-modern {
+        background-color: var(--bg-dark);
+        border-radius: 3px;
+        transition: width 0.6s ease;
+    }
+
+    .user-avatar-sm {
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        background: var(--bg-dark);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--text-light);
+        font-weight: 600;
+        font-size: 0.7rem;
+    }
+
+    .order-id-dashboard {
+        color: var(--text-primary);
+        font-family: 'Courier New', monospace;
+    }
+
+    .amount-dashboard {
+        font-weight: 600;
+        color: var(--text-primary);
+        font-family: 'Courier New', monospace;
+    }
+
+    .table-header-modern {
+        background: var(--bg-tertiary);
+    }
+
+    .table-dashboard th {
+        background: var(--bg-tertiary);
+        border: none;
+        padding: 1rem 1.5rem;
+        font-weight: 600;
+        font-size: 0.875rem;
+        color: var(--text-primary);
+        border-bottom: 1px solid var(--border-light);
+    }
+
+    .table-dashboard td {
+        padding: 1rem 1.5rem;
+        border: none;
+        border-bottom: 1px solid var(--border-light);
+        font-size: 0.875rem;
+        color: var(--text-primary);
+    }
+
+    .table-dashboard tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    .table-dashboard tbody tr:hover {
+        background: var(--bg-secondary);
+    }
+
+    .top-products-list {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .product-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.75rem;
+        background: var(--bg-tertiary);
+        border-radius: var(--radius-lg);
+        transition: all var(--transition-normal);
+    }
+
+    .product-item:hover {
+        background: var(--bg-secondary);
+        box-shadow: var(--shadow-sm);
+    }
+
+    .product-info {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        flex: 1;
+    }
+
+    .product-image {
+        width: 40px;
+        height: 40px;
+        border-radius: var(--radius-md);
+        background: var(--bg-dark);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--text-light);
+        font-size: 1rem;
+    }
+
+    .product-details {
+        flex: 1;
+    }
+
+    .product-name {
+        font-weight: 500;
+        color: var(--text-primary);
+        font-size: 0.875rem;
+        line-height: 1.2;
+    }
+
+    .product-sales {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+    }
+
+    .product-revenue {
+        font-weight: 600;
+        color: var(--text-primary);
+        font-size: 0.875rem;
+        font-family: 'Courier New', monospace;
+    }
+
+    .dropdown-menu-modern {
+        background: var(--bg-primary);
+        border: 1px solid var(--border-light);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-lg);
+    }
+
+    .dropdown-menu-modern .dropdown-item {
+        color: var(--text-primary);
+        padding: 0.5rem 1rem;
+        transition: all var(--transition-normal);
+    }
+
+    .dropdown-menu-modern .dropdown-item:hover {
+        background: var(--bg-tertiary);
+        color: var(--text-primary);
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        .stats-card {
+            padding: 1rem;
+        }
+
+        .stats-icon {
+            width: 50px;
+            height: 50px;
+            font-size: 1.25rem;
+        }
+
+        .stats-number {
+            font-size: 1.5rem;
+        }
+
+        .chart-container {
+            height: 250px;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .stats-card {
+            flex-direction: column;
+            text-align: center;
+            gap: 0.75rem;
+        }
+
+        .stats-content {
+            text-align: center;
+        }
+    }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Sales Chart with monochrome theme
+        const ctx = document.getElementById('salesChart');
+        if (ctx) {
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                    datasets: [{
+                        label: 'Sales',
+                        data: [12000, 19000, 15000, 25000, 22000, 30000, 28000],
+                        borderColor: '#171717',
+                        backgroundColor: 'rgba(23, 23, 23, 0.1)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4,
+                        pointBackgroundColor: '#171717',
+                        pointBorderColor: '#ffffff',
+                        pointBorderWidth: 2,
+                        pointRadius: 6,
+                        pointHoverRadius: 8,
+                        pointHoverBackgroundColor: '#171717',
+                        pointHoverBorderColor: '#ffffff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: '#e5e5e5'
+                            },
+                            ticks: {
+                                color: '#525252',
+                                callback: function(value) {
+                                    return '₹' + (value / 1000) + 'k';
+                                }
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                color: '#525252'
+                            }
+                        }
+                    },
+                    elements: {
+                        point: {
+                            hoverBackgroundColor: '#171717'
+                        }
+                    }
+                }
+            });
+        }
+    });
+</script>
+
+<%- include('./partials/footer') %>
