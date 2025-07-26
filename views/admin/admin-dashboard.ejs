@@ -360,49 +360,65 @@
 </div>
 
 <style>
-    /* Dashboard Specific Monochrome Styles */
+    /* Modern Purple Theme Styles for Dashboard */
+    
+    /* Stats Cards */
     .stats-card {
-        background: var(--bg-primary);
-        border: 1px solid var(--border-light);
-        border-radius: var(--radius-xl);
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 16px;
         padding: 1.5rem;
         display: flex;
         align-items: center;
         gap: 1rem;
-        transition: all var(--transition-normal);
-        box-shadow: var(--shadow-sm);
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .stats-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 4px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     }
 
     .stats-card:hover {
-        box-shadow: var(--shadow-md);
-        transform: translateY(-2px);
+        transform: translateY(-4px);
+        box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
     }
 
     .stats-icon {
         width: 60px;
         height: 60px;
-        border-radius: var(--radius-lg);
+        border-radius: 12px;
         display: flex;
         align-items: center;
         justify-content: center;
         font-size: 1.5rem;
-        color: var(--text-light);
+        color: #ffffff;
+        flex-shrink: 0;
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
     }
 
     .stats-icon-primary {
-        background: var(--bg-dark);
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     }
 
     .stats-icon-success {
-        background: var(--color-grey-700);
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
     }
 
     .stats-icon-warning {
-        background: var(--color-grey-600);
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
     }
 
     .stats-icon-info {
-        background: var(--color-grey-500);
+        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
     }
 
     .stats-content {
@@ -412,14 +428,15 @@
     .stats-number {
         font-size: 1.75rem;
         font-weight: 700;
-        color: var(--text-primary);
+        color: #0f172a;
         line-height: 1.2;
-        font-family: 'Courier New', monospace;
+        font-family: 'Inter', sans-serif;
     }
 
     .stats-label {
         font-size: 0.875rem;
-        color: var(--text-secondary);
+        color: #64748b;
+        font-weight: 500;
         margin-bottom: 0.25rem;
     }
 
@@ -428,22 +445,105 @@
         display: flex;
         align-items: center;
         gap: 0.25rem;
+        font-weight: 500;
     }
 
     .stats-change-positive {
-        color: var(--color-grey-700);
+        color: #059669;
     }
 
     .stats-change-negative {
-        color: var(--color-grey-500);
+        color: #dc2626;
     }
 
+    /* Card Modern Styles */
+    .card-modern {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 16px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+    }
+
+    .card-modern.no-hover {
+        transition: none;
+    }
+
+    .card-header-modern {
+        padding: 1.5rem 2rem;
+        border-bottom: 1px solid #e2e8f0;
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+    }
+
+    .card-title {
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: #0f172a;
+        margin: 0;
+    }
+
+    .card-body-modern {
+        padding: 2rem;
+    }
+
+    .card-body-modern.p-0 {
+        padding: 0;
+    }
+
+    /* Button Styles */
+    .btn-ghost-modern {
+        background: transparent;
+        color: #64748b;
+        border: 2px solid #e2e8f0;
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        font-size: 0.875rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        text-decoration: none;
+    }
+
+    .btn-ghost-modern:hover {
+        background: #f8fafc;
+        border-color: #cbd5e1;
+        color: #475569;
+    }
+
+    .btn-outline-modern {
+        background: transparent;
+        color: #667eea;
+        border: 2px solid #667eea;
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        font-size: 0.875rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        text-decoration: none;
+    }
+
+    .btn-outline-modern:hover {
+        background: #667eea;
+        color: #ffffff;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    }
+
+    /* Chart Container */
     .chart-container {
         position: relative;
         height: 300px;
         width: 100%;
     }
 
+    /* Order Status List */
     .order-status-list {
         display: flex;
         flex-direction: column;
@@ -464,8 +564,8 @@
 
     .status-count {
         font-weight: 600;
-        color: var(--text-primary);
-        font-family: 'Courier New', monospace;
+        color: #0f172a;
+        font-family: 'Inter', sans-serif;
     }
 
     .status-progress {
@@ -473,62 +573,94 @@
     }
 
     .progress-modern {
-        height: 6px;
-        background-color: var(--bg-tertiary);
-        border-radius: 3px;
+        height: 8px;
+        background-color: #f1f5f9;
+        border-radius: 4px;
         overflow: hidden;
     }
 
     .progress-bar-modern {
-        background-color: var(--bg-dark);
-        border-radius: 3px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 4px;
         transition: width 0.6s ease;
+        height: 100%;
     }
 
+    /* Status Badges */
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.375rem;
+        padding: 0.375rem 0.75rem;
+        border-radius: 50px;
+        font-size: 0.75rem;
+        font-weight: 500;
+        text-transform: capitalize;
+    }
+
+    .status-badge i {
+        font-size: 0.5rem;
+    }
+
+    .status-pending {
+        background: rgba(251, 191, 36, 0.1);
+        color: #d97706;
+        border: 1px solid rgba(251, 191, 36, 0.2);
+    }
+
+    .status-processing {
+        background: rgba(59, 130, 246, 0.1);
+        color: #2563eb;
+        border: 1px solid rgba(59, 130, 246, 0.2);
+    }
+
+    .status-shipped {
+        background: rgba(102, 126, 234, 0.1);
+        color: #667eea;
+        border: 1px solid rgba(102, 126, 234, 0.2);
+    }
+
+    .status-delivered {
+        background: rgba(16, 185, 129, 0.1);
+        color: #059669;
+        border: 1px solid rgba(16, 185, 129, 0.2);
+    }
+
+    /* User Avatar */
     .user-avatar-sm {
-        width: 24px;
-        height: 24px;
+        width: 32px;
+        height: 32px;
         border-radius: 50%;
-        background: var(--bg-dark);
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         display: flex;
         align-items: center;
         justify-content: center;
-        color: var(--text-light);
+        color: #ffffff;
         font-weight: 600;
-        font-size: 0.7rem;
+        font-size: 0.75rem;
     }
 
-    .order-id-dashboard {
-        color: var(--text-primary);
-        font-family: 'Courier New', monospace;
-    }
-
-    .amount-dashboard {
-        font-weight: 600;
-        color: var(--text-primary);
-        font-family: 'Courier New', monospace;
-    }
-
+    /* Table Styles */
     .table-header-modern {
-        background: var(--bg-tertiary);
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
     }
 
     .table-dashboard th {
-        background: var(--bg-tertiary);
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
         border: none;
         padding: 1rem 1.5rem;
         font-weight: 600;
         font-size: 0.875rem;
-        color: var(--text-primary);
-        border-bottom: 1px solid var(--border-light);
+        color: #374151;
+        border-bottom: 1px solid #e2e8f0;
     }
 
     .table-dashboard td {
         padding: 1rem 1.5rem;
         border: none;
-        border-bottom: 1px solid var(--border-light);
+        border-bottom: 1px solid #f1f5f9;
         font-size: 0.875rem;
-        color: var(--text-primary);
+        color: #0f172a;
     }
 
     .table-dashboard tbody tr:last-child td {
@@ -536,9 +668,27 @@
     }
 
     .table-dashboard tbody tr:hover {
-        background: var(--bg-secondary);
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
     }
 
+    .order-id-dashboard {
+        color: #667eea;
+        font-family: 'Inter', sans-serif;
+        font-weight: 600;
+    }
+
+    .amount-dashboard {
+        font-weight: 600;
+        color: #0f172a;
+        font-family: 'Inter', sans-serif;
+    }
+
+    .text-muted-modern {
+        color: #64748b;
+        font-size: 0.875rem;
+    }
+
+    /* Top Products */
     .top-products-list {
         display: flex;
         flex-direction: column;
@@ -549,15 +699,17 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: 0.75rem;
-        background: var(--bg-tertiary);
-        border-radius: var(--radius-lg);
-        transition: all var(--transition-normal);
+        padding: 1rem;
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        transition: all 0.3s ease;
     }
 
     .product-item:hover {
-        background: var(--bg-secondary);
-        box-shadow: var(--shadow-sm);
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+        transform: translateY(-2px);
     }
 
     .product-info {
@@ -568,15 +720,16 @@
     }
 
     .product-image {
-        width: 40px;
-        height: 40px;
-        border-radius: var(--radius-md);
-        background: var(--bg-dark);
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         display: flex;
         align-items: center;
         justify-content: center;
-        color: var(--text-light);
-        font-size: 1rem;
+        color: #ffffff;
+        font-size: 1.125rem;
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
     }
 
     .product-details {
@@ -584,40 +737,46 @@
     }
 
     .product-name {
-        font-weight: 500;
-        color: var(--text-primary);
+        font-weight: 600;
+        color: #0f172a;
         font-size: 0.875rem;
         line-height: 1.2;
+        margin-bottom: 0.25rem;
     }
 
     .product-sales {
         font-size: 0.75rem;
-        color: var(--text-muted);
+        color: #64748b;
+        font-weight: 500;
     }
 
     .product-revenue {
-        font-weight: 600;
-        color: var(--text-primary);
+        font-weight: 700;
+        color: #0f172a;
         font-size: 0.875rem;
-        font-family: 'Courier New', monospace;
+        font-family: 'Inter', sans-serif;
     }
 
+    /* Dropdown Styles */
     .dropdown-menu-modern {
-        background: var(--bg-primary);
-        border: 1px solid var(--border-light);
-        border-radius: var(--radius-lg);
-        box-shadow: var(--shadow-lg);
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        box-shadow: 0 10px 40px -12px rgba(0, 0, 0, 0.25);
+        padding: 0.5rem;
     }
 
     .dropdown-menu-modern .dropdown-item {
-        color: var(--text-primary);
+        color: #374151;
         padding: 0.5rem 1rem;
-        transition: all var(--transition-normal);
+        border-radius: 8px;
+        transition: all 0.3s ease;
+        font-weight: 500;
     }
 
     .dropdown-menu-modern .dropdown-item:hover {
-        background: var(--bg-tertiary);
-        color: var(--text-primary);
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+        color: #667eea;
     }
 
     /* Responsive adjustments */
@@ -639,6 +798,21 @@
         .chart-container {
             height: 250px;
         }
+
+        .card-header-modern,
+        .card-body-modern {
+            padding: 1rem 1.5rem;
+        }
+
+        .product-item {
+            padding: 0.75rem;
+        }
+
+        .product-image {
+            width: 40px;
+            height: 40px;
+            font-size: 1rem;
+        }
     }
 
     @media (max-width: 576px) {
@@ -651,13 +825,29 @@
         .stats-content {
             text-align: center;
         }
+
+        .card-header-modern,
+        .card-body-modern {
+            padding: 1rem;
+        }
+
+        .product-item {
+            flex-direction: column;
+            gap: 0.75rem;
+            text-align: center;
+        }
+
+        .product-info {
+            flex-direction: column;
+            text-align: center;
+        }
     }
 </style>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Sales Chart with monochrome theme
+        // Sales Chart with purple theme
         const ctx = document.getElementById('salesChart');
         if (ctx) {
             new Chart(ctx, {
@@ -667,17 +857,17 @@
                     datasets: [{
                         label: 'Sales',
                         data: [12000, 19000, 15000, 25000, 22000, 30000, 28000],
-                        borderColor: '#171717',
-                        backgroundColor: 'rgba(23, 23, 23, 0.1)',
+                        borderColor: '#667eea',
+                        backgroundColor: 'rgba(102, 126, 234, 0.1)',
                         borderWidth: 3,
                         fill: true,
                         tension: 0.4,
-                        pointBackgroundColor: '#171717',
+                        pointBackgroundColor: '#667eea',
                         pointBorderColor: '#ffffff',
                         pointBorderWidth: 2,
                         pointRadius: 6,
                         pointHoverRadius: 8,
-                        pointHoverBackgroundColor: '#171717',
+                        pointHoverBackgroundColor: '#764ba2',
                         pointHoverBorderColor: '#ffffff'
                     }]
                 },
@@ -693,10 +883,10 @@
                         y: {
                             beginAtZero: true,
                             grid: {
-                                color: '#e5e5e5'
+                                color: '#e2e8f0'
                             },
                             ticks: {
-                                color: '#525252',
+                                color: '#64748b',
                                 callback: function(value) {
                                     return '₹' + (value / 1000) + 'k';
                                 }
@@ -707,13 +897,13 @@
                                 display: false
                             },
                             ticks: {
-                                color: '#525252'
+                                color: '#64748b'
                             }
                         }
                     },
                     elements: {
                         point: {
-                            hoverBackgroundColor: '#171717'
+                            hoverBackgroundColor: '#764ba2'
                         }
                     }
                 }

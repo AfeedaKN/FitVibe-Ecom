@@ -1,8 +1,7 @@
 const Order = require("../../models/orderSchema");
 const mongoose = require('mongoose');
-const Product = require("../../models/productSchema");
-const Wallet = require("../../models/walletShema");
-
+const Product = require("../../models/productSchema")
+const Wallet = require("../../models/walletShema")
 
 const loadOrders = async (req, res) => {
   try {
@@ -156,41 +155,35 @@ const approveReturn = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Order not in return pending status' });
     }
 
-    
     order.orderStatus = 'returned';
-    for(const item of order.products) {
-      const productId=item.product
-      const variantSize=item.variant.size
-      const quantityToAdd=item.quantity
 
-      const product=await Product.findById(productId)
-      if(product) {
+    for (const item of order.products) {
+      const productId = item.product;
+      const variantSize = item.variant.size;
+      const quantityToAdd = item.quantity;
+
+      const product = await Product.findById(productId);
+      if (product) {
         const variant = product.variants.find(v => v.size === variantSize);
         if (variant) {
           variant.varientquatity += quantityToAdd;
           await product.save();
         }
       }
+    }
 
-    
     order.products.forEach(product => {
       if (product.status === 'return pending') {
         product.status = 'returned';
       }
     });
 
-    
     order.statusHistory.push({
       status: 'returned',
       date: new Date(),
       description: 'Return approved by admin',
     });
 
-    
-    
-    order.orderStatus = 'returned';
-
-    
     const userId = order.user;
     const refundAmount = order.finalAmount;
     order.refundAmount = refundAmount;
@@ -219,12 +212,11 @@ const approveReturn = async (req, res) => {
     }
 
     await wallet.save();
-
     await order.save();
 
     res.redirect("/admin/orders");
-  } 
-  }catch (error) {
+
+  } catch (error) {
     console.error('Return approval error:', error);
     return res.status(500).json({ success: false, message: 'Server error', error: error.message });
   }

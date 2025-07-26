@@ -3,115 +3,454 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>FitVibe - Verify OTP</title>
+  <title>FitVibe - Verify Reset OTP</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <style>
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
     }
+
     body {
-      font-family: 'Arial', sans-serif;
-      line-height: 1.6;
-      background: #f4f4f4;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1rem;
     }
-    .signup-section {
-      max-width: 500px;
-      margin: 50px auto;
-      padding: 40px;
-      background: white;
-      border-radius: 10px;
-      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+
+    .otp-container {
+      width: 100%;
+      max-width: 480px;
+      background: #ffffff;
+      border-radius: 24px;
+      box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.25);
+      overflow: hidden;
+      position: relative;
+    }
+
+    .otp-container::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 4px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+
+    .otp-header {
+      padding: 3rem 2rem 1rem;
       text-align: center;
+      background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
     }
-    .signup-section h2 {
-      font-size: 32px;
-      margin-bottom: 30px;
-      color: #1a1a1a;
+
+    .brand-logo {
+      font-size: 2.5rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 0.5rem;
+      letter-spacing: -0.025em;
     }
-    .signup-form {
+
+    .otp-title {
+      font-size: 1.75rem;
+      font-weight: 600;
+      color: #0f172a;
+      margin-bottom: 0.5rem;
+    }
+
+    .otp-subtitle {
+      font-size: 0.875rem;
+      color: #64748b;
+      font-weight: 400;
+    }
+
+    .otp-body {
+      padding: 2rem;
+    }
+
+    .otp-form {
       display: flex;
       flex-direction: column;
-      gap: 20px;
+      gap: 1.5rem;
     }
-    .signup-form input {
-      padding: 12px;
-      font-size: 16px;
-      border: 1px solid #ddd;
-      border-radius: 5px;
+
+    .form-group {
+      position: relative;
+    }
+
+    .otp-input {
+      width: 100%;
+      padding: 1rem 1.25rem;
+      font-size: 1.125rem;
+      font-weight: 600;
+      text-align: center;
+      letter-spacing: 0.5rem;
+      border: 2px solid #e2e8f0;
+      border-radius: 12px;
       outline: none;
-      transition: border 0.3s;
+      transition: all 0.3s ease;
+      background: #ffffff;
+      color: #0f172a;
     }
-    .signup-form input:focus {
-      border-color: #ffd700;
+
+    .otp-input:focus {
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+      transform: translateY(-2px);
     }
-    .signup-form button {
-      padding: 12px;
-      font-size: 18px;
-      font-weight: bold;
-      background: #ffd700;
-      color: #1a1a1a;
+
+    .otp-input::placeholder {
+      color: #94a3b8;
+      font-weight: 400;
+      letter-spacing: normal;
+    }
+
+    .verify-btn {
+      width: 100%;
+      padding: 1rem 1.5rem;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: #ffffff;
       border: none;
-      border-radius: 25px;
+      border-radius: 12px;
+      font-size: 0.875rem;
+      font-weight: 600;
       cursor: pointer;
-      transition: background 0.3s;
+      transition: all 0.3s ease;
+      box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
     }
-    .signup-form button:hover {
-      background: #e6c200;
+
+    .verify-btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 25px rgba(102, 126, 234, 0.4);
     }
-    .signup-form .login-link {
-      margin-top: 15px;
-      font-size: 14px;
-      color: #666;
+
+    .verify-btn:active {
+      transform: translateY(-1px);
     }
-    .signup-form .login-link a {
-      color: #ffd700;
+
+    .verify-btn:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .otp-footer {
+      padding: 1.5rem 2rem 2rem;
+      text-align: center;
+      background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+      border-top: 1px solid #e2e8f0;
+    }
+
+    .footer-links {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      font-size: 0.875rem;
+      color: #64748b;
+      font-weight: 500;
+    }
+
+    .footer-links a {
+      color: #667eea;
       text-decoration: none;
+      font-weight: 600;
+      transition: color 0.3s ease;
     }
-    .signup-form .login-link a:hover {
+
+    .footer-links a:hover {
+      color: #764ba2;
       text-decoration: underline;
     }
-    .error-message {
-      color: red;
-      font-size: 14px;
-      text-align: left;
-      justify-content: center;
+
+    .resend-link {
+      display: inline-flex;
       align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      transition: all 0.3s ease;
+    }
+
+    .resend-link:hover {
+      background: rgba(102, 126, 234, 0.1);
+    }
+
+    .error-message {
+      color: #ef4444;
+      font-size: 0.75rem;
+      font-weight: 500;
+      margin-top: 0.5rem;
+      padding: 0.5rem 0.75rem;
+      background: rgba(239, 68, 68, 0.1);
+      border-radius: 8px;
+      border-left: 3px solid #ef4444;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .success-message {
+      color: #10b981;
+      font-size: 0.75rem;
+      font-weight: 500;
+      margin-top: 0.5rem;
+      padding: 0.5rem 0.75rem;
+      background: rgba(16, 185, 129, 0.1);
+      border-radius: 8px;
+      border-left: 3px solid #10b981;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 640px) {
+      body {
+        padding: 1rem 0.5rem;
+      }
+
+      .otp-container {
+        max-width: 100%;
+        border-radius: 16px;
+      }
+
+      .otp-header {
+        padding: 2rem 1.5rem 1rem;
+      }
+
+      .brand-logo {
+        font-size: 2rem;
+      }
+
+      .otp-title {
+        font-size: 1.5rem;
+      }
+
+      .otp-body {
+        padding: 1.5rem;
+      }
+
+      .otp-footer {
+        padding: 1rem 1.5rem 1.5rem;
+      }
+    }
+
+    /* Animation */
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .otp-container {
+      animation: slideUp 0.5s ease-out;
+    }
+
+    /* Loading state */
+    .loading {
+      opacity: 0.7;
+      pointer-events: none;
+    }
+
+    .spinner {
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
     }
   </style>
+</head>
+<body>
+  <div class="otp-container">
+    <!-- Header -->
+    <div class="otp-header">
+      <div class="brand-logo">FitVibe</div>
+      <h1 class="otp-title">Reset Password</h1>
+      <p class="otp-subtitle">Enter the verification code sent to your email</p>
+    </div>
+
+    <!-- Body -->
+    <div class="otp-body">
+      <!-- OTP Form -->
+      <form class="otp-form" action="/verify-reset-otp" method="POST" id="otpForm">
+        <div class="form-group">
+          <input 
+            type="text" 
+            name="otp" 
+            id="otpInput"
+            placeholder="Enter 6-digit OTP" 
+            class="otp-input"
+            maxlength="6"
+            required
+          />
+          
+          <!-- Error/Success Messages -->
+          <% if (message) { %>
+            <div class="<%= message.includes('success') || message.includes('verified') ? 'success-message' : 'error-message' %>">
+              <i class="fas <%= message.includes('success') || message.includes('verified') ? 'fa-check-circle' : 'fa-exclamation-circle' %>"></i>
+              <%= message %>
+            </div>
+          <% } %>
+        </div>
+
+        <button type="submit" class="verify-btn" id="verifyBtn">
+          <i class="fas fa-key"></i>
+          Verify & Reset Password
+        </button>
+      </form>
+    </div>
+
+    <!-- Footer -->
+    <div class="otp-footer">
+      <div class="footer-links">
+        <div>
+          Didn't receive the code? 
+          <a href="#" onclick="resendOtp()" class="resend-link" id="resendLink">
+            <i class="fas fa-redo-alt"></i>
+            Resend OTP
+          </a>
+        </div>
+        <div>
+          <a href="/login">
+            <i class="fas fa-arrow-left"></i>
+            Back to Login
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script>
+    const otpForm = document.getElementById('otpForm');
+    const verifyBtn = document.getElementById('verifyBtn');
+    const otpInput = document.getElementById('otpInput');
+    const resendLink = document.getElementById('resendLink');
+
+    // Auto-focus OTP input
+    document.addEventListener('DOMContentLoaded', function() {
+      otpInput.focus();
+    });
+
+    // Form submission with loading state
+    otpForm.addEventListener('submit', function(e) {
+      // Show loading state
+      verifyBtn.disabled = true;
+      verifyBtn.innerHTML = '<i class="fas fa-spinner spinner"></i> Verifying...';
+      
+      // Basic validation
+      const otpValue = otpInput.value.trim();
+      if (!otpValue || otpValue.length !== 6) {
+        e.preventDefault();
+        alert('Please enter a valid 6-digit OTP');
+        
+        // Reset button
+        verifyBtn.disabled = false;
+        verifyBtn.innerHTML = '<i class="fas fa-key"></i> Verify & Reset Password';
+        return;
+      }
+    });
+
+    // Auto-submit when 6 digits are entered
+    otpInput.addEventListener('input', function(e) {
+      // Remove non-numeric characters
+      e.target.value = e.target.value.replace(/[^0-9]/g, '');
+      
+      if (e.target.value.length === 6) {
+        setTimeout(() => {
+          otpForm.submit();
+        }, 500);
+      }
+    });
+
+    // Resend OTP function
     async function resendOtp() {
+      const originalText = resendLink.innerHTML;
+      
       try {
+        // Show loading state
+        resendLink.innerHTML = '<i class="fas fa-spinner spinner"></i> Sending...';
+        resendLink.style.pointerEvents = 'none';
+        
         const response = await fetch("/resend-reset-otp", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
         });
+        
         const data = await response.json();
-        alert(data.message);
+        
+        if (response.ok && data.success) {
+          // Show success message
+          showMessage('success', data.message || 'OTP has been resent to your email!');
+          
+          // Reset form
+          otpInput.value = '';
+          otpInput.focus();
+        } else {
+          showMessage('error', data.message || 'Failed to resend OTP. Please try again.');
+        }
       } catch (error) {
-        alert("Error resending OTP. Please try again.");
+        console.error('Error resending OTP:', error);
+        showMessage('error', 'Network error. Please check your connection and try again.');
+      } finally {
+        // Reset button
+        setTimeout(() => {
+          resendLink.innerHTML = originalText;
+          resendLink.style.pointerEvents = 'auto';
+        }, 2000);
       }
     }
+
+    // Show message function
+    function showMessage(type, message) {
+      // Remove existing messages
+      const existingMessages = document.querySelectorAll('.error-message, .success-message');
+      existingMessages.forEach(msg => msg.remove());
+      
+      // Create new message
+      const messageDiv = document.createElement('div');
+      messageDiv.className = type === 'success' ? 'success-message' : 'error-message';
+      messageDiv.innerHTML = `
+        <i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i>
+        ${message}
+      `;
+      
+      // Insert after input
+      otpInput.parentNode.appendChild(messageDiv);
+      
+      // Auto-remove after 5 seconds
+      setTimeout(() => {
+        if (messageDiv.parentNode) {
+          messageDiv.remove();
+        }
+      }, 5000);
+    }
+
+    // Prevent form resubmission on page refresh
+    if (window.history.replaceState) {
+      window.history.replaceState(null, null, window.location.href);
+    }
   </script>
-</head>
-<body>
-  <div class="signup-section">
-    <h2>Verify OTP</h2>
-    <form class="signup-form" action="/verify-reset-otp" method="POST">
-      <input type="text" name="otp" placeholder="Enter OTP" required />
-      <div class="error-message">
-        <% if (message) { %>
-          <%= message %>
-        <% } %>
-      </div>
-      <button type="submit">Verify OTP</button>
-      <div class="login-link">
-        Didn't receive OTP? <a href="#" onclick="resendOtp()">Resend OTP</a> | 
-        Back to <a href="/login">Login</a>
-      </div>
-    </form>
-  </div>
 </body>
 </html>

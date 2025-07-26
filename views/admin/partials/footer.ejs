@@ -125,10 +125,10 @@
             };
             
             const colorMap = {
-                success: 'var(--color-grey-800)',
-                error: 'var(--color-grey-600)',
-                warning: 'var(--color-grey-700)',
-                info: 'var(--color-grey-500)'
+                success: '#10b981',
+                error: '#ef4444',
+                warning: '#f59e0b',
+                info: '#667eea'
             };
             
             toast.innerHTML = `
@@ -165,13 +165,13 @@
                 text: message,
                 icon: config.type,
                 showCancelButton: true,
-                confirmButtonColor: config.type === 'danger' ? '#525252' : '#171717',
-                cancelButtonColor: '#a3a3a3',
+                confirmButtonColor: config.type === 'danger' ? '#ef4444' : '#667eea',
+                cancelButtonColor: '#94a3b8',
                 confirmButtonText: config.confirmText,
                 cancelButtonText: config.cancelText,
                 reverseButtons: true,
                 background: '#ffffff',
-                color: '#171717',
+                color: '#0f172a',
                 customClass: {
                     popup: 'rounded-modern',
                     confirmButton: 'btn-modern',

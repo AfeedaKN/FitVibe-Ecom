@@ -1,283 +1,760 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <style>
-    .navbar {
-      background-color: #1a1a1a;
-      padding: 8px 0;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    /* Professional Header - Clean & Minimal */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
     }
 
-    .navbar-brand img {
-      height: 28px;
-      transition: transform 0.3s ease;
+    .top-header {
+      background: #ffffff;
+      border-bottom: 1px solid #e2e8f0;
+      padding: 1rem 0;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.1);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     }
 
-    .navbar-brand img:hover {
+    .header-content {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 0 2rem;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 3rem;
+    }
+
+    .sidebar-toggle {
+      display: none;
+      background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+      border: 2px solid rgba(102, 126, 234, 0.2);
+      padding: 0.75rem;
+      border-radius: 12px;
+      color: #667eea;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 1.125rem;
+    }
+
+    .sidebar-toggle:hover {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: #ffffff;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 15px -3px rgba(102, 126, 234, 0.4);
+    }
+
+    .brand-logo {
+      font-size: 2rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      text-decoration: none;
+      letter-spacing: -0.025em;
+      transition: all 0.3s ease;
+    }
+
+    .brand-logo:hover {
       transform: scale(1.05);
     }
 
-    .navbar-nav {
-      margin: 0 auto;
+    .main-nav {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
     }
 
-    .navbar-nav .nav-link {
-      color: #ffffff !important;
-      font-weight: 500;
-      font-size: 0.9rem;
-      text-transform: uppercase;
-      margin: 0 10px;
-      padding: 4px 8px;
-      transition: background-color 0.3s ease, color 0.3s ease;
-    }
-
-    .navbar-nav .nav-link:hover {
-      color: #ffffff !important;
-      background-color: #ffd700;
-      border-radius: 5px;
-    }
-
-    .navbar-nav .nav-link.active {
-      background-color: #6f42c1;
-      color: #ffffff !important;
-      border-radius: 5px;
-    }
-
-    .sidebar {
-      height: 100%;
-      width: 0;
-      position: fixed;
-      z-index: 1050;
-      top: 0;
-      left: 0;
-      background-color: #adb5bd;
-      overflow-x: hidden;
-      transition: 0.3s;
-      padding-top: 60px;
-    }
-
-    .sidebar a {
-      padding: 10px 30px;
+    .nav-link-modern {
+      color: #64748b;
       text-decoration: none;
-      font-size: 16px;
-      color: var(--muted);
-      display: block;
-      transition: 0.3s;
-      text-transform: uppercase;
+      font-weight: 500;
+      font-size: 0.875rem;
+      padding: 0.75rem 1.25rem;
+      border-radius: 12px;
+      transition: all 0.3s ease;
+      position: relative;
+      white-space: nowrap;
     }
 
-    .sidebar a:hover {
-      background-color: var(--hover-bg);
+    .nav-link-modern:hover {
+      color: #667eea;
+      background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+      transform: translateY(-2px);
+    }
+
+    .nav-link-modern.active {
       color: #ffffff;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
     }
 
-    .sidebar .closebtn {
-      position: absolute;
-      top: 10px;
-      right: 25px;
-      font-size: 30px;
-      color: #000000;
+    .nav-link-modern.active:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 25px rgba(102, 126, 234, 0.4);
     }
 
-    .sidebar .closebtn:hover {
-      color: #ffffff;
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
     }
 
-    .openbtn {
-      font-size: 20px;
-      cursor: pointer;
-      background-color: transparent;
-      color: #ffffff;
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .action-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 48px;
+      height: 48px;
       border: none;
-      padding: 8px;
-      transition: color 0.3s ease;
+      background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+      color: #667eea;
+      border-radius: 12px;
+      transition: all 0.3s ease;
+      text-decoration: none;
+      position: relative;
+      border: 2px solid rgba(102, 126, 234, 0.2);
     }
 
-    .openbtn:hover {
-      color: #ffd700;
-    }
-
-    .search-container .form-control {
-      background-color: transparent;
-      border: 1px solid #adb5bd;
+    .action-btn:hover {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       color: #ffffff;
-      border-radius: 20px;
-      padding: 4px 12px;
-      width: 180px;
-      font-size: 0.85rem;
+      transform: translateY(-3px);
+      box-shadow: 0 8px 15px -3px rgba(102, 126, 234, 0.4);
+      border-color: transparent;
     }
 
-    .search-container .form-control::placeholder {
-      color: #adb5bd;
+    .action-btn i {
+      font-size: 1.125rem;
     }
 
-    .search-container .form-control:focus {
-      background-color: transparent;
-      border-color: #ffd700;
+    .cart-badge,
+    .wishlist-badge {
+      position: absolute;
+      top: -6px;
+      right: -6px;
+      background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
       color: #ffffff;
+      font-size: 0.625rem;
+      font-weight: 700;
+      padding: 0.25rem 0.5rem;
+      border-radius: 50px;
+      min-width: 20px;
+      height: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 6px -1px rgba(239, 68, 68, 0.4);
+      border: 2px solid #ffffff;
+    }
+
+    .auth-section {
+      margin-left: 1rem;
+      padding-left: 1.5rem;
+      border-left: 2px solid #e2e8f0;
+    }
+
+    .auth-buttons {
+      display: flex;
+      gap: 0.75rem;
+      align-items: center;
+    }
+
+    .auth-btn {
+      padding: 0.875rem 1.5rem;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: #ffffff;
+      text-decoration: none;
+      border-radius: 50px;
+      font-weight: 600;
+      font-size: 0.875rem;
+      transition: all 0.3s ease;
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      white-space: nowrap;
+    }
+
+    .auth-btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 25px rgba(102, 126, 234, 0.4);
+      color: #ffffff;
+    }
+
+    .signup-btn {
+      background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+      color: #667eea;
+      border: 2px solid rgba(102, 126, 234, 0.3);
       box-shadow: none;
     }
 
-    .navbar .btn-link {
+    .signup-btn:hover {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       color: #ffffff;
-      font-size: 0.9rem;
-      transition: color 0.3s ease;
+      border-color: transparent;
+      transform: translateY(-3px);
+      box-shadow: 0 12px 25px rgba(102, 126, 234, 0.4);
     }
 
-    .navbar .btn-link:hover {
-      color: #ffd700;
-    }
-
-    .badge {
-      background-color: #ffd700 !important;
-      color: #1a1a1a !important;
-      font-size: 0.75rem;
-    }
-
-    .dropdown-menu {
-      background-color: #1a1a1a;
-      border: none;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-    }
-
-    .dropdown-menu .dropdown-item {
-      color: #adb5bd;
-      font-size: 0.85rem;
-      transition: background-color 0.3s ease, color 0.3s ease;
-    }
-
-    .dropdown-menu .dropdown-item:hover {
-      background-color: #2c2c2c;
-      color: #ffd700;
-    }
-
-    .auth-buttons .btn {
-      color: #ffffff;
-      font-weight: 500;
-      font-size: 0.9rem;
-      padding: 4px 12px;
-      transition: color 0.3s ease;
-    }
-
-    .auth-buttons .btn:hover {
-      color: #ffd700;
-    }
-
-    .right-section {
+    .user-profile {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 1rem;
+      padding: 0.75rem 1.25rem;
+      border-radius: 16px;
+      background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+      border: 2px solid rgba(102, 126, 234, 0.2);
+      transition: all 0.3s ease;
+      text-decoration: none;
+      color: #0f172a;
+      cursor: pointer;
+      min-width: 180px;
+      position: relative;
+    }
+
+    .user-profile:hover {
+      background: linear-gradient(135deg, rgba(102, 126, 234, 0.15) 0%, rgba(118, 75, 162, 0.15) 100%);
+      border-color: rgba(102, 126, 234, 0.4);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 15px -3px rgba(102, 126, 234, 0.2);
+      color: #0f172a;
+    }
+
+    .user-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #ffffff;
+      font-weight: 700;
+      font-size: 1rem;
+      box-shadow: 0 4px 6px -1px rgba(102, 126, 234, 0.4);
+      flex-shrink: 0;
+    }
+
+    .user-info {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
     }
 
     .user-name {
-      color: #ffffff;
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: #0f172a;
+      line-height: 1.2;
+    }
+
+    .user-role {
+      font-size: 0.75rem;
+      color: #667eea;
+      line-height: 1.2;
       font-weight: 500;
-      font-size: 0.9rem;
     }
 
-    .user-name:hover {
-      color: #ffd700;
+    .dropdown-arrow {
+      color: #667eea;
+      font-size: 0.875rem;
+      transition: transform 0.3s ease;
     }
 
-    @media (max-width: 767px) {
-      .navbar-nav .nav-link {
-        font-size: 0.85rem;
-        margin: 0 5px;
+    .user-profile.active .dropdown-arrow {
+      transform: rotate(180deg);
+    }
+
+    /* Enhanced Dropdown Menu */
+    .dropdown-menu-modern {
+      position: absolute;
+      top: 100%;
+      right: 0;
+      background: #ffffff;
+      border: none;
+      border-radius: 20px;
+      box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.25);
+      padding: 1rem 0;
+      margin-top: 1rem;
+      min-width: 240px;
+      overflow: hidden;
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(-10px);
+      transition: all 0.3s ease;
+      z-index: 1000;
+    }
+
+    .dropdown-menu-modern.show {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+    }
+
+    .dropdown-menu-modern::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 4px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+
+    .dropdown-item-modern {
+      padding: 1rem 1.5rem;
+      color: #64748b;
+      text-decoration: none;
+      font-size: 0.875rem;
+      font-weight: 500;
+      transition: all 0.3s ease;
+      border: none;
+      background: none;
+      width: 100%;
+      text-align: left;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      position: relative;
+    }
+
+    .dropdown-item-modern:hover {
+      background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+      color: #667eea;
+      transform: translateX(4px);
+    }
+
+    .dropdown-item-modern i {
+      width: 20px;
+      font-size: 1rem;
+      color: #667eea;
+    }
+
+    .dropdown-divider {
+      margin: 0.75rem 1.5rem;
+      border: none;
+      border-top: 1px solid #e2e8f0;
+      opacity: 1;
+    }
+
+    .logout-item {
+      color: #ef4444 !important;
+    }
+
+    .logout-item:hover {
+      background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(220, 38, 38, 0.1) 100%) !important;
+      color: #ef4444 !important;
+    }
+
+    .logout-item i {
+      color: #ef4444 !important;
+    }
+
+    /* Mobile Sidebar - Enhanced */
+    .mobile-sidebar {
+      position: fixed;
+      top: 0;
+      left: -320px;
+      width: 320px;
+      height: 100vh;
+      background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+      border-right: 1px solid #e2e8f0;
+      z-index: 1050;
+      transition: left 0.3s ease;
+      padding: 0;
+      box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.25);
+    }
+
+    .mobile-sidebar.open {
+      left: 0;
+    }
+
+    .sidebar-header {
+      padding: 2rem 1.5rem;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: #ffffff;
+    }
+
+    .sidebar-brand {
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: #ffffff;
+    }
+
+    .sidebar-close {
+      background: rgba(255, 255, 255, 0.2);
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      color: #ffffff;
+      font-size: 1.25rem;
+      cursor: pointer;
+      padding: 0.5rem;
+      border-radius: 12px;
+      transition: all 0.3s ease;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .sidebar-close:hover {
+      background: rgba(255, 255, 255, 0.3);
+      transform: scale(1.1);
+    }
+
+    .sidebar-nav {
+      padding: 2rem 0;
+    }
+
+    .sidebar-link {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1rem 1.5rem;
+      color: #64748b;
+      text-decoration: none;
+      font-weight: 500;
+      font-size: 0.875rem;
+      transition: all 0.3s ease;
+      border-left: 4px solid transparent;
+    }
+
+    .sidebar-link:hover {
+      background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+      color: #667eea;
+      border-left-color: #667eea;
+      transform: translateX(4px);
+    }
+
+    .sidebar-link i {
+      width: 20px;
+      font-size: 1rem;
+    }
+
+    .sidebar-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.6);
+      z-index: 1040;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s ease;
+      backdrop-filter: blur(4px);
+    }
+
+    .sidebar-overlay.show {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      .sidebar-toggle {
+        display: flex;
       }
 
-      .search-container .form-control {
-        width: 150px;
+      .main-nav {
+        display: none;
       }
+
+      .user-info {
+        display: none;
+      }
+
+      .header-content {
+        padding: 0 1rem;
+      }
+
+      .header-right {
+        gap: 1rem;
+      }
+
+      .auth-section {
+        margin-left: 0.75rem;
+        padding-left: 0.75rem;
+      }
+
+      .auth-buttons {
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+
+      .user-profile {
+        min-width: auto;
+        padding: 0.75rem;
+      }
+
+      .brand-logo {
+        font-size: 1.75rem;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .brand-logo {
+        font-size: 1.5rem;
+      }
+
+      .header-content {
+        padding: 0 0.75rem;
+      }
+
+      .auth-btn {
+        padding: 0.75rem 1.25rem;
+        font-size: 0.75rem;
+      }
+
+      .action-btn {
+        width: 44px;
+        height: 44px;
+      }
+
+      .header-actions {
+        gap: 0.5rem;
+      }
+
+      .auth-buttons {
+        gap: 0.5rem;
+      }
+    }
+
+    /* Animation Enhancements */
+    @keyframes fadeInDown {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Accessibility Improvements */
+    .action-btn:focus,
+    .nav-link-modern:focus,
+    .auth-btn:focus {
+      outline: 2px solid #667eea;
+      outline-offset: 2px;
     }
   </style>
 </head>
 
 <body>
-  <!-- Sidebar -->
-  <div id="mySidebar" class="sidebar">
-    <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">×</a>
-    <a href="/contact">CONTACT</a>
-    <a href="/about">ABOUT US</a>
-    <a href="/products">ALL PRODUCTS</a>
+  <!-- Mobile Sidebar Overlay -->
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+  <!-- Mobile Sidebar -->
+  <div class="mobile-sidebar" id="mobileSidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-brand">FitVibe</div>
+      <button class="sidebar-close" onclick="closeSidebar()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="/" class="sidebar-link">
+        <i class="fas fa-home"></i>
+        Home
+      </a>
+      <a href="/products" class="sidebar-link">
+        <i class="fas fa-tags"></i>
+        Sale
+      </a>
+      <a href="/user/wishlist" class="sidebar-link">
+        <i class="fas fa-heart"></i>
+        Wishlist
+      </a>
+      <a href="/user/cart" class="sidebar-link">
+        <i class="fas fa-shopping-cart"></i>
+        Shopping Cart
+      </a>
+    </nav>
   </div>
 
-  <!-- Navbar -->
-  <nav class="navbar navbar-expand-lg navbar-dark">
-    <div class="container">
-      <button class="openbtn me-2" onclick="openNav()">☰</button>
-      <a class="navbar-brand me-3" href="/">
-        <h4>FitVibe</h4>
-      </a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
-        aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-      </button>
+  <!-- Main Header -->
+  <header class="top-header">
+    <div class="header-content">
+      <!-- Left Section -->
+      <div class="header-left">
+        <button class="sidebar-toggle" onclick="openSidebar()">
+          <i class="fas fa-bars"></i>
+        </button>
+        
+        <a href="/" class="brand-logo">FitVibe</a>
+        
+        <nav class="main-nav">
+          <a href="/" class="nav-link-modern">Home</a>
+          <a href="/products" class="nav-link-modern">Sale</a>
+        </nav>
+      </div>
 
-      <div class="collapse navbar-collapse" id="navbarNav">
-        <ul class="navbar-nav">
-          <li class="nav-item">
-            <a class="nav-link active" href="/">Home</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="/products?sale=true">SALE</a>
-          </li>
-        </ul>
-
-        <div class="ms-auto right-section">
-          <form class="search-container" action="/products" method="get">
-            <input class="form-control" type="search" name="search" placeholder="What are you looking for?"
-              aria-label="Search" value="<%= typeof search !== 'undefined' ? search : '' %>" />
-          </form>
-
-          <a href="/user/wishlist" class="btn btn-link text-white">
+      <!-- Right Section -->
+      <div class="header-right">
+        <!-- Action Buttons -->
+        <div class="header-actions">
+          <a href="/user/wishlist" class="action-btn" title="Wishlist">
             <i class="fas fa-heart"></i>
+            <% if (typeof wishlistCount !== 'undefined' && wishlistCount > 0) { %>
+              <span class="wishlist-badge"><%= wishlistCount %></span>
+            <% } %>
           </a>
 
-          <a href="/user/cart" class="btn btn-link text-white position-relative">
+          <a href="/user/cart" class="action-btn" title="Shopping Cart">
             <i class="fas fa-shopping-cart"></i>
-            <!-- <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger cart-count">
-              <%= typeof cartCount !=='undefined' ? cartCount : 0 %>
-            </span> -->
+            <% if (typeof cartCount !== 'undefined' && cartCount > 0) { %>
+              <span class="cart-badge"><%= cartCount %></span>
+            <% } %>
           </a>
+        </div>
 
+        <!-- Authentication Section -->
+        <div class="auth-section">
           <% if (!user) { %>
             <div class="auth-buttons">
-              <a href="/login" class="btn btn-link text-white">Login / Signup</a>
+              <a href="/login" class="auth-btn login-btn">
+                <i class="fas fa-sign-in-alt"></i>
+                Login
+              </a>
+              <a href="/signup" class="auth-btn signup-btn">
+                <i class="fas fa-user-plus"></i>
+                Sign Up
+              </a>
             </div>
           <% } else { %>
             <div class="dropdown">
-              <a class="btn btn-link dropdown-toggle user-name" href="#" role="button" data-bs-toggle="dropdown"
-                aria-expanded="false">
-                <i class="fas fa-user-circle fa-lg me-1"></i>
-                <%= user.fullname %>
-              </a>
-              <ul class="dropdown-menu dropdown-menu-end">
-                <li><a class="dropdown-item" href="/user/account">Account</a></li>
-                <li><a class="dropdown-item" href="/profile/orders">My Orders</a></li>
-                <li><a class="dropdown-item" href="/logout">Logout</a></li>
-              </ul>
+              <div class="user-profile" id="userProfileToggle">
+                <div class="user-avatar">
+                  <%= user.fullname ? user.fullname.charAt(0).toUpperCase() : (user.username ? user.username.charAt(0).toUpperCase() : 'U') %>
+                </div>
+                <div class="user-info">
+                  <div class="user-name"><%= user.name || 'User' %></div>
+                  
+                </div>
+                <i class="fas fa-chevron-down dropdown-arrow"></i>
+              </div>
+              
+              <div class="dropdown-menu-modern" id="userDropdownMenu">
+                <a class="dropdown-item-modern" href="/user/account">
+                  <i class="fas fa-user-circle"></i>
+                  Account
+                </a>
+                <a class="dropdown-item-modern" href="/profile/orders">
+                  <i class="fas fa-box"></i>
+                  My Orders
+                </a>
+                <div class="dropdown-divider"></div>
+                <a class="dropdown-item-modern logout-item" href="/logout">
+                  <i class="fas fa-sign-out-alt"></i>
+                  Logout
+                </a>
+              </div>
             </div>
           <% } %>
         </div>
       </div>
     </div>
-  </nav>
+  </header>
 
-  <!-- JS Scripts -->
+  <!-- JavaScript -->
   <script>
-    function openNav() {
-      document.getElementById("mySidebar").style.width = "250px";
+    function openSidebar() {
+      document.getElementById('mobileSidebar').classList.add('open');
+      document.getElementById('sidebarOverlay').classList.add('show');
+      document.body.style.overflow = 'hidden';
     }
-    function closeNav() {
-      document.getElementById("mySidebar").style.width = "0";
+
+    function closeSidebar() {
+      document.getElementById('mobileSidebar').classList.remove('open');
+      document.getElementById('sidebarOverlay').classList.remove('show');
+      document.body.style.overflow = '';
     }
+
+    // Close sidebar when clicking on a link
+    document.querySelectorAll('.sidebar-link').forEach(link => {
+      link.addEventListener('click', closeSidebar);
+    });
+
+    // Handle active nav link
+    const currentPath = window.location.pathname;
+    document.querySelectorAll('.nav-link-modern').forEach(link => {
+      link.classList.remove('active');
+      if (link.getAttribute('href') === currentPath || 
+          (currentPath === '/' && link.getAttribute('href') === '/')) {
+        link.classList.add('active');
+      }
+    });
+
+    // Enhanced dropdown functionality
+    document.addEventListener('DOMContentLoaded', function() {
+      const dropdownToggle = document.getElementById('userProfileToggle');
+      const dropdownMenu = document.getElementById('userDropdownMenu');
+      
+      if (dropdownToggle && dropdownMenu) {
+        dropdownToggle.addEventListener('click', function(e) {
+          e.preventDefault();
+          e.stopPropagation();
+          
+          // Toggle dropdown
+          const isOpen = dropdownMenu.classList.contains('show');
+          if (isOpen) {
+            dropdownMenu.classList.remove('show');
+            dropdownToggle.classList.remove('active');
+          } else {
+            dropdownMenu.classList.add('show');
+            dropdownToggle.classList.add('active');
+          }
+        });
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(e) {
+          if (!dropdownToggle.contains(e.target) && !dropdownMenu.contains(e.target)) {
+            dropdownMenu.classList.remove('show');
+            dropdownToggle.classList.remove('active');
+          }
+        });
+
+        // Close dropdown when clicking on dropdown items
+        dropdownMenu.querySelectorAll('.dropdown-item-modern').forEach(item => {
+          item.addEventListener('click', function() {
+            dropdownMenu.classList.remove('show');
+            dropdownToggle.classList.remove('active');
+          });
+        });
+      }
+    });
   </script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
-
 </html>

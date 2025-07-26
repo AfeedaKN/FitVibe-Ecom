@@ -40,11 +40,12 @@ router.post("/update-product-offer", adminAuth, productController.updateProductO
 router.delete("/deleteproduct/:id", adminAuth, productController.deleteProduct);
 router.put("/toggle-product-listing/:id", adminAuth, productController.toggleProductListing);
 
-router.get("/orders",adminAuth,orderController.loadOrders);
+router.get("/orders", adminAuth, orderController.loadOrders);
 router.post("/order/status", adminAuth, orderController.updateOrderStatus);
 router.get("/order/:id", adminAuth, orderController.viewOrderDetails);
-router.post('/order/return-approve/:orderId', adminAuth, orderController.approveReturn);
-router.post('/order/return-reject/:orderId', adminAuth, orderController.rejectReturn);
+router.post("/order/return-approve/:orderId", adminAuth, orderController.approveReturn);
+router.post("/order/return-reject/:orderId", adminAuth, orderController.rejectReturn);
+
 
 
 

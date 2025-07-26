@@ -72,13 +72,19 @@ router.post("/address/delete/:id", userAuth, addressController.deleteAddress);
 router.get("/user/account", userAuth, userProfileController.loadUserProfile); 
 router.get("/profile/edit", userAuth, userProfileController.loadEditProfile);
 router.post('/profile/edit', upload.single('profileImage'), userProfileController.updateProfile);
+router.post('/profile/send-otp', userAuth, userProfileController.sendProfileOtp);
+router.get('/profile/verify-otp', userAuth, userProfileController.loadProfileOtpVerification);
+router.post('/profile/verify-otp', userAuth, userProfileController.verifyProfileOtp);
+router.post('/profile/resend-otp', userAuth, userProfileController.resendProfileOtp);
 router.get('/profile/change-password',userAuth, userProfileController.getChangePasswordPage);
 router.post('/profile/change-password',userAuth, userProfileController.postChangePassword);
 
 
 router.get("/profile/orders", userAuth,orderController.getOrders);
 router.get("profile/order/:id", userAuth,orderController.getOrderDetail);
+router.post("/order/cancel/item", userAuth, orderController.cancelOrderItem);
 router.post("/order/cancel/:orderId",  orderController.cancelOrder);
+router.post("/order/return/item", userAuth, orderController.returnOrderItem);
 router.get("/order/invoice/:id", userAuth, orderController.downloadInvoice);
 router.post("/order/return/:orderId",userAuth, orderController.returnOrder);
 
@@ -86,4 +92,3 @@ router.get("/profile/Wallet", userAuth, walletController.getWalletPage);
 router.post("/wallet/add-funds", userAuth, walletController.addFunds);
 
 module.exports=router 
-

@@ -71,10 +71,10 @@ const getAddress = async (req, res) => {
       );
 
       if (!updated) {
-        return res.status(404).json({ message: "Address not found" });
+        return res.status(404).json({ success: false, message: "Address not found" });
       }
 
-      res.json({ success: true, message: "Address updated" });
+      res.json({ success: true, message: "Address updated successfully" });
     } else {
       const newAddress = await Address.create(addressData);
 
@@ -83,11 +83,16 @@ const getAddress = async (req, res) => {
         $push: { addresses: newAddress._id }
       });
 
-      res.redirect("/profile/addresses");
+      // Check if request is AJAX (from checkout page) or form submission
+      if (req.headers['content-type'] === 'application/json') {
+        res.json({ success: true, message: "Address added successfully" });
+      } else {
+        res.redirect("/profile/addresses");
+      }
     }
   } catch (error) {
     console.error("Save Address Error:", error);
-    res.status(500).json({ message: "Server Error" });
+    res.status(500).json({ success: false, message: "Server Error" });
   }
 };
 
@@ -108,10 +113,15 @@ const setDefaultAddress = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Address not found' });
     }
 
-    return res.redirect("/profile/addresses");
+    // Check if request is from checkout page (AJAX) or addresses page (form)
+    if (req.headers['content-type'] === 'application/json') {
+      return res.json({ success: true, message: 'Default address updated successfully' });
+    } else {
+      return res.redirect("/profile/addresses");
+    }
   } catch (error) {
     console.error("Set Default Address Error:", error);
-    res.status(500).json({ message: "Server Error" });
+    res.status(500).json({ success: false, message: "Server Error" });
   }
 };
 

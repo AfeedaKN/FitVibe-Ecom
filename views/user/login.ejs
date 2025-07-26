@@ -4,231 +4,512 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>FitVibe - Login</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <style>
-   * {
+    * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
     }
+
     body {
-      font-family: 'Arial', sans-serif;
-      line-height: 1.6;
-      background: #f4f4f4;
-    }
-    /* Navbar Styles */
-    .navbar {
-      background: linear-gradient(90deg, #1a1a1a, #333);
-      padding: 15px 30px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      color: white;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
-      position: sticky;
-      top: 0;
-      z-index: 1000;
-    }
-    .navbar .logo {
-      font-size: 24px;
-      font-weight: bold;
-    }
-    .navbar a {
-      color: white;
-      text-decoration: none;
-      margin: 0 20px;
-      font-size: 16px;
-      transition: color 0.3s;
-    }
-    .navbar a:hover {
-      color: #ffd700;
-    }
-    .nav-right a {
-      padding: 8px 15px;
-      border: 1px solid #ffd700;
-      border-radius: 25px;
-      transition: background 0.3s;
-    }
-    .nav-right a:hover {
-      background: #ffd700;
-      color: #1a1a1a;
-    }
-    .nav-right span {
-      margin-right: 20px;
-      font-size: 16px;
-    }
-    /* Signup Form Styles */
-    .signup-section {
-      max-width: 500px;
-      margin: 50px auto;
-      padding: 40px;
-      background: white;
-      border-radius: 10px;
-      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-      text-align: center;
-    }
-    .signup-section h2 {
-      font-size: 32px;
-      margin-bottom: 30px;
-      color: #1a1a1a;
-    }
-    .signup-form {
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-    }
-    .signup-form input {
-      padding: 12px;
-      font-size: 16px;
-      border: 1px solid #ddd;
-      border-radius: 5px;
-      outline: none;
-      transition: border 0.3s;
-    }
-    .signup-form input:focus {
-      border-color: #ffd700;
-    }
-    .signup-form button {
-      padding: 12px;
-      font-size: 18px;
-      font-weight: bold;
-      background: #ffd700;
-      color: #1a1a1a;
-      border: none;
-      border-radius: 25px;
-      cursor: pointer;
-      transition: background 0.3s;
-    }
-    .signup-form button:hover {
-      background: #e6c200;
-    }
-    .signup-form .login-link {
-      margin-top: 15px;
-      font-size: 14px;
-      color: #666;
-    }
-    .signup-form .login-link a {
-      color: #ffd700;
-      text-decoration: none;
-    }
-    .signup-form .login-link a:hover {
-      text-decoration: underline;
-    }
-    .forgot-password {
-      font-size: 14px;
-      text-align: right; /* Align to the right */
-      color: #666;
-    }
-    .forgot-password a {
-      color: #ffd700;
-      text-decoration: none;
-    }
-    .forgot-password a:hover {
-      text-decoration: underline;
-    }
-    /* Footer Styles */
-    .footer {
-      background: linear-gradient(90deg, #1a1a1a, #333);
-      color: white;
-      padding: 40px 20px;
-      text-align: center;
-      box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.3);
-      position: relative;
-      bottom: 0;
-      width: 100%;
-    }
-    .footer a {
-      color: #ffd700;
-      text-decoration: none;
-      margin: 0 15px;
-      font-size: 16px;
-      transition: color 0.3s;
-    }
-    .footer a:hover {
-      color: white;
-    }
-    .footer p {
-      margin: 10px 0;
-      font-size: 14px;
-    }
-    .footer .social-icons {
-      margin-top: 20px;
-    }
-    .footer .social-icons a {
-      font-size: 20px;
-      margin: 0 10px;
-    }
-    .error-message {
-      color: red;
-      font-size: 14px;
-      text-align: left;
-      justify-content: center;
-      align-items: center;
-    }
-    .success-message {
-  color: green;
-  font-size: 14px;
-  text-align: left;
-  justify-content: center;
-  align-items: center;
-}
-    .google-signin-btn {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 12px;
-      font-size: 18px;
-      font-weight: bold;
-      background: #ffffff;
-      color: #1a1a1a;
-      border: 1px solid #ddd;
-      border-radius: 25px;
-      cursor: pointer;
-      transition: background 0.3s;
-    }
-    .google-signin-btn img {
-      width: 20px;
-      margin-right: 10px;
-    }
-    .google-signin-btn:hover {
-      background: #f8f8f8;
+      padding: 2rem 1rem;
     }
 
+    .login-container {
+      width: 100%;
+      max-width: 480px;
+      background: #ffffff;
+      border-radius: 24px;
+      box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.25);
+      overflow: hidden;
+      position: relative;
+    }
+
+    .login-container::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 4px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+
+    .login-header {
+      padding: 3rem 2rem 1rem;
+      text-align: center;
+      background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+    }
+
+    .brand-logo {
+      font-size: 2.5rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 0.5rem;
+      letter-spacing: -0.025em;
+    }
+
+    .login-title {
+      font-size: 1.75rem;
+      font-weight: 600;
+      color: #0f172a;
+      margin-bottom: 0.5rem;
+    }
+
+    .login-subtitle {
+      font-size: 0.875rem;
+      color: #64748b;
+      font-weight: 400;
+    }
+
+    .login-body {
+      padding: 2rem;
+    }
+
+    .login-form {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    .form-group {
+      position: relative;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 1rem 1.25rem;
+      font-size: 0.875rem;
+      border: 2px solid #e2e8f0;
+      border-radius: 12px;
+      outline: none;
+      transition: all 0.3s ease;
+      background: #ffffff;
+      color: #0f172a;
+      font-weight: 500;
+    }
+
+    .form-input:focus {
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+      transform: translateY(-2px);
+    }
+
+    .form-input::placeholder {
+      color: #94a3b8;
+      font-weight: 400;
+    }
+
+    .input-icon {
+      position: absolute;
+      right: 1rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #94a3b8;
+      font-size: 1rem;
+      transition: color 0.3s ease;
+    }
+
+    .form-input:focus + .input-icon {
+      color: #667eea;
+    }
+
+    .forgot-password {
+      text-align: right;
+      margin-top: -0.5rem;
+    }
+
+    .forgot-password a {
+      color: #667eea;
+      text-decoration: none;
+      font-size: 0.875rem;
+      font-weight: 500;
+      transition: color 0.3s ease;
+    }
+
+    .forgot-password a:hover {
+      color: #764ba2;
+      text-decoration: underline;
+    }
+
+    .login-btn {
+      width: 100%;
+      padding: 1rem 1.5rem;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: #ffffff;
+      border: none;
+      border-radius: 12px;
+      font-size: 0.875rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+
+    .login-btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 25px rgba(102, 126, 234, 0.4);
+    }
+
+    .login-btn:active {
+      transform: translateY(-1px);
+    }
+
+    .divider {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin: 1.5rem 0;
+    }
+
+    .divider::before,
+    .divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: #e2e8f0;
+    }
+
+    .divider span {
+      color: #94a3b8;
+      font-size: 0.875rem;
+      font-weight: 500;
+    }
+
+    .google-signin-btn {
+      width: 100%;
+      padding: 1rem 1.5rem;
+      background: #ffffff;
+      color: #374151;
+      border: 2px solid #e2e8f0;
+      border-radius: 12px;
+      font-size: 0.875rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.75rem;
+      text-decoration: none;
+    }
+
+    .google-signin-btn:hover {
+      background: #f8fafc;
+      border-color: #cbd5e1;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 15px -3px rgba(0, 0, 0, 0.1);
+    }
+
+    .google-icon {
+      width: 20px;
+      height: 20px;
+    }
+
+    .login-footer {
+      padding: 1.5rem 2rem 2rem;
+      text-align: center;
+      background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+    }
+
+    .signup-link {
+      font-size: 0.875rem;
+      color: #64748b;
+      font-weight: 500;
+    }
+
+    .signup-link a {
+      color: #667eea;
+      text-decoration: none;
+      font-weight: 600;
+      transition: color 0.3s ease;
+    }
+
+    .signup-link a:hover {
+      color: #764ba2;
+      text-decoration: underline;
+    }
+
+    .error-message {
+      color: #ef4444;
+      font-size: 0.75rem;
+      font-weight: 500;
+      margin-top: 0.5rem;
+      padding: 0.5rem 0.75rem;
+      background: rgba(239, 68, 68, 0.1);
+      border-radius: 8px;
+      border-left: 3px solid #ef4444;
+    }
+
+    .success-message {
+      color: #10b981;
+      font-size: 0.75rem;
+      font-weight: 500;
+      margin-top: 0.5rem;
+      padding: 0.5rem 0.75rem;
+      background: rgba(16, 185, 129, 0.1);
+      border-radius: 8px;
+      border-left: 3px solid #10b981;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 640px) {
+      body {
+        padding: 1rem 0.5rem;
+      }
+
+      .login-container {
+        max-width: 100%;
+        border-radius: 16px;
+      }
+
+      .login-header {
+        padding: 2rem 1.5rem 1rem;
+      }
+
+      .brand-logo {
+        font-size: 2rem;
+      }
+
+      .login-title {
+        font-size: 1.5rem;
+      }
+
+      .login-body {
+        padding: 1.5rem;
+      }
+
+      .login-footer {
+        padding: 1rem 1.5rem 1.5rem;
+      }
+    }
+
+    /* Animation */
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .login-container {
+      animation: slideUp 0.5s ease-out;
+    }
+
+    /* Loading state */
+    .login-btn:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .login-btn:disabled:hover {
+      transform: none;
+      box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+    }
   </style>
 </head>
 <body>
+  <div class="login-container">
+    <!-- Header -->
+    <div class="login-header">
+      <div class="brand-logo">FitVibe</div>
+      <h1 class="login-title">Welcome Back</h1>
+      <p class="login-subtitle">Sign in to your account to continue</p>
+    </div>
 
-<div class="signup-section">
-  <h2>Login to Your Account</h2>
-  
-    <form id="loginform" class="signup-form" action="/login" method="POST">
-    <input id="loginEmail" type="email" name="email" placeholder="Email" />
-    <div id="loginError1" class="error-message"></div>
+    <!-- Body -->
+    <div class="login-body">
+      <!-- Login Form -->
+      <form id="loginform" class="login-form" action="/login" method="POST">
+        <div class="form-group">
+          <input 
+            id="loginEmail" 
+            type="email" 
+            name="email" 
+            placeholder="Enter your email" 
+            class="form-input"
+            required
+          />
+          <i class="fas fa-envelope input-icon"></i>
+          <div id="loginError1" class="error-message" style="display: none;"></div>
+        </div>
 
-    <input id="loginPassword" type="password" name="password" placeholder="Password" />
-    <% if (message) { %>
-  <div class="<%= message.includes('successfully') ? 'success-message' : 'error-message' %>">
-    <%= message %>
+        <div class="form-group">
+          <input 
+            id="loginPassword" 
+            type="password" 
+            name="password" 
+            placeholder="Enter your password" 
+            class="form-input"
+            required
+          />
+          <i class="fas fa-lock input-icon"></i>
+          <div id="loginError2" class="error-message" style="display: none;"></div>
+        </div>
+
+        <div class="forgot-password">
+          <a href="/forgot-password">Forgot Password?</a>
+        </div>
+
+        <!-- Error/Success Messages -->
+        <% if (message) { %>
+          <div class="<%= message.includes('successfully') ? 'success-message' : 'error-message' %>">
+            <i class="fas <%= message.includes('successfully') ? 'fa-check-circle' : 'fa-exclamation-circle' %>"></i>
+            <%= message %>
+          </div>
+        <% } %>
+
+        <button type="submit" class="login-btn" id="loginBtn">
+          <i class="fas fa-sign-in-alt"></i>
+          Sign In
+        </button>
+
+        <div class="divider">
+          <span>or continue with</span>
+        </div>
+
+        <a href="/auth/google" class="google-signin-btn" onclick="handleGoogleSignIn()">
+          <img src="https://www.google.com/favicon.ico" alt="Google" class="google-icon" />
+          Sign in with Google
+        </a>
+      </form>
+    </div>
+
+    <!-- Footer -->
+    <div class="login-footer">
+      <div class="signup-link">
+        Don't have an account? <a href="/signup">Create Account</a>
+      </div>
+    </div>
   </div>
-<% } %>
-    <div id="loginError2" class="error-message"></div>
-    <div class="forgot-password">
-      <a href="/forgot-password">Forgot Password?</a>
-    </div>
 
-    <button type="submit">Login</button>
-          <a href="/auth/google" class="google-signin-btn" onclick="handleGoogleSignIn()">
-        <img src="https://www.google.com/favicon.ico" alt="Google Icon" />
-        Sign in with Google
-      </a>
-    <div class="login-link">
-      Don't you have an account? <a href="/signup">Signup</a>
-    </div>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const loginForm = document.getElementById('loginform');
+      const loginBtn = document.getElementById('loginBtn');
+      const emailInput = document.getElementById('loginEmail');
+      const passwordInput = document.getElementById('loginPassword');
+      const emailError = document.getElementById('loginError1');
+      const passwordError = document.getElementById('loginError2');
 
+      // Form validation
+      function validateEmail(email) {
+        const emailPattern = /^[a-zA-Z0-9._-]+@([a-zA-Z0-9.-]+)\.([a-zA-Z]{2,4})$/;
+        return emailPattern.test(email);
+      }
 
-    
-    
-  </form>
-</div>
+      function showError(element, message) {
+        element.textContent = message;
+        element.style.display = 'block';
+      }
 
+      function hideError(element) {
+        element.style.display = 'none';
+      }
+
+      // Real-time validation
+      emailInput.addEventListener('blur', function() {
+        const email = this.value.trim();
+        if (!email) {
+          showError(emailError, 'Email is required');
+        } else if (!validateEmail(email)) {
+          showError(emailError, 'Please enter a valid email address');
+        } else {
+          hideError(emailError);
+        }
+      });
+
+      passwordInput.addEventListener('blur', function() {
+        const password = this.value;
+        if (!password) {
+          showError(passwordError, 'Password is required');
+        } else if (password.length < 6) {
+          showError(passwordError, 'Password must be at least 6 characters');
+        } else {
+          hideError(passwordError);
+        }
+      });
+
+      // Form submission
+      loginForm.addEventListener('submit', function(e) {
+        const email = emailInput.value.trim();
+        const password = passwordInput.value;
+        let hasErrors = false;
+
+        // Validate email
+        if (!email) {
+          showError(emailError, 'Email is required');
+          hasErrors = true;
+        } else if (!validateEmail(email)) {
+          showError(emailError, 'Please enter a valid email address');
+          hasErrors = true;
+        } else {
+          hideError(emailError);
+        }
+
+        // Validate password
+        if (!password) {
+          showError(passwordError, 'Password is required');
+          hasErrors = true;
+        } else if (password.length < 6) {
+          showError(passwordError, 'Password must be at least 6 characters');
+          hasErrors = true;
+        } else {
+          hideError(passwordError);
+        }
+
+        if (hasErrors) {
+          e.preventDefault();
+          return;
+        }
+
+        // Show loading state
+        loginBtn.disabled = true;
+        loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Signing In...';
+      });
+
+      // Clear errors on input
+      emailInput.addEventListener('input', function() {
+        hideError(emailError);
+      });
+
+      passwordInput.addEventListener('input', function() {
+        hideError(passwordError);
+      });
+
+      // Enter key support
+      document.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+          loginForm.dispatchEvent(new Event('submit'));
+        }
+      });
+    });
+
+    // Google Sign-In Handler
+    function handleGoogleSignIn() {
+      // Add any Google Sign-In specific logic here
+      console.log('Google Sign-In initiated');
+    }
+  </script>
 </body>
 </html>

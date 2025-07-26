@@ -4,6 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>FitVibe - Sign Up</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <!-- Google Sign-In Script -->
   <script src="https://accounts.google.com/gsi/client" async defer></script>
   <style>
@@ -12,195 +14,425 @@
       padding: 0;
       box-sizing: border-box;
     }
+
     body {
-      font-family: 'Arial', sans-serif;
-      line-height: 1.6;
-      background: #f4f4f4;
-    }
-    /* Navbar Styles */
-    .navbar {
-      background: linear-gradient(90deg, #1a1a1a, #333);
-      padding: 15px 30px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      color: white;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
-      position: sticky;
-      top: 0;
-      z-index: 1000;
-    }
-    .navbar .logo {
-      font-size: 24px;
-      font-weight: bold;
-    }
-    .navbar a {
-      color: white;
-      text-decoration: none;
-      margin: 0 20px;
-      font-size: 16px;
-      transition: color 0.3s;
-    }
-    .navbar a:hover {
-      color: #ffd700;
-    }
-    .nav-right a {
-      padding: 8px 15px;
-      border: 1px solid #ffd700;
-      border-radius: 25px;
-      transition: background 0.3s;
-    }
-    .nav-right a:hover {
-      background: #ffd700;
-      color: #1a1a1a;
-    }
-    .nav-right span {
-      margin-right: 20px;
-      font-size: 16px;
-    }
-    /* Signup Form Styles */
-    .signup-section {
-      max-width: 500px;
-      margin: 50px auto;
-      padding: 40px;
-      background: white;
-      border-radius: 10px;
-      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-      text-align: center;
-    }
-    .signup-section h2 {
-      font-size: 32px;
-      margin-bottom: 30px;
-      color: #1a1a1a;
-    }
-    .signup-form {
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-    }
-    .signup-form input {
-      padding: 12px;
-      font-size: 16px;
-      border: 1px solid #ddd;
-      border-radius: 5px;
-      outline: none;
-      transition: border 0.3s;
-    }
-    .signup-form input:focus {
-      border-color: #ffd700;
-    }
-    .signup-form button {
-      padding: 12px;
-      font-size: 18px;
-      font-weight: bold;
-      background: #ffd700;
-      color: #1a1a1a;
-      border: none;
-      border-radius: 25px;
-      cursor: pointer;
-      transition: background 0.3s;
-    }
-    .signup-form button:hover {
-      background: #e6c200;
-    }
-    .signup-form .google-signin-btn {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 12px;
-      font-size: 18px;
-      font-weight: bold;
+      padding: 2rem 1rem;
+    }
+
+    .signup-container {
+      width: 100%;
+      max-width: 520px;
       background: #ffffff;
-      color: #1a1a1a;
-      border: 1px solid #ddd;
-      border-radius: 25px;
+      border-radius: 24px;
+      box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.25);
+      overflow: hidden;
+      position: relative;
+    }
+
+    .signup-container::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 4px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+
+    .signup-header {
+      padding: 3rem 2rem 1rem;
+      text-align: center;
+      background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+    }
+
+    .brand-logo {
+      font-size: 2.5rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 0.5rem;
+      letter-spacing: -0.025em;
+    }
+
+    .signup-title {
+      font-size: 1.75rem;
+      font-weight: 600;
+      color: #0f172a;
+      margin-bottom: 0.5rem;
+    }
+
+    .signup-subtitle {
+      font-size: 0.875rem;
+      color: #64748b;
+      font-weight: 400;
+    }
+
+    .signup-body {
+      padding: 2rem;
+    }
+
+    .signup-form {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    .form-group {
+      position: relative;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 1rem 1.25rem;
+      font-size: 0.875rem;
+      border: 2px solid #e2e8f0;
+      border-radius: 12px;
+      outline: none;
+      transition: all 0.3s ease;
+      background: #ffffff;
+      color: #0f172a;
+      font-weight: 500;
+    }
+
+    .form-input:focus {
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+      transform: translateY(-2px);
+    }
+
+    .form-input::placeholder {
+      color: #94a3b8;
+      font-weight: 400;
+    }
+
+    .input-icon {
+      position: absolute;
+      right: 1rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #94a3b8;
+      font-size: 1rem;
+      transition: color 0.3s ease;
+    }
+
+    .form-input:focus + .input-icon {
+      color: #667eea;
+    }
+
+    .signup-btn {
+      width: 100%;
+      padding: 1rem 1.5rem;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: #ffffff;
+      border: none;
+      border-radius: 12px;
+      font-size: 0.875rem;
+      font-weight: 600;
       cursor: pointer;
-      transition: background 0.3s;
+      transition: all 0.3s ease;
+      box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
     }
-    .signup-form .google-signin-btn img {
-      width: 20px;
-      margin-right: 10px;
+
+    .signup-btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 25px rgba(102, 126, 234, 0.4);
     }
-    .signup-form .google-signin-btn:hover {
-      background: #f8f8f8;
+
+    .signup-btn:active {
+      transform: translateY(-1px);
     }
-    .signup-form .login-link {
-      margin-top: 15px;
-      font-size: 14px;
-      color: #666;
+
+    .divider {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin: 1.5rem 0;
     }
-    .signup-form .login-link a {
-      color: #ffd700;
+
+    .divider::before,
+    .divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: #e2e8f0;
+    }
+
+    .divider span {
+      color: #94a3b8;
+      font-size: 0.875rem;
+      font-weight: 500;
+    }
+
+    .google-signin-btn {
+      width: 100%;
+      padding: 1rem 1.5rem;
+      background: #ffffff;
+      color: #374151;
+      border: 2px solid #e2e8f0;
+      border-radius: 12px;
+      font-size: 0.875rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.75rem;
       text-decoration: none;
     }
-    .signup-form .login-link a:hover {
+
+    .google-signin-btn:hover {
+      background: #f8fafc;
+      border-color: #cbd5e1;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 15px -3px rgba(0, 0, 0, 0.1);
+    }
+
+    .google-icon {
+      width: 20px;
+      height: 20px;
+    }
+
+    .signup-footer {
+      padding: 1.5rem 2rem 2rem;
+      text-align: center;
+      background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+    }
+
+    .login-link {
+      font-size: 0.875rem;
+      color: #64748b;
+      font-weight: 500;
+    }
+
+    .login-link a {
+      color: #667eea;
+      text-decoration: none;
+      font-weight: 600;
+      transition: color 0.3s ease;
+    }
+
+    .login-link a:hover {
+      color: #764ba2;
       text-decoration: underline;
     }
-    /* Footer Styles */
-    .footer {
-      background: linear-gradient(90deg, #1a1a1a, #333);
-      color: white;
-      padding: 40px 20px;
-      text-align: center;
-      box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.3);
-      position: relative;
-      bottom: 0;
-      width: 100%;
-    }
-    .footer a {
-      color: #ffd700;
-      text-decoration: none;
-      margin: 0 15px;
-      font-size: 16px;
-      transition: color 0.3s;
-    }
-    .footer a:hover {
-      color: white;
-    }
-    .footer p {
-      margin: 10px 0;
-      font-size: 14px;
-    }
-    .footer .social-icons {
-      margin-top: 20px;
-    }
-    .footer .social-icons a {
-      font-size: 20px;
-      margin: 0 10px;
-    }
+
     .error-message {
-      color: red;
+      color: #ef4444;
       font-size: 0.75rem;
+      font-weight: 500;
+      margin-top: 0.5rem;
+      padding: 0.5rem 0.75rem;
+      background: rgba(239, 68, 68, 0.1);
+      border-radius: 8px;
+      border-left: 3px solid #ef4444;
       display: none;
     }
+
+    .success-message {
+      color: #10b981;
+      font-size: 0.75rem;
+      font-weight: 500;
+      margin-top: 0.5rem;
+      padding: 0.5rem 0.75rem;
+      background: rgba(16, 185, 129, 0.1);
+      border-radius: 8px;
+      border-left: 3px solid #10b981;
+    }
+
+    /* Form Grid for larger screens */
+    @media (min-width: 640px) {
+      .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+      }
+    }
+
+    /* Responsive Design */
+    @media (max-width: 640px) {
+      body {
+        padding: 1rem 0.5rem;
+      }
+
+      .signup-container {
+        max-width: 100%;
+        border-radius: 16px;
+      }
+
+      .signup-header {
+        padding: 2rem 1.5rem 1rem;
+      }
+
+      .brand-logo {
+        font-size: 2rem;
+      }
+
+      .signup-title {
+        font-size: 1.5rem;
+      }
+
+      .signup-body {
+        padding: 1.5rem;
+      }
+
+      .signup-footer {
+        padding: 1rem 1.5rem 1.5rem;
+      }
+    }
+
+    /* Animation */
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .signup-container {
+      animation: slideUp 0.5s ease-out;
+    }
+
+    /* Loading state */
+    .signup-btn:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .signup-btn:disabled:hover {
+      transform: none;
+      box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+    }
+
+    /* Password strength indicator */
+    .password-strength {
+      margin-top: 0.5rem;
+      font-size: 0.75rem;
+    }
+
+    .strength-weak { color: #ef4444; }
+    .strength-medium { color: #f59e0b; }
+    .strength-strong { color: #10b981; }
   </style>
 </head>
 <body>
-  <!-- Signup Section -->
-  <div class="signup-section">
-    <h2>Create Your Account</h2>
-    <form id="signform" class="signup-form" action="/signup" method="POST">
-      <input id="name" type="text" name="name" placeholder="Username" />
-      <div id="error1" class="error-message"></div>
+  <div class="signup-container">
+    <!-- Header -->
+    <div class="signup-header">
+      <div class="brand-logo">FitVibe</div>
+      <h1 class="signup-title">Create Account</h1>
+      <p class="signup-subtitle">Join FitVibe and start your fitness journey</p>
+    </div>
 
-      <input id="email" type="email" name="email" placeholder="Email" />
-      <div id="error2" class="error-message"></div>
+    <!-- Body -->
+    <div class="signup-body">
+      <!-- Signup Form -->
+      <form id="signform" class="signup-form" action="/signup" method="POST">
+        <div class="form-group">
+          <input 
+            id="name" 
+            type="text" 
+            name="name" 
+            placeholder="Enter your full name" 
+            class="form-input"
+            required
+          />
+          <i class="fas fa-user input-icon"></i>
+          <div id="error1" class="error-message"></div>
+        </div>
 
-      <input id="phone" type="number" name="phone" placeholder="Phone Number" />
-      <div id="error3" class="error-message"></div>
+        <div class="form-group">
+          <input 
+            id="email" 
+            type="email" 
+            name="email" 
+            placeholder="Enter your email" 
+            class="form-input"
+            required
+          />
+          <i class="fas fa-envelope input-icon"></i>
+          <div id="error2" class="error-message"></div>
+        </div>
 
-      <input id="password" type="password" name="password" placeholder="Password" />
-      <div id="error4" class="error-message"></div>
+        <div class="form-group">
+          <input 
+            id="phone" 
+            type="tel" 
+            name="phone" 
+            placeholder="Enter your phone number" 
+            class="form-input"
+            required
+          />
+          <i class="fas fa-phone input-icon"></i>
+          <div id="error3" class="error-message"></div>
+        </div>
 
-      <input id="confirmPassword" type="password" name="confirmPassword" placeholder="Confirm Password" />
-      <div id="error5" class="error-message"></div>
+        <div class="form-group">
+          <input 
+            id="password" 
+            type="password" 
+            name="password" 
+            placeholder="Create a password" 
+            class="form-input"
+            required
+          />
+          <i class="fas fa-lock input-icon"></i>
+          <div id="error4" class="error-message"></div>
+          <div id="passwordStrength" class="password-strength"></div>
+        </div>
 
-      <button type="submit">Sign Up</button>
-      <a href="/auth/google" class="google-signin-btn" onclick="handleGoogleSignIn()">
-        <img src="https://www.google.com/favicon.ico" alt="Google Icon" />
-        Sign in with Google
-      </a>
-    </form>
+        <div class="form-group">
+          <input 
+            id="confirmPassword" 
+            type="password" 
+            name="confirmPassword" 
+            placeholder="Confirm your password" 
+            class="form-input"
+            required
+          />
+          <i class="fas fa-lock input-icon"></i>
+          <div id="error5" class="error-message"></div>
+        </div>
+
+        <button type="submit" class="signup-btn" id="signupBtn">
+          <i class="fas fa-user-plus"></i>
+          Create Account
+        </button>
+
+        <div class="divider">
+          <span>or continue with</span>
+        </div>
+
+        <a href="/auth/google" class="google-signin-btn" onclick="handleGoogleSignIn()">
+          <img src="https://www.google.com/favicon.ico" alt="Google" class="google-icon" />
+          Sign up with Google
+        </a>
+      </form>
+    </div>
+
+    <!-- Footer -->
+    <div class="signup-footer">
+      <div class="login-link">
+        Already have an account? <a href="/login">Sign In</a>
+      </div>
+    </div>
   </div>
 
   <script>
@@ -215,135 +447,175 @@
     const error3 = document.getElementById("error3");
     const error4 = document.getElementById("error4");
     const error5 = document.getElementById("error5");
+    const passwordStrength = document.getElementById("passwordStrength");
 
     const signform = document.getElementById("signform");
+    const signupBtn = document.getElementById("signupBtn");
 
-    function nameValidateChecking(e) {
+    function showError(element, message) {
+      element.textContent = message;
+      element.style.display = "block";
+    }
+
+    function hideError(element) {
+      element.style.display = "none";
+    }
+
+    function checkPasswordStrength(password) {
+      let strength = 0;
+      let feedback = "";
+
+      if (password.length >= 8) strength++;
+      if (/[a-z]/.test(password)) strength++;
+      if (/[A-Z]/.test(password)) strength++;
+      if (/[0-9]/.test(password)) strength++;
+      if (/[^A-Za-z0-9]/.test(password)) strength++;
+
+      switch (strength) {
+        case 0:
+        case 1:
+        case 2:
+          feedback = "Weak password";
+          passwordStrength.className = "password-strength strength-weak";
+          break;
+        case 3:
+        case 4:
+          feedback = "Medium strength";
+          passwordStrength.className = "password-strength strength-medium";
+          break;
+        case 5:
+          feedback = "Strong password";
+          passwordStrength.className = "password-strength strength-strong";
+          break;
+      }
+
+      passwordStrength.textContent = password ? feedback : "";
+    }
+
+    function nameValidateChecking() {
       const nameval = nameid.value.trim();
       const namepattern = /^[A-Za-z\s]+$/;
 
       if (nameval === "") {
-        error1.style.display = "block";
-        error1.innerHTML = "Please enter a valid name";
+        showError(error1, "Please enter your full name");
+        return false;
+      } else if (nameval.length < 2) {
+        showError(error1, "Name must be at least 2 characters");
+        return false;
       } else if (!namepattern.test(nameval)) {
-        error1.style.display = "block";
-        error1.innerHTML = "Name can only contain alphabets and spaces";
+        showError(error1, "Name can only contain letters and spaces");
+        return false;
       } else {
-        error1.style.display = "none";
-        error1.innerHTML = "";
+        hideError(error1);
+        return true;
       }
     }
 
-    function emailValidateChecking(e) {
-      const emailval = emailid.value;
+    function emailValidateChecking() {
+      const emailval = emailid.value.trim();
       const emailpattern = /^[a-zA-Z0-9._-]+@([a-zA-Z0-9.-]+)\.([a-zA-Z]{2,4})$/;
 
-      if (!emailpattern.test(emailval)) {
-        error2.style.display = "block";
-        error2.innerHTML = "Invalid email format";
+      if (!emailval) {
+        showError(error2, "Email is required");
+        return false;
+      } else if (!emailpattern.test(emailval)) {
+        showError(error2, "Please enter a valid email address");
+        return false;
       } else {
-        error2.style.display = "none";
-        error2.innerHTML = "";
+        hideError(error2);
+        return true;
       }
     }
 
-    function phoneValidateChecking(e) {
-      const phoneval = phoneid.value;
+    function phoneValidateChecking() {
+      const phoneval = phoneid.value.trim();
 
-      if (phoneval.trim() === "") {
-        error3.style.display = "block";
-        error3.innerHTML = "Enter valid phone number";
-      } else if (phoneval.length !== 10) {
-        error3.style.display = "block";
-        error3.innerHTML = "Enter 10 digit number";
+      if (phoneval === "") {
+        showError(error3, "Phone number is required");
+        return false;
+      } else if (!/^\d{10}$/.test(phoneval)) {
+        showError(error3, "Please enter a valid 10-digit phone number");
+        return false;
       } else {
-        error3.style.display = "none";
-        error3.innerHTML = "";
+        hideError(error3);
+        return true;
       }
     }
 
-    function passValidateChecking(e) {
+    function passValidateChecking() {
       const passval = passid.value;
       const cpassval = cpassid.value;
       const alpha = /[a-zA-Z]/;
       const digit = /\d/;
 
+      let isValid = true;
+
       if (passval.length < 8) {
-        error4.style.display = "block";
-        error4.innerHTML = "Should contain at least 8 characters";
+        showError(error4, "Password must be at least 8 characters");
+        isValid = false;
       } else if (!alpha.test(passval) || !digit.test(passval)) {
-        error4.style.display = "block";
-        error4.innerHTML = "Should contain numbers and alphabets";
+        showError(error4, "Password must contain both letters and numbers");
+        isValid = false;
       } else {
-        error4.style.display = "none";
-        error4.innerHTML = "";
+        hideError(error4);
       }
 
-      if (passval !== cpassval) {
-        error5.style.display = "block";
-        error5.innerHTML = "Passwords do not match";
-      } else {
-        error5.style.display = "none";
-        error5.innerHTML = "";
+      if (cpassval && passval !== cpassval) {
+        showError(error5, "Passwords do not match");
+        isValid = false;
+      } else if (cpassval) {
+        hideError(error5);
       }
+
+      return isValid;
     }
 
-    document.addEventListener("DOMContentLoaded", function () {
-      signform.addEventListener("submit", function (e) {
-        nameValidateChecking(e);
-        emailValidateChecking(e);
-        phoneValidateChecking(e);
-        passValidateChecking(e);
+    // Real-time validation
+    nameid.addEventListener('blur', nameValidateChecking);
+    nameid.addEventListener('input', () => hideError(error1));
 
-        if (
-          error1.innerHTML ||
-          error2.innerHTML ||
-          error3.innerHTML ||
-          error4.innerHTML ||
-          error5.innerHTML
-        ) {
-          e.preventDefault();
-        }
-      });
+    emailid.addEventListener('blur', emailValidateChecking);
+    emailid.addEventListener('input', () => hideError(error2));
+
+    phoneid.addEventListener('blur', phoneValidateChecking);
+    phoneid.addEventListener('input', () => hideError(error3));
+
+    passid.addEventListener('input', function() {
+      checkPasswordStrength(this.value);
+      passValidateChecking();
+    });
+
+    cpassid.addEventListener('input', passValidateChecking);
+
+    // Form submission
+    signform.addEventListener("submit", function (e) {
+      const isNameValid = nameValidateChecking();
+      const isEmailValid = emailValidateChecking();
+      const isPhoneValid = phoneValidateChecking();
+      const isPasswordValid = passValidateChecking();
+
+      if (!isNameValid || !isEmailValid || !isPhoneValid || !isPasswordValid) {
+        e.preventDefault();
+        return;
+      }
+
+      // Show loading state
+      signupBtn.disabled = true;
+      signupBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating Account...';
     });
 
     // Google Sign-In Handler
     function handleGoogleSignIn() {
-      // Initialize Google Sign-In
-      google.accounts.id.initialize({
-        client_id: 'YOUR_GOOGLE_CLIENT_ID', // Replace with your Google Client ID
-        callback: handleCredentialResponse
-      });
-
-      // Prompt user to sign in
-      google.accounts.id.prompt();
+      console.log('Google Sign-In initiated');
+      // Add Google Sign-In logic here
     }
 
-    function handleCredentialResponse(response) {
-      // Send the ID token to your backend for verification
-      const idToken = response.credential;
-      fetch('/google-signin', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ id_token: idToken })
-      })
-      .then(response => response.json())
-      .then(data => {
-        if (data.success) {
-          // Redirect or update UI after successful sign-in
-          alert('Google Sign-In successful!');
-          // Example: window.location.href = '/dashboard';
-        } else {
-          alert('Google Sign-In failed: ' + data.error);
-        }
-      })
-      .catch(error => {
-        console.error('Error during Google Sign-In:', error);
-        alert('An error occurred during Google Sign-In.');
-      });
-    }
+    // Enter key support
+    document.addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+        signform.dispatchEvent(new Event('submit'));
+      }
+    });
   </script>
 </body>
 </html>

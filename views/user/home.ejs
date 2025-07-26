@@ -4,567 +4,494 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>FitVibe - Premium Men's Shirts</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-  <link rel="stylesheet" href="/css/styles.css">
+  <style>
+    /* Professional Home Page - Matching Profile Theme */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f8fafc;
+      color: #1e293b;
+      line-height: 1.6;
+    }
+
+    /* Hero Banner */
+    .banner {
+      position: relative;
+      height: 70vh;
+      min-height: 500px;
+      overflow: hidden;
+      border-radius: 0 0 24px 24px;
+      margin-bottom: 4rem;
+    }
+
+    .carousel {
+      width: 100%;
+      height: 100%;
+      position: relative;
+    }
+
+    .carousel img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .banner-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(135deg, rgba(0, 0, 0, 0.6) 0%, rgba(0, 0, 0, 0.3) 100%);
+      z-index: 1;
+    }
+
+    .banner-content {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+      color: #ffffff;
+      z-index: 2;
+    }
+
+    .banner-content h1 {
+      font-size: 3.5rem;
+      font-weight: 700;
+      margin-bottom: 1.5rem;
+      letter-spacing: -0.025em;
+      text-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    }
+
+    .banner-content a {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 1rem 2rem;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: #ffffff;
+      text-decoration: none;
+      border-radius: 50px;
+      font-size: 1.125rem;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+    }
+
+    .banner-content a:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 15px 35px rgba(102, 126, 234, 0.4);
+      color: #ffffff;
+    }
+
+    .carousel-arrow {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 50px;
+      height: 50px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #ffffff;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      z-index: 3;
+      backdrop-filter: blur(10px);
+    }
+
+    .carousel-arrow:hover {
+      background: rgba(255, 255, 255, 0.3);
+      transform: translateY(-50%) scale(1.1);
+    }
+
+    .left-arrow {
+      left: 2rem;
+    }
+
+    .right-arrow {
+      right: 2rem;
+    }
+
+    /* Section Styling */
+    .section {
+      max-width: 1200px;
+      margin: 0 auto 4rem;
+      padding: 0 1.5rem;
+    }
+
+    .section h2 {
+      font-size: 2.25rem;
+      font-weight: 700;
+      color: #0f172a;
+      text-align: center;
+      margin-bottom: 3rem;
+      letter-spacing: -0.025em;
+      position: relative;
+    }
+
+    .section h2::after {
+      content: '';
+      position: absolute;
+      bottom: -0.5rem;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 60px;
+      height: 4px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: 2px;
+    }
+
+    /* Products Grid */
+    .products {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 2rem;
+      margin-bottom: 3rem;
+    }
+
+    .product-card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 20px;
+      padding: 1.5rem;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .product-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 4px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      transform: scaleX(0);
+      transition: transform 0.3s ease;
+    }
+
+    .product-card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    }
+
+    .product-card:hover::before {
+      transform: scaleX(1);
+    }
+
+    .product-card img {
+      width: 100%;
+      height: 250px;
+      object-fit: cover;
+      border-radius: 12px;
+      margin-bottom: 1rem;
+    }
+
+    .product-card h3 {
+      font-size: 1.125rem;
+      font-weight: 600;
+      color: #0f172a;
+      margin-bottom: 0.5rem;
+      line-height: 1.4;
+    }
+
+    .stars {
+      display: flex;
+      gap: 0.25rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .stars i {
+      color: #fbbf24;
+      font-size: 0.875rem;
+    }
+
+    .price {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #059669;
+      margin-bottom: 1rem;
+    }
+
+    .product-actions {
+      display: flex;
+      gap: 0.75rem;
+      align-items: center;
+    }
+
+    .view-btn {
+      flex: 1;
+      padding: 0.75rem 1rem;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: #ffffff;
+      text-decoration: none;
+      border-radius: 12px;
+      font-size: 0.875rem;
+      font-weight: 500;
+      text-align: center;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+
+    .view-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 15px -3px rgba(102, 126, 234, 0.4);
+      color: #ffffff;
+    }
+
+    .wishlist-btn {
+      width: 45px;
+      height: 45px;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #64748b;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .wishlist-btn:hover {
+      background: #ef4444;
+      color: #ffffff;
+      border-color: #ef4444;
+      transform: scale(1.05);
+    }
+
+    .wishlist-btn.active {
+      background: #ef4444;
+      color: #ffffff;
+      border-color: #ef4444;
+    }
+
+    /* View More Button */
+    .view-more {
+      text-align: center;
+    }
+
+    .view-more-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 1rem 2rem;
+      background: #ffffff;
+      color: #6366f1;
+      text-decoration: none;
+      border: 2px solid #6366f1;
+      border-radius: 50px;
+      font-size: 1rem;
+      font-weight: 500;
+      transition: all 0.3s ease;
+    }
+
+    .view-more-btn:hover {
+      background: #6366f1;
+      color: #ffffff;
+      transform: translateY(-2px);
+      box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.4);
+    }
+
+    /* Banner Sections */
+    .middle-banner,
+    .formal-banner {
+      position: relative;
+      height: 400px;
+      margin: 4rem 0;
+      border-radius: 24px;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .middle-banner::before,
+    .formal-banner::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(135deg, rgba(0, 0, 0, 0.5) 0%, rgba(0, 0, 0, 0.3) 100%);
+      z-index: 1;
+    }
+
+    .middle-banner-text,
+    .formal-banner-text {
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: #ffffff;
+      text-align: center;
+      z-index: 2;
+      position: relative;
+      text-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+      letter-spacing: -0.025em;
+    }
+
+    /* Collections */
+    .collections {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 2rem;
+    }
+
+    .collection-card {
+      position: relative;
+      height: 300px;
+      border-radius: 20px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .collection-card:hover {
+      transform: scale(1.02);
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+    }
+
+    .collection-card img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.3s ease;
+    }
+
+    .collection-card:hover img {
+      transform: scale(1.05);
+    }
+
+    .collection-overlay {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      padding: 2rem;
+      background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
+      color: #ffffff;
+    }
+
+    .collection-overlay h3 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+
+    .collection-overlay p {
+      font-size: 0.875rem;
+      opacity: 0.9;
+      line-height: 1.5;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      .banner-content h1 {
+        font-size: 2.5rem;
+      }
+
+      .banner-content a {
+        padding: 0.875rem 1.5rem;
+        font-size: 1rem;
+      }
+
+      .section {
+        padding: 0 1rem;
+        margin-bottom: 3rem;
+      }
+
+      .section h2 {
+        font-size: 1.875rem;
+        margin-bottom: 2rem;
+      }
+
+      .products {
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+      }
+
+      .carousel-arrow {
+        width: 40px;
+        height: 40px;
+      }
+
+      .left-arrow {
+        left: 1rem;
+      }
+
+      .right-arrow {
+        right: 1rem;
+      }
+
+      .middle-banner-text,
+      .formal-banner-text {
+        font-size: 2rem;
+        padding: 0 1rem;
+      }
+
+      .collections {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .banner {
+        height: 60vh;
+        min-height: 400px;
+      }
+
+      .banner-content h1 {
+        font-size: 2rem;
+      }
+
+      .products {
+        grid-template-columns: 1fr;
+      }
+
+      .product-card {
+        padding: 1rem;
+      }
+
+      .middle-banner-text,
+      .formal-banner-text {
+        font-size: 1.5rem;
+      }
+    }
+  </style>
 </head>
-<style>
-  /* Global Styles */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-:root {
-  --primary-color: #1a1a1a;
-  --secondary-color: #ffd700;
-  --accent-color: #e6c200;
-  --text-light: #ffffff;
-  --text-dark: #333333;
-  --background-light: #f9f9f9;
-  --card-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-  --transition: all 0.3s ease;
-}
-
-body {
-  font-family: 'Arial', sans-serif;
-  line-height: 1.6;
-  color: var(--text-dark);
-  background-color: var(--background-light);
-}
-
-/* Navbar Styles */
-.navbar {
-  background: linear-gradient(90deg, var(--primary-color), #333);
-  padding: 15px 30px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  color: var(--text-light);
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
-  position: sticky;
-  top: 0;
-  z-index: 1000;
-}
-
-.navbar .logo {
-  font-size: 24px;
-  font-weight: bold;
-}
-
-.navbar a {
-  color: var(--text-light);
-  text-decoration: none;
-  margin: 0 20px;
-  font-size: 16px;
-  transition: var(--transition);
-}
-
-.navbar a:hover {
-  color: var(--secondary-color);
-}
-
-.nav-right a {
-  padding: 8px 15px;
-  border: 1px solid var(--secondary-color);
-  border-radius: 25px;
-  transition: var(--transition);
-}
-
-.nav-right a:hover {
-  background: var(--secondary-color);
-  color: var(--primary-color);
-}
-
-.nav-right span {
-  margin-right: 20px;
-  font-size: 16px;
-}
-
-/* Banner and Carousel Styles */
-.banner {
-  position: relative;
-  width: 100%;
-  height: 600px;
-  overflow: hidden;
-}
-
-.carousel {
-  display: flex;
-  width: 300%;
-  height: 100%;
-  transition: transform 0.5s ease-in-out;
-}
-
-.carousel img {
-  width: 33.33%;
-  height: 100%;
-  object-fit: cover;
-  filter: brightness(0.7);
-}
-
-.banner-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.3);
-  z-index: 5;
-}
-
-.banner-content {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  color: var(--text-light);
-  text-align: center;
-  z-index: 10;
-  animation: fadeIn 1.5s ease-in-out;
-  width: 80%;
-}
-
-.banner-content h1 {
-  font-size: clamp(36px, 5vw, 64px);
-  font-weight: 900;
-  text-shadow: 2px 2px 10px rgba(0, 0, 0, 0.7);
-  margin-bottom: 20px;
-}
-
-.banner-content a {
-  display: inline-block;
-  padding: 15px 30px;
-  background: var(--secondary-color);
-  color: var(--primary-color);
-  text-decoration: none;
-  font-size: 18px;
-  font-weight: bold;
-  border-radius: 25px;
-  transition: var(--transition);
-}
-
-.banner-content a:hover {
-  background: var(--accent-color);
-  transform: translateY(-3px);
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-}
-
-@keyframes fadeIn {
-  0% { opacity: 0; transform: translate(-50%, -60%); }
-  100% { opacity: 1; transform: translate(-50%, -50%); }
-}
-
-.carousel-arrow {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  font-size: 24px;
-  color: var(--text-light);
-  background: rgba(0, 0, 0, 0.5);
-  width: 50px;
-  height: 50px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  border-radius: 50%;
-  transition: var(--transition);
-  z-index: 10;
-}
-
-.carousel-arrow:hover {
-  background: rgba(0, 0, 0, 0.8);
-  transform: translateY(-50%) scale(1.1);
-}
-
-.left-arrow {
-  left: 30px;
-}
-
-.right-arrow {
-  right: 30px;
-}
-
-/* Section and Product Styles */
-.section {
-  padding: 60px 20px;
-  text-align: center;
-  background: var(--background-light);
-}
-
-.section h2 {
-  font-size: 36px;
-  margin-bottom: 30px;
-  color: var(--text-dark);
-  position: relative;
-  display: inline-block;
-}
-
-.section h2::after {
-  content: '';
-  position: absolute;
-  bottom: -10px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 80px;
-  height: 3px;
-  background: var(--secondary-color);
-}
-
-.products {
-  display: flex;
-  justify-content: center;
-  gap: 30px;
-  flex-wrap: wrap;
-  margin-top: 20px;
-}
-
-.product-card {
-  width: 280px;
-  background: white;
-  padding: 15px;
-  border-radius: 10px;
-  box-shadow: var(--card-shadow);
-  transition: var(--transition);
-  overflow: hidden;
-}
-
-.product-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
-}
-
-.product-card img {
-  width: 100%;
-  height: 280px;
-  object-fit: cover;
-  border-radius: 8px;
-  transition: var(--transition);
-}
-
-.product-card:hover img {
-  transform: scale(1.05);
-}
-
-.product-card h3 {
-  font-size: 18px;
-  margin: 15px 0 10px;
-  color: var(--text-dark);
-}
-
-.price {
-  font-size: 18px;
-  color: #e74c3c;
-  font-weight: bold;
-  margin: 5px 0 15px;
-}
-
-.stars {
-  color: var(--secondary-color);
-  margin: 5px 0;
-  font-size: 14px;
-}
-
-.product-actions {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: 10px;
-}
-
-.view-btn {
-  padding: 8px 15px;
-  background: var(--primary-color);
-  color: var(--text-light);
-  text-decoration: none;
-  border-radius: 5px;
-  font-size: 14px;
-  transition: var(--transition);
-}
-
-.view-btn:hover {
-  background: #333;
-}
-
-.add-to-cart-btn {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: var(--secondary-color);
-  color: var(--primary-color);
-  border: none;
-  cursor: pointer;
-  transition: var(--transition);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.add-to-cart-btn:hover {
-  background: var(--accent-color);
-  transform: scale(1.1);
-}
-
-.view-more {
-  margin-top: 40px;
-}
-
-.view-more-btn {
-  display: inline-block;
-  padding: 12px 25px;
-  background: transparent;
-  color: var(--text-dark);
-  text-decoration: none;
-  font-weight: bold;
-  border: 2px solid var(--secondary-color);
-  border-radius: 25px;
-  transition: var(--transition);
-}
-
-.view-more-btn:hover {
-  background: var(--secondary-color);
-  color: var(--primary-color);
-}
-
-/* Banner Styles */
-.middle-banner, .formal-banner {
-  position: relative;
-  width: 100%;
-  height: 400px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--text-light);
-  text-align: center;
-  overflow: hidden;
-}
-
-.middle-banner::before, .formal-banner::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.4);
-  z-index: 1;
-}
-
-.middle-banner-text, .formal-banner-text {
-  position: relative;
-  z-index: 2;
-  font-size: clamp(28px, 4vw, 48px);
-  font-weight: bold;
-  text-shadow: 2px 2px 10px rgba(0, 0, 0, 0.7);
-  padding: 20px;
-  border-radius: 10px;
-  max-width: 80%;
-}
-
-/* Collections Styles */
-.collections {
-  display: flex;
-  justify-content: center;
-  gap: 30px;
-  flex-wrap: wrap;
-  margin-top: 20px;
-}
-
-.collection-card {
-  width: 350px;
-  height: 250px;
-  position: relative;
-  overflow: hidden;
-  border-radius: 10px;
-  box-shadow: var(--card-shadow);
-  text-decoration: none;
-}
-
-.collection-card img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transition: var(--transition);
-}
-
-.collection-card:hover img {
-  transform: scale(1.1);
-}
-
-.collection-overlay {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  padding: 20px;
-  background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
-  color: var(--text-light);
-  transition: var(--transition);
-}
-
-.collection-card:hover .collection-overlay {
-  background: linear-gradient(transparent, rgba(0, 0, 0, 0.9));
-}
-
-.collection-overlay h3 {
-  font-size: 22px;
-  margin-bottom: 5px;
-}
-
-.collection-overlay p {
-  font-size: 14px;
-  opacity: 0.8;
-}
-
-/* Footer Styles */
-.footer {
-  background: linear-gradient(90deg, var(--primary-color), #333);
-  color: var(--text-light);
-  padding: 40px 20px;
-  text-align: center;
-  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.3);
-}
-
-.footer a {
-  color: var(--secondary-color);
-  text-decoration: none;
-  margin: 0 15px;
-  font-size: 16px;
-  transition: var(--transition);
-}
-
-.footer a:hover {
-  color: var(--text-light);
-}
-
-.footer p {
-  margin: 10px 0;
-  font-size: 14px;
-}
-
-.footer .social-icons {
-  margin-top: 20px;
-}
-
-.footer .social-icons a {
-  font-size: 20px;
-  margin: 0 10px;
-  display: inline-block;
-  transition: var(--transition);
-}
-
-.footer .social-icons a:hover {
-  transform: translateY(-3px);
-}
-
-/* Responsive Styles */
-@media (max-width: 768px) {
-  .navbar {
-    flex-direction: column;
-    padding: 15px;
-  }
-  
-  .nav-left, .nav-right {
-    width: 100%;
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    margin: 5px 0;
-  }
-  
-  .navbar a {
-    margin: 5px 10px;
-    font-size: 14px;
-  }
-  
-  .banner {
-    height: 400px;
-  }
-  
-  .banner-content h1 {
-    font-size: 36px;
-  }
-  
-  .banner-content a {
-    padding: 10px 20px;
-    font-size: 16px;
-  }
-  
-  .carousel-arrow {
-    width: 40px;
-    height: 40px;
-    font-size: 18px;
-  }
-  
-  .left-arrow {
-    left: 10px;
-  }
-  
-  .right-arrow {
-    right: 10px;
-  }
-  
-  .section {
-    padding: 40px 15px;
-  }
-  
-  .section h2 {
-    font-size: 28px;
-  }
-  
-  .product-card {
-    width: 100%;
-    max-width: 280px;
-  }
-  
-  .middle-banner, .formal-banner {
-    height: 300px;
-  }
-  
-  .collection-card {
-    width: 100%;
-    max-width: 350px;
-  }
-}
-
-@media (max-width: 480px) {
-  .banner-content h1 {
-    font-size: 28px;
-  }
-  
-  .banner-content a {
-    padding: 8px 16px;
-    font-size: 14px;
-  }
-  
-  .section h2 {
-    font-size: 24px;
-  }
-  
-  .footer a {
-    margin: 0 8px;
-    font-size: 14px;
-  }
-}
-</style>
 <body>
- 
   <%- include('./partials/header') %>
 
- 
-   <div class="banner">
+  <!-- Hero Banner -->
+  <div class="banner">
     <div class="carousel" id="carousel">
-      
-     
-      <img src="image/bannernew.jpg" alt="Formal Shirt 3" loading="lazy">
+      <img src="image/bannernew.jpg" alt="Premium Fashion Collection" loading="lazy">
     </div>
     <div class="banner-overlay"></div>
     <div class="banner-content">
       <h1>Elevate Your Style</h1>
-      <a href="/shirts">Shop Now</a>
+      <a href="/products">
+        <i class="fas fa-shopping-bag"></i>
+        Shop Now
+      </a>
     </div>
- 
     <div class="carousel-arrow left-arrow" onclick="moveCarousel(-1)">
       <i class="fas fa-chevron-left"></i>
     </div>
@@ -573,144 +500,293 @@ body {
     </div>
   </div>
 
-
-
- 
- <div class="section">
-  <h2>New Arrivals</h2>
-  <div class="products">
-    <% newArrivals.forEach(product => { %>
-      <div class="product-card">
-        <% if (product.images && product.images.length > 0) { %>
-          <img src="<%= product.images[0].url %>" alt="<%= product.name %>" loading="lazy" />
-        <% } else { %>
-          <img src="/path/to/default-image.jpg" alt="No image" loading="lazy" />
-        <% } %>
-
-        <h3><%= product.name %></h3>
-
-        <div class="stars">
-          <% for(let i = 0; i < Math.floor(product.rating || 0); i++) { %>
-            <i class="fas fa-star"></i>
+  <!-- New Arrivals Section -->
+  <div class="section">
+    <h2>New Arrivals</h2>
+    <div class="products">
+      <% newArrivals.forEach(product => { %>
+        <div class="product-card">
+          <% if (product.images && product.images.length > 0) { %>
+            <img src="<%= product.images[0].url %>" alt="<%= product.name %>" loading="lazy" />
+          <% } else { %>
+            <img src="/images/no-image.png" alt="No image available" loading="lazy" />
           <% } %>
-          <% if((product.rating || 0) % 1 !== 0) { %>
-            <i class="fas fa-star-half-alt"></i>
+
+          <h3><%= product.name %></h3>
+
+          <div class="stars">
+            <% for(let i = 0; i < Math.floor(product.rating || 0); i++) { %>
+              <i class="fas fa-star"></i>
+            <% } %>
+            <% if((product.rating || 0) % 1 !== 0) { %>
+              <i class="fas fa-star-half-alt"></i>
+            <% } %>
+            <% for(let i = 0; i < 5 - Math.ceil(product.rating || 0); i++) { %>
+              <i class="far fa-star"></i>
+            <% } %>
+          </div>
+
+          <% if (product.variants && product.variants.length > 0 && product.variants[0].salePrice !== undefined) { %>
+            <p class="price">₹<%= product.variants[0].salePrice.toFixed(2) %></p>
+          <% } else { %>
+            <p class="price">Price not available</p>
           <% } %>
-          <% for(let i = 0; i < 5 - Math.ceil(product.rating || 0); i++) { %>
-            <i class="far fa-star"></i>
-          <% } %>
+
+          <div class="product-actions">
+            <a href="/products/<%= product._id %>" class="view-btn">
+              <i class="fas fa-eye"></i>
+              View Details
+            </a>
+            <button class="wishlist-btn" data-product-id="<%= product._id %>" data-variant-id="<%= product.variants[0]._id %>" title="Add to Wishlist">
+              <i class="far fa-heart"></i>
+            </button>
+          </div>
         </div>
-
-        <% if (product.variants && product.variants.length > 0 && product.variants[0].salePrice !== undefined) { %>
-           <p class="price">₹<%= product.variants[0].salePrice.toFixed(2) %></p>
-         <% } else { %>
-             <p class="price">Price not available</p>
-        <% } %>
-
-
-        <div class="product-actions">
-          <a href="/products/<%= product._id %>" class="view-btn">View Details</a>
-          <!-- <button class="add-to-cart-btn" data-product-id="<%= product._id %>">
-            <i class="fas fa-shopping-cart"></i>
-          </button> -->
-        </div>
-      </div>
-    <% }) %>
+      <% }) %>
+    </div>
+    <div class="view-more">
+      <a href="/products" class="view-more-btn">
+        <i class="fas fa-arrow-right"></i>
+        View All New Arrivals
+      </a>
+    </div>
   </div>
-  <div class="view-more">
-    <a href="/products/new-arrivals" class="view-more-btn">View All New Arrivals</a>
-  </div>
-</div>
 
-
-  
+  <!-- Middle Banner -->
   <div class="middle-banner" style="background: url('https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?w=1600&h=600&fit=crop') no-repeat center center/cover;">
     <div class="middle-banner-text">Discover Timeless Elegance</div>
   </div>
 
-
-  
+  <!-- Trending Section -->
   <div class="section">
-  <h2>Trending</h2>
-  <div class="products">
-    <% trending.forEach(product => { %>
-      <div class="product-card">
-        <% if (product.images && product.images.length > 0) { %>
-          <img src="<%= product.images[0].url %>" alt="<%= product.name %>" loading="lazy" />
-        <% } else { %>
-          <img src="/path/to/default-image.jpg" alt="No image" loading="lazy" />
-        <% } %>
+    <h2>Trending Now</h2>
+    <div class="products">
+      <% trending.forEach(product => { %>
+        <div class="product-card">
+          <% if (product.images && product.images.length > 0) { %>
+            <img src="<%= product.images[0].url %>" alt="<%= product.name %>" loading="lazy" />
+          <% } else { %>
+            <img src="/images/no-image.png" alt="No image available" loading="lazy" />
+          <% } %>
 
-        <h3><%= product.name %></h3>
+          <h3><%= product.name %></h3>
 
-        <div class="stars">
-          <% for(let i = 0; i < Math.floor(product.rating || 0); i++) { %>
-            <i class="fas fa-star"></i>
+          <div class="stars">
+            <% for(let i = 0; i < Math.floor(product.rating || 0); i++) { %>
+              <i class="fas fa-star"></i>
+            <% } %>
+            <% if((product.rating || 0) % 1 !== 0) { %>
+              <i class="fas fa-star-half-alt"></i>
+            <% } %>
+            <% for(let i = 0; i < 5 - Math.ceil(product.rating || 0); i++) { %>
+              <i class="far fa-star"></i>
+            <% } %>
+          </div>
+
+          <% if (product.variants && product.variants.length > 0 && product.variants[0].salePrice !== undefined) { %>
+            <p class="price">₹<%= product.variants[0].salePrice.toFixed(2) %></p>
+          <% } else { %>
+            <p class="price">Price not available</p>
           <% } %>
-          <% if((product.rating || 0) % 1 !== 0) { %>
-            <i class="fas fa-star-half-alt"></i>
-          <% } %>
-          <% for(let i = 0; i < 5 - Math.ceil(product.rating || 0); i++) { %>
-            <i class="far fa-star"></i>
-          <% } %>
+
+          <div class="product-actions">
+            <a href="/products/<%= product._id %>" class="view-btn">
+              <i class="fas fa-eye"></i>
+              View Details
+            </a>
+            <button class="wishlist-btn" data-product-id="<%= product._id %>" data-variant-id="<%= product.variants[0]._id %>" title="Add to Wishlist">
+              <i class="far fa-heart"></i>
+            </button>
+          </div>
         </div>
-
-        <% if (product.variants && product.variants.length > 0 && product.variants[0].salePrice !== undefined) { %>
-      <p class="price">₹<%= product.variants[0].salePrice.toFixed(2) %></p>
-       <% } else { %>
-               <p class="price">Price not available</p>
-        <% } %>
-
-
-        <div class="product-actions">
-          <a href="/product/<%= product._id %>" class="view-btn">View Details</a>
-
-        </div>
-      </div>
-    <% }) %>
+      <% }) %>
+    </div>
+    <div class="view-more">
+      <a href="/products" class="view-more-btn">
+        <i class="fas fa-fire"></i>
+        View All Trending Items
+      </a>
+    </div>
   </div>
-  <div class="view-more">
-    <a href="/products/trending" class="view-more-btn">View All Trending Items</a>
-  </div>
-</div>
 
-
- 
+  <!-- Formal Banner -->
   <div class="formal-banner" style="background: url('https://images.unsplash.com/photo-1618354691551-8a942d87344b?w=1600&h=700&fit=crop') no-repeat center center/cover;">
     <div class="formal-banner-text">Sophistication Meets Comfort</div>
   </div>
 
-
-  
-<div class="section">
-  <h2>Featured Collections</h2>
-  <div class="collections">
-    <% collections.forEach(collection => { %>
-      <div class="collection-card">
-        <img
-          src="<%= collection.imageUrl ? collection.imageUrl : '/images/no-image.png' %>"
-          alt="<%= collection.name %>"
-          loading="lazy"
-          style="cursor: pointer;"  <!-- Optional: cursor pointer to show it's clickable -->
-          onclick="alert('You clicked <%= collection.name %> collection!')" 
-        />
-        <div class="collection-overlay">
-          <h3><%= collection.name %></h3>
-          <p><%= collection.description %></p>
+  <!-- Featured Collections -->
+  <div class="section">
+    <h2>Featured Collections</h2>
+    <div class="collections">
+      <% collections.forEach(collection => { %>
+        <div class="collection-card" onclick="window.location.href='/products?collection=<%= collection._id %>'">
+          <img
+            src="<%= collection.imageUrl ? collection.imageUrl : '/images/no-image.png' %>"
+            alt="<%= collection.name %>"
+            loading="lazy"
+          />
+          <div class="collection-overlay">
+            <h3><%= collection.name %></h3>
+            <p><%= collection.description %></p>
+          </div>
         </div>
-      </div>
-    <% }) %>
-  </div>
-</div>
-
-
+      <% }) %>
+    </div>
   </div>
 
-  
   <%- include('./partials/footer') %>
 
- 
-  <script src="/js/carousel.js"></script>
-  <script src="/js/cart.js"></script>
+  <script>
+    // Enhanced carousel functionality
+    let currentSlide = 0;
+    const slides = document.querySelectorAll('.carousel img');
+    
+    function moveCarousel(direction) {
+      if (slides.length <= 1) return;
+      
+      currentSlide += direction;
+      if (currentSlide >= slides.length) currentSlide = 0;
+      if (currentSlide < 0) currentSlide = slides.length - 1;
+      
+      slides.forEach((slide, index) => {
+        slide.style.display = index === currentSlide ? 'block' : 'none';
+      });
+    }
+
+    // Auto-play carousel
+    setInterval(() => {
+      if (slides.length > 1) {
+        moveCarousel(1);
+      }
+    }, 5000);
+
+    // Wishlist functionality
+    document.querySelectorAll('.wishlist-btn').forEach(btn => {
+      btn.addEventListener('click', async function(e) {
+        e.preventDefault();
+        const productId = this.dataset.productId;
+        const variantId = this.dataset.variantId;
+        const originalIcon = this.innerHTML;
+        const isActive = this.classList.contains('active');
+
+        try {
+          this.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+          this.disabled = true;
+
+          const endpoint = isActive ? '/wishlist/remove' : '/wishlist/add';
+          const response = await fetch(endpoint, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ productId, variantId })
+          });
+          
+          const result = await response.json();
+          
+          if (result.success) {
+            if (isActive) {
+              // Remove from wishlist
+              this.classList.remove('active');
+              this.innerHTML = '<i class="far fa-heart"></i>';
+              this.title = 'Add to Wishlist';
+              showToast('Removed from wishlist!', 'info');
+            } else {
+              // Add to wishlist
+              this.classList.add('active');
+              this.innerHTML = '<i class="fas fa-heart"></i>';
+              this.title = 'Remove from Wishlist';
+              showToast('Added to wishlist!', 'success');
+            }
+          } else {
+            throw new Error(result.message || 'Failed to update wishlist');
+          }
+        } catch (error) {
+          console.error('Error updating wishlist:', error);
+          showToast('Failed to update wishlist. Please try again.', 'error');
+          
+          this.innerHTML = originalIcon;
+        } finally {
+          this.disabled = false;
+        }
+      });
+    });
+
+    // Check wishlist status for all products on page load
+    document.addEventListener('DOMContentLoaded', async function() {
+      const wishlistBtns = document.querySelectorAll('.wishlist-btn');
+      
+      for (const btn of wishlistBtns) {
+        const productId = btn.dataset.productId;
+        
+        try {
+          const response = await fetch(`/wishlist/check/${productId}`);
+          const result = await response.json();
+          
+          if (result.exists) {
+            btn.classList.add('active');
+            btn.innerHTML = '<i class="fas fa-heart"></i>';
+            btn.title = 'Remove from Wishlist';
+          }
+        } catch (error) {
+          console.error('Error checking wishlist status:', error);
+        }
+      }
+
+      // Initialize carousel
+      if (slides.length > 1) {
+        slides.forEach((slide, index) => {
+          slide.style.display = index === 0 ? 'block' : 'none';
+        });
+      }
+    });
+
+    // Simple toast notification function
+    function showToast(message, type = 'info') {
+      const toast = document.createElement('div');
+      toast.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 1rem 1.5rem;
+        background: ${type === 'success' ? '#10b981' : type === 'error' ? '#ef4444' : '#6366f1'};
+        color: white;
+        border-radius: 12px;
+        font-weight: 500;
+        z-index: 10000;
+        transform: translateX(100%);
+        transition: transform 0.3s ease;
+      `;
+      toast.textContent = message;
+      
+      document.body.appendChild(toast);
+      
+      setTimeout(() => {
+        toast.style.transform = 'translateX(0)';
+      }, 100);
+      
+      setTimeout(() => {
+        toast.style.transform = 'translateX(100%)';
+        setTimeout(() => {
+          document.body.removeChild(toast);
+        }, 300);
+      }, 3000);
+    }
+
+    // Smooth scroll for anchor links
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+          target.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+          });
+        }
+      });
+    });
+
+      </script>
 </body>
 </html>

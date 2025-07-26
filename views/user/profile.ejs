@@ -4,185 +4,453 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>FitVibe - User Profile</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
   <style>
+    /* Professional Profile Page Design */
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
     }
 
-    :root {
-      --primary-color: #1a1a1a;
-      --secondary-color: #ffd700;
-      --accent-color: #e6c200;
-      --text-light: #ffffff;
-      --text-dark: #333333;
-      --background-light: #f9f9f9;
-      --card-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-      --transition: all 0.3s ease;
-    }
-
     body {
-      font-family: 'Arial', sans-serif;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f8fafc;
+      color: #1e293b;
       line-height: 1.6;
-      color: var(--text-dark);
-      background-color: var(--background-light);
-      margin-left: 250px;
+      margin-left: 280px;
     }
 
-    .container {
-      padding: 40px 20px;
+    .profile-container {
+      padding: 2rem 1.5rem;
       max-width: 1200px;
       margin: 0 auto;
     }
 
-    h1 {
-      font-size: 28px;
-      margin-bottom: 20px;
-      color: var(--text-dark);
-      position: relative;
-      display: inline-block;
+    /* Page Header */
+    .page-header {
+      margin-bottom: 2rem;
+      padding-bottom: 1rem;
+      border-bottom: 2px solid #e2e8f0;
     }
 
-    h1::after {
-      content: '';
-      position: absolute;
-      bottom: -10px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 80px;
-      height: 3px;
-      background: var(--secondary-color);
+    .page-title {
+      font-size: 2.25rem;
+      font-weight: 700;
+      color: #0f172a;
+      margin: 0;
+      letter-spacing: -0.025em;
     }
 
-    .profile-section, .address-section, .orders-section {
-      background: white;
-      padding: 20px;
-      border-radius: 10px;
-      box-shadow: var(--card-shadow);
-      margin-bottom: 20px;
+    .page-subtitle {
+      font-size: 1rem;
+      color: #64748b;
+      margin-top: 0.5rem;
     }
 
-    .profile-section {
+    /* Profile Grid Layout */
+    .profile-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+      margin-bottom: 2rem;
+    }
+
+    /* Card Base Styles */
+    .card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 16px;
+      padding: 2rem;
+      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+      transition: all 0.3s ease;
+    }
+
+    .card:hover {
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+      transform: translateY(-2px);
+    }
+
+    /* Profile Card */
+    .profile-header {
       display: flex;
       align-items: center;
-      gap: 20px;
+      gap: 1.5rem;
+      margin-bottom: 2rem;
     }
 
-    .profile-image {
-      width: 100px;
-      height: 100px;
+    .profile-avatar {
+      width: 80px;
+      height: 80px;
       border-radius: 50%;
-      object-fit: cover;
-    }
-
-    .profile-details h2 {
-      font-size: 22px;
-      margin-bottom: 10px;
-    }
-
-    .profile-details p {
-      margin: 5px 0;
-    }
-
-    .profile-actions {
-      margin-top: 20px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       display: flex;
-      gap: 10px;
+      align-items: center;
+      justify-content: center;
+      color: #ffffff;
+      font-size: 2rem;
+      font-weight: 700;
+      border: 4px solid #ffffff;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
     }
 
-    .profile-actions a, .profile-actions button {
-      padding: 10px 20px;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-      transition: var(--transition);
+    .profile-info h2 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: #0f172a;
+      margin: 0 0 0.5rem 0;
+    }
+
+    .user-role {
+      font-size: 0.875rem;
+      color: #6366f1;
+      background: #eef2ff;
+      padding: 0.25rem 0.75rem;
+      border-radius: 12px;
+      display: inline-block;
+      font-weight: 500;
+    }
+
+    /* Profile Details */
+    .profile-details {
+      display: grid;
+      gap: 1.25rem;
+    }
+
+    .detail-item {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1rem;
+      background: #f8fafc;
+      border-radius: 12px;
+      border: 1px solid #e2e8f0;
+    }
+
+    .detail-icon {
+      width: 48px;
+      height: 48px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #ffffff;
+      font-size: 1.125rem;
+    }
+
+    .detail-content {
+      flex: 1;
+    }
+
+    .detail-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.25rem;
+    }
+
+    .detail-value {
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: #0f172a;
+    }
+
+    /* Action Buttons */
+    .profile-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin-top: 2rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid #e2e8f0;
+    }
+
+    .action-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1.25rem;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: #ffffff;
       text-decoration: none;
-      color: var(--text-light);
+      border-radius: 12px;
+      font-size: 0.875rem;
+      font-weight: 500;
+      transition: all 0.3s ease;
+      border: none;
+      cursor: pointer;
     }
 
-    .edit-profile-btn {
-      background: var(--primary-color);
+    .action-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 15px -3px rgba(102, 126, 234, 0.4);
+      color: #ffffff;
     }
 
-    .edit-profile-btn:hover {
-      background: var(--secondary-color);
-      color: var(--primary-color);
+    .action-btn.secondary {
+      background: #ffffff;
+      color: #6366f1;
+      border: 2px solid #6366f1;
     }
 
-    .change-password-btn {
-      background: #3498db;
+    .action-btn.secondary:hover {
+      background: #6366f1;
+      color: #ffffff;
     }
 
-    .change-password-btn:hover {
-      background: #2980b9;
+    /* Card Headers */
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.5rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid #e2e8f0;
     }
 
-    .forgot-password-btn {
-      background: #e74c3c;
+    .card-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: #0f172a;
+      margin: 0;
     }
 
-    .forgot-password-btn:hover {
-      background: #c0392b;
+    .card-action {
+      font-size: 0.875rem;
+      color: #6366f1;
+      text-decoration: none;
+      font-weight: 500;
+      transition: color 0.3s ease;
     }
 
-    .address-section p {
-      margin: 10px 0;
+    .card-action:hover {
+      color: #4f46e5;
     }
 
-    .orders-section table {
+    /* Address Content */
+    .address-content {
+      color: #64748b;
+      line-height: 1.6;
+    }
+
+    .address-content p {
+      margin-bottom: 0.5rem;
+    }
+
+    .address-content strong {
+      color: #0f172a;
+      font-weight: 600;
+    }
+
+    .no-address {
+      text-align: center;
+      padding: 3rem 2rem;
+      color: #64748b;
+    }
+
+    .no-address i {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+      color: #cbd5e1;
+    }
+
+    .no-address a {
+      color: #6366f1;
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    /* Orders Section */
+    .orders-section {
+      grid-column: 1 / -1;
+    }
+
+    .orders-table {
       width: 100%;
       border-collapse: collapse;
+      margin-top: 1rem;
+      background: #ffffff;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
     }
 
-    .orders-section th, .orders-section td {
-      padding: 10px;
+    .orders-table th {
+      background: #f8fafc;
+      color: #374151;
+      font-weight: 600;
+      font-size: 0.875rem;
       text-align: left;
-      border-bottom: 1px solid #ddd;
+      padding: 1rem 1.5rem;
+      border-bottom: 1px solid #e2e8f0;
     }
 
-    .orders-section th {
-      background: var(--primary-color);
-      color: var(--text-light);
+    .orders-table td {
+      padding: 1rem 1.5rem;
+      border-bottom: 1px solid #f1f5f9;
+      color: #374151;
+      font-size: 0.875rem;
     }
 
+    .orders-table tbody tr:hover {
+      background: #f8fafc;
+    }
+
+    .orders-table tbody tr:last-child td {
+      border-bottom: none;
+    }
+
+    .order-link {
+      color: #6366f1;
+      text-decoration: none;
+      font-weight: 600;
+      transition: color 0.3s ease;
+    }
+
+    .order-link:hover {
+      color: #4f46e5;
+    }
+
+    /* Status Badges */
+    .status-badge {
+      display: inline-block;
+      padding: 0.375rem 0.75rem;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: capitalize;
+    }
+
+    .status-pending {
+      background: #fef3c7;
+      color: #92400e;
+    }
+
+    .status-processing {
+      background: #dbeafe;
+      color: #1e40af;
+    }
+
+    .status-delivered {
+      background: #d1fae5;
+      color: #065f46;
+    }
+
+    .status-cancelled {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
+    /* Cancel Button */
     .cancel-btn {
-      padding: 5px 10px;
-      background: #e74c3c;
-      color: var(--text-light);
+      padding: 0.5rem 1rem;
+      background: #ef4444;
+      color: #ffffff;
       border: none;
-      border-radius: 5px;
+      border-radius: 8px;
+      font-size: 0.75rem;
+      font-weight: 500;
       cursor: pointer;
-      transition: var(--transition);
+      transition: all 0.3s ease;
     }
 
     .cancel-btn:hover {
-      background: #c0392b;
+      background: #dc2626;
+      transform: translateY(-1px);
     }
 
     .cancel-btn:disabled {
-      background: #ccc;
+      background: #d1d5db;
       cursor: not-allowed;
+      transform: none;
     }
 
+    /* No Orders State */
+    .no-orders {
+      text-align: center;
+      padding: 4rem 2rem;
+      color: #64748b;
+    }
+
+    .no-orders i {
+      font-size: 4rem;
+      margin-bottom: 1rem;
+      color: #cbd5e1;
+    }
+
+    .no-orders p {
+      font-size: 1.125rem;
+      margin-bottom: 1.5rem;
+    }
+
+    /* Responsive Design */
     @media (max-width: 768px) {
       body {
         margin-left: 0;
       }
 
-      .container {
-        padding: 20px;
+      .profile-container {
+        padding: 1rem;
       }
 
-      .profile-section {
+      .profile-grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+      }
+
+      .profile-header {
+        flex-direction: column;
+        text-align: center;
+        gap: 1rem;
+      }
+
+      .profile-avatar {
+        width: 64px;
+        height: 64px;
+        font-size: 1.5rem;
+      }
+
+      .profile-actions {
+        flex-direction: column;
+      }
+
+      .action-btn {
+        justify-content: center;
+      }
+
+      .orders-table {
+        font-size: 0.75rem;
+      }
+
+      .orders-table th,
+      .orders-table td {
+        padding: 0.75rem;
+      }
+
+      .page-title {
+        font-size: 1.875rem;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .card {
+        padding: 1.5rem;
+      }
+
+      .detail-item {
         flex-direction: column;
         align-items: flex-start;
+        gap: 0.75rem;
+        text-align: left;
       }
 
-      .profile-image {
-        width: 80px;
-        height: 80px;
+      .detail-icon {
+        width: 40px;
+        height: 40px;
       }
     }
   </style>
@@ -190,99 +458,204 @@
 <body>
   <%- include('./partials/sidebar') %>
 
-  <div class="container">
-    <h1>My Profile</h1>
+  <div class="profile-container">
+    <!-- Page Header -->
+    <div class="page-header">
+      <h1 class="page-title">My Profile</h1>
+      <p class="page-subtitle">Manage your account information and preferences</p>
+    </div>
 
-  
-    <div class="profile-section">
-     <img src="/image/profileimage.jpeg" alt="Profile Image" class="profile-image">
-      <div class="profile-details">
-        <h2><%= user.name %></h2>
-        <p>Email: <%= user.email %></p>
-          <p>Mobile: <%= user.phone || 'Not provided' %></p>
+    <!-- Profile Grid -->
+    <div class="profile-grid">
+      <!-- Profile Information Card -->
+      <div class="card">
+        <div class="profile-header">
+          <div class="profile-avatar">
+            <%= user.name ? user.name.charAt(0).toUpperCase() : 'U' %>
+          </div>
+          <div class="profile-info">
+            <h2><%= user.name || 'User' %></h2>
+            <span class="user-role">Premium Customer</span>
+          </div>
+        </div>
+
+        <div class="profile-details">
+          <div class="detail-item">
+            <div class="detail-icon">
+              <i class="fas fa-envelope"></i>
+            </div>
+            <div class="detail-content">
+              <div class="detail-label">Email Address</div>
+              <div class="detail-value"><%= user.email %></div>
+            </div>
+          </div>
+
+          <div class="detail-item">
+            <div class="detail-icon">
+              <i class="fas fa-phone"></i>
+            </div>
+            <div class="detail-content">
+              <div class="detail-label">Phone Number</div>
+              <div class="detail-value"><%= user.phone || 'Not provided' %></div>
+            </div>
+          </div>
+
+          <div class="detail-item">
+            <div class="detail-icon">
+              <i class="fas fa-calendar"></i>
+            </div>
+            <div class="detail-content">
+              <div class="detail-label">Member Since</div>
+              <div class="detail-value"><%= new Date(user.createdAt || Date.now()).toLocaleDateString() %></div>
+            </div>
+          </div>
+        </div>
+
         <div class="profile-actions">
-          <a href="/profile/edit" class="edit-profile-btn">Edit Profile</a>
-          <a href="/profile/change-password" class="change-password-btn">Change Password</a>
-          <a href="/forgot-password" class="forgot-password-btn">Forgot Password</a>
+          <a href="/profile/edit" class="action-btn">
+            <i class="fas fa-edit"></i>
+            Edit Profile
+          </a>
+          <a href="/profile/change-password" class="action-btn secondary">
+            <i class="fas fa-lock"></i>
+            Change Password
+          </a>
         </div>
       </div>
+
+      <!-- Address Card -->
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">Default Address</h3>
+          <a href="/profile/addresses" class="card-action">Manage Addresses</a>
+        </div>
+
+        <% if (defaultAddress) { %>
+          <div class="address-content">
+            <p><strong><%= defaultAddress.name %></strong></p>
+            <p><%= defaultAddress.address %></p>
+            <p><%= defaultAddress.city %>, <%= defaultAddress.state %> <%= defaultAddress.zipCode %></p>
+            <p><%= defaultAddress.country %></p>
+            <p><i class="fas fa-phone"></i> <%= defaultAddress.phone %></p>
+          </div>
+        <% } else { %>
+          <div class="no-address">
+            <i class="fas fa-map-marker-alt"></i>
+            <p>No default address set.</p>
+            <a href="/profile/addresses">Add your first address</a>
+          </div>
+        <% } %>
+      </div>
+
+      <!-- Recent Orders Section -->
+      <div class="orders-section card">
+        <div class="card-header">
+          <h3 class="card-title">Recent Orders</h3>
+          <a href="/profile/orders" class="card-action">View All Orders</a>
+        </div>
+
+        <% if (orders && orders.length > 0) { %>
+          <table class="orders-table">
+            <thead>
+              <tr>
+                <th>Order ID</th>
+                <th>Date</th>
+                <th>Total</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% orders.forEach(order => { %>
+                <tr>
+                  <td>
+                    <a href="/order/<%= order._id %>" class="order-link">
+                      #<%= order.orderID %>
+                    </a>
+                  </td>
+                  <td><%= new Date(order.createdAt).toLocaleDateString() %></td>
+                  <td>₹<%= order.finalAmount.toFixed(2) %></td>
+                  <td>
+                    <span class="status-badge status-<%= order.orderStatus.toLowerCase() %>">
+                      <%= order.orderStatus %>
+                    </span>
+                  </td>
+                  <td>
+                    <% if (order.orderStatus === 'pending') { %>
+                      <button class="cancel-btn" data-order-id="<%= order._id %>">
+                        Cancel
+                      </button>
+                    <% } else { %>
+                      <button class="cancel-btn" disabled>
+                        Cancel
+                      </button>
+                    <% } %>
+                  </td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        <% } else { %>
+          <div class="no-orders">
+            <i class="fas fa-shopping-bag"></i>
+            <p>No orders found</p>
+            <a href="/products" class="action-btn">
+              <i class="fas fa-shopping-cart"></i>
+              Start Shopping
+            </a>
+          </div>
+        <% } %>
+      </div>
     </div>
-
-   
-    <div class="address-section">
-      <h2>Default Address</h2>
-      <% if (defaultAddress) { %>
-        <p><strong><%= defaultAddress.name %></strong></p>
-      <p><%= defaultAddress.address %>, <%= defaultAddress.city %>, <%= defaultAddress.state %> <%= defaultAddress.zipCode %></p>
-        <p><%= defaultAddress.country %></p>
-        <p>Phone: <%= defaultAddress.phone %></p>
-      <% } else { %>
-        <p>No default address set. <a href="/profile/addresses">Add an address</a>.</p>
-      <% } %>
-    </div>
-
-  
-   
-<div class="orders-section">
-  <h2>Recent Orders</h2>
-  <% if (orders.length > 0) { %>
-    <table>
-      <thead>
-        <tr>
-          <th>Order ID</th>
-          <th>Date</th>
-          <th>Total</th>
-          <th>Status</th>
-          <th>Action</th>
-        </tr>
-      </thead>
-      <tbody>
-        <% orders.forEach(order => { %>
-          <tr>
-            <td><a href="/order/<%= order._id %>"><%= order.orderID %></a></td>
-            <td><%= new Date(order.createdAt).toLocaleDateString() %></td>
-            <td>₹<%= order.finalAmount.toFixed(2) %></td>
-            <td><%= order.orderStatus %></td>
-            <td>
-              <% if (order.orderStatus === 'pending') { %>
-                <button class="cancel-btn" data-order-id="<%= order._id %>">Cancel</button>
-              <% } else { %>
-                <button class="cancel-btn" disabled>Cancel</button>
-              <% } %>
-            </td>
-          </tr>
-        <% }) %>
-      </tbody>
-    </table>
-  <% } else { %>
-    <p>No orders found.</p>
-  <% } %>
-</div>
-
-
+  </div>
 
   <script>
-    
-    document.querySelectorAll('.cancel-btn').forEach(button => {
-      button.addEventListener('click', async () => {
-        if (button.disabled) return;
-        const orderId = button.getAttribute('data-order-id');
-        if (confirm('Are you sure you want to cancel this order?')) {
-          try {
-            const response = await fetch(`/order/cancel/${orderId}`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' }
-            });
-            const result = await response.json();
-            if (result.success) {
-              window.location.reload();
-            } else {
-              alert(result.message || 'Failed to cancel order.');
+    // Enhanced order cancellation with better UX
+    document.addEventListener('DOMContentLoaded', function() {
+      document.querySelectorAll('.cancel-btn').forEach(button => {
+        button.addEventListener('click', async function() {
+          if (this.disabled) return;
+          
+          const orderId = this.getAttribute('data-order-id');
+          
+          // Show confirmation dialog
+          const confirmed = confirm('Are you sure you want to cancel this order? This action cannot be undone.');
+          
+          if (confirmed) {
+            // Disable button and show loading state
+            this.disabled = true;
+            this.textContent = 'Cancelling...';
+            this.style.background = '#9ca3af';
+            
+            try {
+              const response = await fetch(`/order/cancel/${orderId}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+              });
+              
+              const result = await response.json();
+              
+              if (result.success) {
+                // Show success message
+                this.textContent = 'Cancelled';
+                this.style.background = '#10b981';
+                
+                // Reload page after short delay
+                setTimeout(() => {
+                  window.location.reload();
+                }, 1500);
+              } else {
+                throw new Error(result.message || 'Failed to cancel order.');
+              }
+            } catch (error) {
+              // Reset button state on error
+              this.disabled = false;
+              this.textContent = 'Cancel';
+              this.style.background = '#ef4444';
+              alert(error.message || 'Error cancelling order. Please try again.');
             }
-          } catch (error) {
-            alert('Error cancelling order.');
           }
-        }
+        });
       });
     });
   </script>

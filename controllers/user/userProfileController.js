@@ -1,7 +1,11 @@
 const User = require("../../models/userSchema")
 const Order = require("../../models/orderSchema");
+const { sendVerificationEmail } = require("../../controllers/user/userController");
 
-
+// Generate OTP function
+function generateOtp() {
+  return Math.floor(100000 + Math.random() * 900000).toString();
+}
 
 const loadUserProfile = async (req, res) => {
   try {  
@@ -33,7 +37,6 @@ const loadUserProfile = async (req, res) => {
     res.status(500).render("pageNotFound", { message: "Error loading profile" });
   }
 };
-
 
 const getOrders = async (req, res) => {
   try {
@@ -96,22 +99,16 @@ const getOrders = async (req, res) => {
   }
 };
 
-
-
 const getOrderDetail = async (req, res) => {
   try {
     const userId = req.session.user._id;
     const orderId = req.params.id;
-
 
     
     const order = await Order.findOne({ _id: orderId, user: userId })
       .populate("products.product")  
       .populate("address")           
       .populate("user");
-
-
-
 
     console.log("Order Details:", order);
 
@@ -141,40 +138,178 @@ const loadEditProfile = async (req, res) => {
   }
 };
 
+// Send OTP for email verification
+const sendProfileOtp = async (req, res) => {
+  try {
+    const { email } = req.body;
+    const userId = req.session.user._id;
+
+    // Check if email is already in use by another user
+    const existingUser = await User.findOne({ email, _id: { $ne: userId } });
+    if (existingUser) {
+      return res.json({ success: false, message: "Email is already in use by another account" });
+    }
+
+    const otp = generateOtp();
+    
+    // Store OTP and new email in session
+    req.session.profileOtp = otp;
+    req.session.newEmail = email;
+    req.session.otpExpiry = Date.now() + 600000; // 10 minutes
+
+    const emailSent = await sendVerificationEmail(
+      email,
+      "Email Verification for Profile Update",
+      `Your OTP for email verification is ${otp}. This OTP will expire in 10 minutes.`
+    );
+
+    if (!emailSent) {
+      return res.json({ success: false, message: "Failed to send OTP. Please try again." });
+    }
+
+    console.log("Profile OTP sent:", otp);
+    res.json({ success: true, message: "OTP sent to your new email address" });
+  } catch (error) {
+    console.error("Error sending profile OTP:", error);
+    res.json({ success: false, message: "Error sending OTP. Please try again." });
+  }
+};
+
+// Load OTP verification page for profile
+const loadProfileOtpVerification = async (req, res) => {
+  try {
+    if (!req.session.profileOtp || !req.session.newEmail) {
+      return res.redirect('/profile/edit');
+    }
+    
+    res.render("verify-profile-otp", { 
+      email: req.session.newEmail,
+      message: null 
+    });
+  } catch (error) {
+    console.error("Error loading profile OTP verification page:", error);
+    res.redirect('/profile/edit');
+  }
+};
+
+// Verify OTP for profile update
+const verifyProfileOtp = async (req, res) => {
+  try {
+    const { otp } = req.body;
+
+    if (!otp) {
+      return res.json({ success: false, message: "OTP is required" });
+    }
+
+    if (!req.session.profileOtp || !req.session.newEmail) {
+      return res.json({ success: false, message: "OTP session expired. Please try again." });
+    }
+
+    if (Date.now() > req.session.otpExpiry) {
+      return res.json({ success: false, message: "OTP has expired. Please request a new one." });
+    }
+
+    if (otp !== req.session.profileOtp) {
+      return res.json({ success: false, message: "Invalid OTP. Please try again." });
+    }
+
+    // OTP verified successfully - update the email immediately
+    const userId = req.session.user._id;
+    const newEmail = req.session.newEmail;
+    
+    // Update user email in database
+    await User.findByIdAndUpdate(userId, { email: newEmail }, { new: true });
+    
+    // Update session user data
+    req.session.user.email = newEmail;
+    
+    // Clear OTP data and email verification session
+    delete req.session.profileOtp;
+    delete req.session.otpExpiry;
+    delete req.session.newEmail;
+
+    res.json({ 
+      success: true, 
+      message: "Email verified and updated successfully",
+      redirectUrl: "/profile/edit?emailUpdated=true"
+    });
+  } catch (error) {
+    console.error("Error verifying profile OTP:", error);
+    res.json({ success: false, message: "Error verifying OTP. Please try again." });
+  }
+};
+
+// Resend OTP for profile
+const resendProfileOtp = async (req, res) => {
+  try {
+    if (!req.session.newEmail) {
+      return res.json({ success: false, message: "No email verification in progress" });
+    }
+
+    const otp = generateOtp();
+    
+    req.session.profileOtp = otp;
+    req.session.otpExpiry = Date.now() + 600000; // 10 minutes
+
+    const emailSent = await sendVerificationEmail(
+      req.session.newEmail,
+      "Email Verification for Profile Update",
+      `Your new OTP for email verification is ${otp}. This OTP will expire in 10 minutes.`
+    );
+
+    if (!emailSent) {
+      return res.json({ success: false, message: "Failed to resend OTP. Please try again." });
+    }
+
+    console.log("Profile OTP resent:", otp);
+    res.json({ success: true, message: "OTP resent successfully" });
+  } catch (error) {
+    console.error("Error resending profile OTP:", error);
+    res.json({ success: false, message: "Error resending OTP. Please try again." });
+  }
+};
+
 const updateProfile = async (req, res) => {
   try {
     const userId = req.session.user._id;
     const { name, email, phone } = req.body;
+    
+    // Get current user to check if email changed
+    const currentUser = await User.findById(userId);
+    if (!currentUser) {
+      return res.json({ success: false, message: "User not found" });
+    }
 
-    let updateData = { name, email, phone };
+    let updateData = { name, phone };
+
+    // Always include email in update (it will be the same if unchanged, or already updated if verified)
+    updateData.email = email;
 
     if (req.file) {
       const imagePath = "/uploads/profile/" + req.file.filename;
       updateData.profileImage = imagePath;
 
-      
-      const user = await User.findById(userId);
-      if (user.profileImage && fs.existsSync("public" + user.profileImage)) {
-        fs.unlinkSync("public" + user.profileImage);
+      if (currentUser.profileImage && require('fs').existsSync("public" + currentUser.profileImage)) {
+        require('fs').unlinkSync("public" + currentUser.profileImage);
       }
     }
 
     await User.findByIdAndUpdate(userId, updateData, { new: true });
+    
+    // Update session user data
+    req.session.user = { ...req.session.user, ...updateData };
 
-    return res.json({ success: true });
+    return res.json({ success: true, message: "Profile updated successfully" });
   } catch (error) {
     console.error("🔥 Error updating profile:", error);
     return res.json({ success: false, message: "Profile update failed" });
   }
 };
 
-
-
 const getChangePasswordPage = async (req, res) => {
   try {
     const userId = req.session.user._id; 
     console.log("req.user in change-password:", req.user);
-
 
     const user = await User.findById(userId);
     if (!user) {
@@ -187,8 +322,6 @@ const getChangePasswordPage = async (req, res) => {
     res.status(500).send("Server Error");
   }
 };
-
-
 
 const bcrypt = require('bcrypt');
 
@@ -222,16 +355,16 @@ const postChangePassword = async (req, res) => {
   }
 };
 
-
-
-
 module.exports = {
   loadUserProfile,
   getOrders,
   getOrderDetail,
   loadEditProfile,
   updateProfile,
+  sendProfileOtp,
+  loadProfileOtpVerification,
+  verifyProfileOtp,
+  resendProfileOtp,
   getChangePasswordPage,
   postChangePassword,
 };
-

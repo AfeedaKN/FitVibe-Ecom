@@ -35,155 +35,234 @@
 
     <!-- Content Area -->
     <div class="content-area">
-        <!-- Search and Stats -->
-        <div class="row g-4 mb-4">
-            <!-- Search Bar -->
-            <div class="col-lg-8">
-                <div class="card-modern no-hover">
-                    <div class="card-body-modern">
-                        <form action="/admin/users" method="get" class="d-flex gap-3">
-                            <div class="position-relative flex-grow-1">
-                                <input type="text" 
-                                       name="search" 
-                                       class="form-control form-control-modern ps-5" 
-                                       placeholder="Search customers by name, email, or phone..." 
-                                       value="<%= search || '' %>">
-                                <i class="fas fa-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted-modern"></i>
-                            </div>
-                            <button type="submit" class="btn btn-primary-modern">
-                                <i class="fas fa-search me-2"></i>Search
-                            </button>
-                            <a href="/admin/users" class="btn btn-outline-modern">
-                                <i class="fas fa-times me-2"></i>Clear
-                            </a>
-                        </form>
-                    </div>
+        <!-- Stats Overview -->
+        <div class="stats-overview">
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-number"><%= data ? data.length : 0 %></div>
+                    <div class="stat-label">Total Customers</div>
                 </div>
             </div>
-
-            <!-- Customer Stats -->
-            <div class="col-lg-4">
-                <div class="stats-card-customers">
-                    <div class="stats-icon-customers">
-                        <i class="fas fa-users"></i>
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-user-check"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-number">
+                        <% if (data && data.length > 0) { %>
+                            <%= data.filter(u => !u.isBlocked).length %>
+                        <% } else { %>
+                            0
+                        <% } %>
                     </div>
-                    <div class="stats-content-customers">
-                        <div class="stats-number-customers"><%= data ? data.length : 0 %></div>
-                        <div class="stats-label-customers">Total Customers</div>
-                        <div class="stats-detail-customers">
-                            <% if (data && data.length > 0) { %>
-                                Active: <%= data.filter(u => !u.isBlocked).length %> | 
-                                Blocked: <%= data.filter(u => u.isBlocked).length %>
-                            <% } else { %>
-                                No customers yet
-                            <% } %>
+                    <div class="stat-label">Active</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-user-lock"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-number">
+                        <% if (data && data.length > 0) { %>
+                            <%= data.filter(u => u.isBlocked).length %>
+                        <% } else { %>
+                            0
+                        <% } %>
+                    </div>
+                    <div class="stat-label">Blocked</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-calendar-day"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-number">
+                        <% if (data && data.length > 0) { %>
+                            <%= data.filter(u => {
+                                const today = new Date();
+                                const userDate = new Date(u.createdAt || u.dateJoined);
+                                return userDate.toDateString() === today.toDateString();
+                            }).length %>
+                        <% } else { %>
+                            0
+                        <% } %>
+                    </div>
+                    <div class="stat-label">New Today</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filters and Search -->
+        <div class="filter-card">
+            <div class="filter-header">
+                <h3 class="filter-title">
+                    <i class="fas fa-filter"></i>
+                    Search & Filter Customers
+                </h3>
+            </div>
+            <div class="filter-body">
+                <form action="/admin/users" method="get" class="filter-form">
+                    <div class="filter-row">
+                        <div class="filter-group">
+                            <label class="filter-label">Search Customers</label>
+                            <div class="search-input-wrapper">
+                                <input type="text" 
+                                       name="search" 
+                                       class="search-input" 
+                                       placeholder="Search by name, email, or phone..." 
+                                       value="<%= search || '' %>">
+                                <i class="fas fa-search search-icon"></i>
+                            </div>
+                        </div>
+                        <div class="filter-group">
+                            <label class="filter-label">Status</label>
+                            <select name="status" class="filter-select">
+                                <option value="">All Customers</option>
+                                <option value="active">Active Only</option>
+                                <option value="blocked">Blocked Only</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label class="filter-label">Sort By</label>
+                            <select name="sort" class="filter-select">
+                                <option value="-createdAt">Newest First</option>
+                                <option value="createdAt">Oldest First</option>
+                                <option value="name">Name A-Z</option>
+                                <option value="-name">Name Z-A</option>
+                            </select>
                         </div>
                     </div>
-                </div>
+                    <div class="filter-actions">
+                        <button type="submit" class="btn-primary">
+                            <i class="fas fa-search"></i>
+                            Apply Filters
+                        </button>
+                        <a href="/admin/users" class="btn-secondary">
+                            <i class="fas fa-times"></i>
+                            Clear All
+                        </a>
+                    </div>
+                </form>
             </div>
         </div>
 
         <!-- Customers Table -->
         <% if (data && data.length > 0) { %>
-            <div class="table-modern">
-                <table class="table table-hover mb-0">
-                    <thead>
-                        <tr>
-                            <th>Customer Details</th>
-                            <th>Contact Information</th>
-                            <th>Status</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <% data.forEach((customer, index) => { %>
+            <div class="customers-table-card">
+                <div class="table-header">
+                    <h3 class="table-title">
+                        <i class="fas fa-users"></i>
+                        Customers List
+                    </h3>
+                </div>
+                <div class="table-container">
+                    <table class="customers-table">
+                        <thead>
                             <tr>
-                                <td>
-                                    <div class="d-flex align-items-center gap-3">
-                                        <div class="customer-avatar">
-                                            <%= customer.name.charAt(0).toUpperCase() %>
-                                        </div>
-                                        <div class="customer-details">
-                                            <div class="customer-name"><%= customer.name %></div>
-                                            <div class="customer-id">ID: #<%= customer._id.toString().slice(-8).toUpperCase() %></div>
-                                        </div>
+                                <th>
+                                    <div class="th-content">
+                                        <span>Customer Details</span>
+                                        <i class="fas fa-sort"></i>
                                     </div>
-                                </td>
-                                <td>
-                                    <div class="contact-info">
-                                        <div class="customer-email">
-                                            <i class="fas fa-envelope me-2"></i>
-                                            <%= customer.email %>
-                                        </div>
-                                        <div class="customer-phone">
-                                            <i class="fas fa-phone me-2"></i>
-                                            <%= customer.phone || 'N/A' %>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td>
-                                    <span class="status-badge status-<%= customer.isBlocked ? 'blocked' : 'active' %>">
-                                        <i class="fas fa-circle"></i>
-                                        <%= customer.isBlocked ? 'Blocked' : 'Active' %>
-                                    </span>
-                                </td>
-                                <td>
-                                    <div class="action-buttons">
-                                        <% if (!customer.isBlocked) { %>
-                                            <button class="btn btn-sm btn-warning-modern"
-                                                    onclick="toggleBlock('<%= customer._id %>', 'block')"
-                                                    data-bs-toggle="tooltip" 
-                                                    title="Block Customer">
-                                                <i class="fas fa-lock me-1"></i>Block
-                                            </button>
-                                        <% } else { %>
-                                            <button class="btn btn-sm btn-success-modern"
-                                                    onclick="toggleBlock('<%= customer._id %>', 'unblock')"
-                                                    data-bs-toggle="tooltip" 
-                                                    title="Unblock Customer">
-                                                <i class="fas fa-unlock me-1"></i>Unblock
-                                            </button>
-                                        <% } %>
-                                        
-                                        <button class="btn btn-sm btn-outline-modern"
-                                                onclick="viewCustomerDetails('<%= customer._id %>')"
-                                                data-bs-toggle="tooltip" 
-                                                title="View Customer Details">
-                                            <i class="fas fa-eye me-1"></i>View
-                                        </button>
-                                    </div>
-                                </td>
+                                </th>
+                                <th>Contact Information</th>
+                                <th>Join Date</th>
+                                <th>Status</th>
+                                <th>Actions</th>
                             </tr>
-                        <% }) %>
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            <% data.forEach((customer, index) => { %>
+                                <tr class="customer-row">
+                                    <td>
+                                        <div class="customer-info">
+                                            <div class="customer-avatar">
+                                                <%= customer.name.charAt(0).toUpperCase() %>
+                                            </div>
+                                            <div class="customer-details">
+                                                <div class="customer-name"><%= customer.name %></div>
+                                                <div class="customer-id">ID: #<%= customer._id.toString().slice(-8).toUpperCase() %></div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="contact-info">
+                                            <div class="customer-email">
+                                                <i class="fas fa-envelope"></i>
+                                                <%= customer.email %>
+                                            </div>
+                                            <div class="customer-phone">
+                                                <i class="fas fa-phone"></i>
+                                                <%= customer.phone || 'N/A' %>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="join-date">
+                                            <%= (customer.createdAt || customer.dateJoined || new Date()).toLocaleDateString('en-IN', { 
+                                                year: 'numeric', 
+                                                month: 'short', 
+                                                day: 'numeric' 
+                                            }) %>
+                                        </div>
+                                        <div class="join-time">
+                                            <%= (customer.createdAt || customer.dateJoined || new Date()).toLocaleTimeString('en-IN', { 
+                                                hour: '2-digit', 
+                                                minute: '2-digit' 
+                                            }) %>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="status-badge status-<%= customer.isBlocked ? 'blocked' : 'active' %>">
+                                            <i class="fas fa-circle"></i>
+                                            <%= customer.isBlocked ? 'Blocked' : 'Active' %>
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="action-buttons">
+                                            <% if (!customer.isBlocked) { %>
+                                                <button class="action-btn block-btn"
+                                                        onclick="toggleBlock('<%= customer._id %>', 'block')"
+                                                        title="Block Customer">
+                                                    <i class="fas fa-lock"></i>
+                                                </button>
+                                            <% } else { %>
+                                                <button class="action-btn unblock-btn"
+                                                        onclick="toggleBlock('<%= customer._id %>', 'unblock')"
+                                                        title="Unblock Customer">
+                                                    <i class="fas fa-unlock"></i>
+                                                </button>
+                                            <% } %>
+                                            
+                                            <button class="action-btn view-btn"
+                                                    onclick="viewCustomerDetails('<%= customer._id %>')"
+                                                    title="View Customer Details">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            <% }) %>
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
             <!-- Pagination -->
             <% if (totalPages > 1) { %>
-                <div class="d-flex justify-content-center mt-4">
-                    <nav aria-label="Customers pagination">
-                        <ul class="pagination pagination-modern">
-                            <% if (currentPage > 1) { %>
-                                <li class="page-item">
-                                    <a class="page-link" href="?page=<%= currentPage - 1 %>&search=<%= search || '' %>">
-                                        <i class="fas fa-chevron-left"></i>
-                                    </a>
-                                </li>
-                            <% } %>
-
-                            <% for (let i = 1; i <= totalPages; i++) { %>
-                                <li class="page-item <%= i === currentPage ? 'active' : '' %>">
-                                    <a class="page-link" href="?page=<%= i %>&search=<%= search || '' %>">
+                <div class="pagination-container">
+                    <nav class="pagination-nav">
+                        <ul class="pagination">
+                            <% for(let i = 1; i <= totalPages; i++) { %>
+                                <li class="page-item <%= currentPage === i ? 'active' : '' %>">
+                                    <a class="page-link" 
+                                       href="/admin/users?page=<%= i %><%= search ? '&search=' + encodeURIComponent(search) : '' %>">
                                         <%= i %>
-                                    </a>
-                                </li>
-                            <% } %>
-
-                            <% if (currentPage < totalPages) { %>
-                                <li class="page-item">
-                                    <a class="page-link" href="?page=<%= currentPage + 1 %>&search=<%= search || '' %>">
-                                        <i class="fas fa-chevron-right"></i>
                                     </a>
                                 </li>
                             <% } %>
@@ -193,24 +272,25 @@
             <% } %>
         <% } else { %>
             <!-- Empty State -->
-            <div class="card-modern text-center py-5 no-hover">
-                <div class="card-body-modern">
-                    <div class="empty-state">
-                        <i class="fas fa-users text-muted-modern mb-3 empty-icon"></i>
-                        <h5 class="text-muted-modern mb-2">No Customers Found</h5>
-                        <p class="text-muted-modern mb-0">
-                            <% if (search) { %>
-                                No customers match your search criteria. Try adjusting your search terms.
-                            <% } else { %>
-                                No customers have registered yet.
-                            <% } %>
-                        </p>
-                        <% if (search) { %>
-                            <a href="/admin/users" class="btn btn-outline-modern mt-3">
-                                <i class="fas fa-times me-2"></i>Clear Search
-                            </a>
-                        <% } %>
+            <div class="empty-state-card">
+                <div class="empty-state-content">
+                    <div class="empty-state-icon">
+                        <i class="fas fa-users"></i>
                     </div>
+                    <h3 class="empty-state-title">No Customers Found</h3>
+                    <p class="empty-state-text">
+                        <% if (search) { %>
+                            No customers match your current search criteria. Try adjusting your filters.
+                        <% } else { %>
+                            Customers will appear here once they start registering.
+                        <% } %>
+                    </p>
+                    <% if (search) { %>
+                        <a href="/admin/users" class="btn-secondary">
+                            <i class="fas fa-times"></i>
+                            Clear Filters
+                        </a>
+                    <% } %>
                 </div>
             </div>
         <% } %>
@@ -247,71 +327,326 @@
 </div>
 
 <style>
-    /* Customer Management Specific Monochrome Styles */
-    .stats-card-customers {
-        background: var(--bg-primary);
-        border: 1px solid var(--border-light);
-        border-radius: var(--radius-xl);
+    /* Modern Purple Theme Styles for Customer Management Page */
+    
+    /* Stats Overview */
+    .stats-overview {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 16px;
         padding: 1.5rem;
         display: flex;
         align-items: center;
         gap: 1rem;
-        transition: all var(--transition-normal);
-        box-shadow: var(--shadow-sm);
-        height: 100%;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        position: relative;
+        overflow: hidden;
     }
 
-    .stats-card-customers:hover {
-        box-shadow: var(--shadow-md);
-        transform: translateY(-1px);
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 4px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     }
 
-    .stats-icon-customers {
-        width: 60px;
-        height: 60px;
-        border-radius: var(--radius-lg);
-        background: var(--bg-dark);
+    .stat-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+    }
+
+    .stat-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 1.5rem;
-        color: var(--text-light);
+        color: #ffffff;
+        font-size: 1.25rem;
+        flex-shrink: 0;
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
     }
 
-    .stats-content-customers {
+    .stat-content {
         flex: 1;
     }
 
-    .stats-number-customers {
+    .stat-number {
         font-size: 1.75rem;
         font-weight: 700;
-        color: var(--text-primary);
+        color: #0f172a;
         line-height: 1.2;
-        font-family: 'Courier New', monospace;
+        font-family: 'Inter', sans-serif;
     }
 
-    .stats-label-customers {
+    .stat-label {
         font-size: 0.875rem;
-        color: var(--text-secondary);
-        margin-bottom: 0.25rem;
+        color: #64748b;
+        font-weight: 500;
+        margin-top: 0.25rem;
     }
 
-    .stats-detail-customers {
+    /* Filter Card */
+    .filter-card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 16px;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+
+    .filter-header {
+        padding: 1.5rem 2rem 0;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .filter-title {
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: #0f172a;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .filter-title i {
+        color: #667eea;
+    }
+
+    .filter-body {
+        padding: 2rem;
+    }
+
+    .filter-form {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+
+    .filter-row {
+        display: grid;
+        grid-template-columns: 2fr 1fr 1fr;
+        gap: 1.5rem;
+    }
+
+    .filter-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .filter-label {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: #374151;
+    }
+
+    .search-input-wrapper {
+        position: relative;
+    }
+
+    .search-input {
+        width: 100%;
+        padding: 0.75rem 1rem 0.75rem 2.5rem;
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        font-size: 0.875rem;
+        transition: all 0.3s ease;
+        background: #ffffff;
+    }
+
+    .search-input:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        transform: translateY(-2px);
+    }
+
+    .search-icon {
+        position: absolute;
+        left: 0.75rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #94a3b8;
+        font-size: 0.875rem;
+    }
+
+    .filter-select {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        font-size: 0.875rem;
+        background: #ffffff;
+        transition: all 0.3s ease;
+    }
+
+    .filter-select:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        transform: translateY(-2px);
+    }
+
+    .filter-actions {
+        display: flex;
+        gap: 1rem;
+        justify-content: flex-start;
+    }
+
+    /* Buttons */
+    .btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: #ffffff;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: 12px;
+        font-size: 0.875rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        text-decoration: none;
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        color: #ffffff;
+    }
+
+    .btn-secondary {
+        background: transparent;
+        color: #64748b;
+        border: 2px solid #e2e8f0;
+        padding: 0.75rem 1.5rem;
+        border-radius: 12px;
+        font-size: 0.875rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        text-decoration: none;
+    }
+
+    .btn-secondary:hover {
+        background: #f8fafc;
+        border-color: #cbd5e1;
+        color: #475569;
+        transform: translateY(-2px);
+    }
+
+    /* Customers Table */
+    .customers-table-card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 16px;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+    }
+
+    .table-header {
+        padding: 1.5rem 2rem;
+        border-bottom: 1px solid #e2e8f0;
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+    }
+
+    .table-title {
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: #0f172a;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .table-title i {
+        color: #667eea;
+    }
+
+    .table-container {
+        overflow-x: auto;
+    }
+
+    .customers-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .customers-table th {
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+        padding: 1rem 1.5rem;
+        text-align: left;
+        font-weight: 600;
+        font-size: 0.875rem;
+        color: #374151;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .th-content {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .th-content i {
+        color: #94a3b8;
         font-size: 0.75rem;
-        color: var(--text-muted);
+    }
+
+    .customers-table td {
+        padding: 1rem 1.5rem;
+        border-bottom: 1px solid #f1f5f9;
+        font-size: 0.875rem;
+    }
+
+    .customer-row {
+        transition: all 0.3s ease;
+    }
+
+    .customer-row:hover {
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+    }
+
+    .customer-info {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
     }
 
     .customer-avatar {
         width: 40px;
         height: 40px;
         border-radius: 50%;
-        background: var(--bg-dark);
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         display: flex;
         align-items: center;
         justify-content: center;
-        color: var(--text-light);
+        color: #ffffff;
         font-weight: 600;
         font-size: 1rem;
+        flex-shrink: 0;
     }
 
     .customer-details {
@@ -320,16 +655,14 @@
 
     .customer-name {
         font-weight: 500;
-        color: var(--text-primary);
-        font-size: 0.875rem;
-        line-height: 1.3;
+        color: #0f172a;
         margin-bottom: 0.125rem;
     }
 
     .customer-id {
         font-size: 0.75rem;
-        color: var(--text-muted);
-        font-family: 'Courier New', monospace;
+        color: #64748b;
+        font-family: 'Inter', sans-serif;
     }
 
     .contact-info {
@@ -340,190 +673,274 @@
 
     .customer-email,
     .customer-phone {
-        font-size: 0.875rem;
-        color: var(--text-secondary);
         display: flex;
         align-items: center;
+        gap: 0.5rem;
+        font-size: 0.875rem;
+        color: #374151;
     }
 
     .customer-email i,
     .customer-phone i {
-        color: var(--text-muted);
+        color: #667eea;
         font-size: 0.75rem;
+        width: 12px;
     }
 
-    .status-blocked {
-        background: var(--color-grey-600);
-        color: var(--text-light);
+    .join-date {
+        font-weight: 500;
+        color: #0f172a;
+    }
+
+    .join-time {
+        font-size: 0.75rem;
+        color: #64748b;
+        margin-top: 0.25rem;
+    }
+
+    /* Status Badges */
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.375rem;
+        padding: 0.375rem 0.75rem;
+        border-radius: 50px;
+        font-size: 0.75rem;
+        font-weight: 500;
+        text-transform: capitalize;
+    }
+
+    .status-badge i {
+        font-size: 0.5rem;
     }
 
     .status-active {
-        background: var(--color-grey-800);
-        color: var(--text-light);
+        background: rgba(16, 185, 129, 0.1);
+        color: #059669;
+        border: 1px solid rgba(16, 185, 129, 0.2);
     }
 
+    .status-blocked {
+        background: rgba(239, 68, 68, 0.1);
+        color: #dc2626;
+        border: 1px solid rgba(239, 68, 68, 0.2);
+    }
+
+    /* Action Buttons */
     .action-buttons {
         display: flex;
-        gap: 0.375rem;
-        flex-wrap: wrap;
+        gap: 0.5rem;
     }
 
-    .action-buttons .btn {
-        padding: 0.375rem 0.75rem;
-        border-radius: var(--radius-md);
-        transition: all var(--transition-normal);
+    .action-btn {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        border: none;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
         font-size: 0.75rem;
     }
 
-    .action-buttons .btn:hover {
-        transform: translateY(-1px);
-        box-shadow: var(--shadow-sm);
+    .view-btn {
+        background: rgba(102, 126, 234, 0.1);
+        color: #667eea;
     }
 
-    .btn-warning-modern {
-        background: var(--color-grey-600);
-        color: var(--text-light);
-        border: 1px solid var(--color-grey-600);
+    .view-btn:hover {
+        background: rgba(102, 126, 234, 0.2);
+        transform: translateY(-2px);
     }
 
-    .btn-warning-modern:hover {
-        background: var(--color-grey-700);
-        border-color: var(--color-grey-700);
-        color: var(--text-light);
+    .block-btn {
+        background: rgba(239, 68, 68, 0.1);
+        color: #dc2626;
     }
 
-    .btn-success-modern {
-        background: var(--color-grey-700);
-        color: var(--text-light);
-        border: 1px solid var(--color-grey-700);
+    .block-btn:hover {
+        background: rgba(239, 68, 68, 0.2);
+        transform: translateY(-2px);
     }
 
-    .btn-success-modern:hover {
-        background: var(--color-grey-800);
-        border-color: var(--color-grey-800);
-        color: var(--text-light);
+    .unblock-btn {
+        background: rgba(16, 185, 129, 0.1);
+        color: #059669;
     }
 
-    .empty-state {
-        padding: 3rem 1rem;
+    .unblock-btn:hover {
+        background: rgba(16, 185, 129, 0.2);
+        transform: translateY(-2px);
     }
 
-    .empty-icon {
+    /* Pagination */
+    .pagination-container {
+        display: flex;
+        justify-content: center;
+        margin-top: 2rem;
+    }
+
+    .pagination {
+        display: flex;
+        gap: 0.5rem;
+        list-style: none;
+        margin: 0;
+        padding: 0;
+    }
+
+    .page-item {
+        margin: 0;
+    }
+
+    .page-link {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        border: 2px solid #e2e8f0;
+        border-radius: 8px;
+        color: #64748b;
+        text-decoration: none;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+
+    .page-link:hover {
+        border-color: #667eea;
+        color: #667eea;
+        transform: translateY(-2px);
+    }
+
+    .page-item.active .page-link {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-color: #667eea;
+        color: #ffffff;
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    }
+
+    /* Empty State */
+    .empty-state-card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 16px;
+        padding: 4rem 2rem;
+        text-align: center;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+
+    .empty-state-icon {
         font-size: 4rem;
+        color: #cbd5e1;
+        margin-bottom: 1.5rem;
+    }
+
+    .empty-state-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #374151;
+        margin-bottom: 0.5rem;
+    }
+
+    .empty-state-text {
+        color: #64748b;
+        margin-bottom: 2rem;
     }
 
     /* Modal Styles */
-    .modal-modern {
+    .modal-content {
         border: none;
-        border-radius: var(--radius-xl);
-        box-shadow: var(--shadow-xl);
-        background: var(--bg-primary);
+        border-radius: 16px;
+        box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.25);
     }
 
     .modal-header-modern {
-        background: var(--bg-tertiary);
-        border-bottom: 1px solid var(--border-light);
-        border-radius: var(--radius-xl) var(--radius-xl) 0 0;
-        color: var(--text-primary);
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+        border-bottom: 1px solid #e2e8f0;
+        border-radius: 16px 16px 0 0;
+        padding: 1.5rem 2rem;
+    }
+
+    .modal-title {
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: #0f172a;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .modal-title i {
+        color: #667eea;
     }
 
     .modal-body-modern {
-        background: var(--bg-primary);
-        color: var(--text-primary);
+        padding: 2rem;
+        background: #ffffff;
+        color: #0f172a;
     }
 
     .modal-footer-modern {
-        background: var(--bg-tertiary);
-        border-top: 1px solid var(--border-light);
-        border-radius: 0 0 var(--radius-xl) var(--radius-xl);
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+        border-top: 1px solid #e2e8f0;
+        border-radius: 0 0 16px 16px;
+        padding: 1.5rem 2rem;
+        display: flex;
+        gap: 1rem;
+        justify-content: flex-end;
     }
 
     .btn-close-modern {
-        filter: none;
         background: none;
         border: none;
         opacity: 0.6;
+        font-size: 1.25rem;
+        color: #64748b;
     }
 
     .btn-close-modern:hover {
         opacity: 1;
+        color: #374151;
     }
 
-    /* Pagination Styles */
-    .pagination-modern {
-        --bs-pagination-padding-x: 0.75rem;
-        --bs-pagination-padding-y: 0.5rem;
-        --bs-pagination-font-size: 0.875rem;
-        --bs-pagination-color: var(--text-secondary);
-        --bs-pagination-bg: var(--bg-primary);
-        --bs-pagination-border-width: 1px;
-        --bs-pagination-border-color: var(--border-light);
-        --bs-pagination-border-radius: var(--radius-lg);
-        --bs-pagination-hover-color: var(--text-primary);
-        --bs-pagination-hover-bg: var(--bg-tertiary);
-        --bs-pagination-hover-border-color: var(--border-medium);
-        --bs-pagination-focus-color: var(--text-primary);
-        --bs-pagination-focus-bg: var(--bg-tertiary);
-        --bs-pagination-focus-box-shadow: 0 0 0 0.25rem rgb(0 0 0 / 0.1);
-        --bs-pagination-active-color: var(--text-light);
-        --bs-pagination-active-bg: var(--bg-dark);
-        --bs-pagination-active-border-color: var(--bg-dark);
-        --bs-pagination-disabled-color: var(--text-muted);
-        --bs-pagination-disabled-bg: var(--bg-primary);
-        --bs-pagination-disabled-border-color: var(--border-light);
+    .text-muted-modern {
+        color: #64748b !important;
     }
 
-    .pagination-modern .page-link {
-        border-radius: var(--radius-md);
-        margin: 0 0.125rem;
-        transition: all var(--transition-normal);
-    }
-
-    .pagination-modern .page-item.active .page-link {
-        box-shadow: var(--shadow-sm);
-    }
-
-    /* Responsive adjustments */
+    /* Responsive Design */
     @media (max-width: 768px) {
+        .stats-overview {
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        }
+
+        .filter-row {
+            grid-template-columns: 1fr;
+        }
+
+        .filter-actions {
+            flex-direction: column;
+        }
+
+        .customers-table {
+            font-size: 0.75rem;
+        }
+
+        .customer-info {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.5rem;
+        }
+
         .action-buttons {
             flex-direction: column;
             gap: 0.25rem;
         }
 
-        .action-buttons .btn {
-            padding: 0.25rem 0.5rem;
-            font-size: 0.7rem;
-        }
-
-        .customer-avatar {
-            width: 32px;
-            height: 32px;
-            font-size: 0.875rem;
-        }
-
-        .contact-info {
-            gap: 0.25rem;
-        }
-
-        .customer-email,
-        .customer-phone {
-            font-size: 0.8rem;
-        }
-    }
-
-    @media (max-width: 576px) {
-        .table-modern {
-            font-size: 0.8rem;
-        }
-
-        .stats-card-customers {
-            flex-direction: column;
-            text-align: center;
-            gap: 0.75rem;
-        }
-
-        .stats-content-customers {
-            text-align: center;
+        .action-btn {
+            width: 100%;
+            height: 28px;
         }
     }
 </style>

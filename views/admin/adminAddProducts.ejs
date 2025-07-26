@@ -26,18 +26,7 @@
         }) %>
 
         <!-- Flash Messages -->
-        <% if (typeof success_msg !== 'undefined' && success_msg) { %>
-            <div class="alert alert-success alert-dismissible fade show" role="alert">
-                <%= success_msg %>
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-        <% } %>
-        <% if (typeof error_msg !== 'undefined' && error_msg) { %>
-            <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                <%= error_msg %>
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-        <% } %>
+
 
         <form id="addProductForm" action="/admin/addproducts" method="POST" enctype="multipart/form-data">
             <div class="row">

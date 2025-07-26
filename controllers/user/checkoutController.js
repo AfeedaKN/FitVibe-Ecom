@@ -46,6 +46,8 @@ const getCheckout = async (req, res) => {
     const shipping = 100;
     const total = subtotal + tax - discount + shipping;
 
+    const defaultAddress = addresses.find(addr => addr.isDefault);
+    
     res.render('checkout', {
       addresses,
       user,
@@ -55,7 +57,7 @@ const getCheckout = async (req, res) => {
       discount,
       shipping,
       total,
-      defaultAddress: addresses.length > 0 ? addresses[0]._id : null 
+      defaultAddress: defaultAddress ? defaultAddress._id : null 
     });
 
   } catch (error) {
@@ -63,9 +65,6 @@ const getCheckout = async (req, res) => {
     res.status(500).send('Server Error');
   }
 };
-
-
-
 
 const placeOrder = async (req, res) => {
   try {
@@ -82,12 +81,30 @@ const placeOrder = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Cart is empty' });
     }
 
-    const outOfStock = cart.items.some(item => item.productId.variants[0].stock < item.quantity);
+    // First, let's match variants for each cart item
+    cart.items.forEach(item => {
+      const product = item.productId;
+      const matchedVariant = product.variants.find(variant => 
+        variant._id.toString() === item.variantId.toString()
+      );
+      item.variant = matchedVariant;
+      console.log(`Item: ${product.name}, Selected Variant: ${matchedVariant?.size}, VariantId: ${item.variantId}`);
+    });
+
+    // Check stock using the correct variants
+    const outOfStock = cart.items.some(item => {
+      if (!item.variant) {
+        console.error(`Variant not found for item: ${item.productId._id}, variantId: ${item.variantId}`);
+        return true;
+      }
+      return item.variant.varientquatity < item.quantity;
+    });
+
     if (outOfStock) {
       return res.status(400).json({ success: false, message: 'Some items are out of stock' });
     }
 
-    console.log("Stock is fine:", outOfStock);
+    console.log("Stock is fine:", !outOfStock);
 
     const address = await Address.findOne({ _id: addressId, user: userId });
     if (!address) {
@@ -105,22 +122,40 @@ const placeOrder = async (req, res) => {
 
     const orderID = generateOrderID();
 
-    const subtotal = cart.items.reduce((sum, item) => sum + (item.productId.variants[0].salePrice * item.quantity), 0);
+    // Calculate subtotal using the correct variants
+    const subtotal = cart.items.reduce((sum, item) => {
+      if (!item.variant) {
+        console.error(`Variant not found for subtotal calculation: ${item.productId._id}`);
+        return sum;
+      }
+      return sum + (item.variant.salePrice * item.quantity);
+    }, 0);
+
     const taxAmount = subtotal * 0.05;
     const discount = subtotal > 5000 ? subtotal * 0.1 : 0;
     const shippingCharge = 100;
     const totalAmount = subtotal + taxAmount;
     const finalAmount = totalAmount - discount + shippingCharge;
 
-    const products = cart.items.map(item => ({
-      product: item.productId._id,
-      variant: {
-        size: item.productId.variants[0].size,
-        varientPrice: item.productId.variants[0].varientPrice,
-        salePrice: item.productId.variants[0].salePrice,
-      },
-      quantity: item.quantity,
-    }));
+    // Create products array using the correct variants
+    const products = cart.items.map(item => {
+      if (!item.variant) {
+        throw new Error(`Variant not found for product: ${item.productId._id}, variantId: ${item.variantId}`);
+      }
+      
+      console.log(`Creating order item: ${item.productId.name} - Size: ${item.variant.size} - Price: ${item.variant.salePrice}`);
+      
+      return {
+        product: item.productId._id,
+        variant: {
+          size: item.variant.size,
+          varientPrice: item.variant.varientPrice,
+          salePrice: item.variant.salePrice,
+        },
+        quantity: item.quantity,
+        status: 'pending', // Add default status for each item
+      };
+    });
 
     const order = new Order({
       user: userId,
@@ -146,13 +181,28 @@ const placeOrder = async (req, res) => {
     });
 
     await order.save();
+    console.log("Order saved successfully with ID:", order.orderID);
 
+    // Update stock using the correct variants
     for (const item of cart.items) {
+      if (!item.variant) {
+        console.error(`Variant not found for stock update: ${item.productId._id}`);
+        continue;
+      }
+      
       const product = item.productId;
-      console.log("no product", product);
-      product.variants[0].varientquatity -= item.quantity;
-      console.log("no stock", product.variants[0].varientquatity);
-      await product.save();
+      console.log("Updating product:", product.name, "Variant:", item.variant.size);
+      
+      // Find the variant in the product and update its stock
+      const variantToUpdate = product.variants.find(v => v._id.toString() === item.variantId.toString());
+      if (variantToUpdate) {
+        const oldStock = variantToUpdate.varientquatity;
+        variantToUpdate.varientquatity -= item.quantity;
+        console.log(`Updated stock for ${item.variant.size}: ${oldStock} -> ${variantToUpdate.varientquatity} (reduced by ${item.quantity})`);
+        await product.save();
+      } else {
+        console.error(`Could not find variant to update stock: ${item.variantId}`);
+      }
     }
 
     cart.items = [];
@@ -160,8 +210,8 @@ const placeOrder = async (req, res) => {
 
     res.json({ success: true, orderId: order.orderID });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ success: false, message: 'Server Error' });
+    console.error('Error in placeOrder:', error);
+    res.status(500).json({ success: false, message: 'Server Error: ' + error.message });
   }
 };
 
@@ -171,7 +221,7 @@ const getOrderSuccess = async (req, res) => {
      const order = await Order.find({ user: req.user._id })
           .sort({ createdAt: -1 })
           .populate('products.product') 
-    res.render('order-success', { orderId,order });
+    res.render('order-success', { orderId, order });
   } catch (error) {
     console.error(error);
     res.status(500).send('Server Error');

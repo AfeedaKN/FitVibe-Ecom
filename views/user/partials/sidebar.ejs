@@ -1,13 +1,19 @@
 <div class="sidebar" id="sidebar">
   <div class="sidebar-header">
+    <button class="toggle-btn" id="toggleBtn"><i class="fas fa-bars"></i></button>
     <div class="user-info">
       <% if (user) { %>
-        <h3>Welcome, <%= user.name %>
-        </h3>
-        <% } %>
-
+        <div class="user-avatar">
+          <%= user.name ? user.name.charAt(0).toUpperCase() : 'U' %>
+        </div>
+        <h3><%= user.name || 'User' %></h3>
+        <span class="user-role">Premium Customer</span>
+      <% } else { %>
+        <div class="user-avatar">G</div>
+        <h3>Guest User</h3>
+        <span class="user-role">Visitor</span>
+      <% } %>
     </div>
-    <button class="toggle-btn" id="toggleBtn"><i class="fas fa-bars"></i></button>
   </div>
   <nav class="sidebar-nav">
     <a href="/" data-route="/"><i class="fas fa-home"></i> Home</a>
@@ -24,101 +30,149 @@
 </div>
 
 <style>
-  :root {
-    --primary-color: #1a1a1a;
-    --secondary-color: #ffd700;
-    --accent-color: #e6c200;
-    --text-light: #ffffff;
-    --text-dark: #333333;
-    --background-light: #f9f9f9;
-    --card-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-    --transition: all 0.3s ease;
-  }
-
+  /* Modern Professional Sidebar - Matching Profile Theme */
   .sidebar {
     width: 280px;
-    background: linear-gradient(180deg, var(--primary-color), #2c2c2c);
-    color: var(--text-light);
+    background: #ffffff;
+    border-right: 1px solid #e2e8f0;
     height: 100vh;
-    padding: 20px;
+    padding: 1.5rem 0;
     position: fixed;
     top: 0;
     left: 0;
     overflow-y: auto;
     transition: transform 0.3s ease;
-    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
     z-index: 1000;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   }
 
   .sidebar-header {
     display: flex;
-    justify-content: space-between;
+    flex-direction: column;
     align-items: center;
-    margin-bottom: 20px;
+    margin-bottom: 2rem;
+    padding: 0 1.5rem 1.5rem;
+    border-bottom: 1px solid #e2e8f0;
   }
 
   .user-info {
     display: flex;
+    flex-direction: column;
     align-items: center;
-    gap: 10px;
+    gap: 0.75rem;
+    text-align: center;
   }
 
   .user-avatar {
-    width: 40px;
-    height: 40px;
+    width: 60px;
+    height: 60px;
     border-radius: 50%;
-    object-fit: cover;
-    border: 2px solid var(--secondary-color);
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff;
+    font-size: 1.5rem;
+    font-weight: 700;
+    border: 3px solid #ffffff;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
   }
 
   .sidebar-header h3 {
-    font-size: 16px;
-    color: var(--secondary-color);
+    font-size: 1rem;
+    color: #0f172a;
     margin: 0;
+    font-weight: 600;
   }
 
-  .wallet-balance {
-    font-size: 12px;
-    color: #2ecc71;
-    margin: 0;
+  .user-role {
+    font-size: 0.75rem;
+    color: #6366f1;
+    background: #eef2ff;
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-weight: 500;
   }
 
   .toggle-btn {
     background: none;
     border: none;
-    color: var(--text-light);
-    font-size: 18px;
+    color: #64748b;
+    font-size: 1.125rem;
     cursor: pointer;
     display: none;
+    padding: 0.5rem;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+  }
+
+  .toggle-btn:hover {
+    background: #f1f5f9;
+    color: #0f172a;
+  }
+
+  .sidebar-nav {
+    padding: 0 1rem;
   }
 
   .sidebar-nav a {
     display: flex;
     align-items: center;
-    padding: 12px 15px;
-    color: var(--text-light);
+    padding: 0.875rem 1rem;
+    color: #64748b;
     text-decoration: none;
-    margin: 5px 0;
-    border-radius: 8px;
-    transition: var(--transition);
-    font-size: 14px;
+    margin: 0.25rem 0;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+    font-size: 0.875rem;
+    font-weight: 500;
+    position: relative;
   }
 
-  .sidebar-nav a:hover,
+  .sidebar-nav a:hover {
+    background: #f8fafc;
+    color: #0f172a;
+    transform: translateX(4px);
+  }
+
   .sidebar-nav a.active {
-    background: var(--secondary-color);
-    color: var(--primary-color);
-    transform: translateX(5px);
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #ffffff;
+    box-shadow: 0 4px 6px -1px rgba(102, 126, 234, 0.3);
+  }
+
+  .sidebar-nav a.active:hover {
+    transform: translateX(4px);
+    color: #ffffff;
   }
 
   .sidebar-nav a i {
-    margin-right: 12px;
-    font-size: 16px;
+    margin-right: 0.75rem;
+    font-size: 1rem;
+    min-width: 20px;
+    text-align: center;
+  }
+
+  /* Logout Section */
+  .sidebar-nav a[href="/logout"] {
+    margin-top: 1rem;
+    border-top: 1px solid #e2e8f0;
+    padding-top: 1rem;
+    color: #ef4444;
+  }
+
+  .sidebar-nav a[href="/logout"]:hover {
+    background: #fef2f2;
+    color: #dc2626;
   }
 
   @media (max-width: 768px) {
     .sidebar {
-      width: 250px;
+      width: 280px;
       transform: translateX(-100%);
     }
 
@@ -133,8 +187,38 @@
     body.sidebar-open {
       overflow: hidden;
     }
+
+    body.sidebar-open::after {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 999;
+    }
+  }
+
+  /* Professional Scrollbar */
+  .sidebar::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .sidebar::-webkit-scrollbar-track {
+    background: #f1f5f9;
+  }
+
+  .sidebar::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 3px;
+  }
+
+  .sidebar::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
   }
 </style>
+
 
 <script>
   // Sidebar toggle for mobile
@@ -143,6 +227,16 @@
   toggleBtn.addEventListener('click', () => {
     sidebar.classList.toggle('active');
     document.body.classList.toggle('sidebar-open');
+  });
+
+  // Close sidebar when clicking outside on mobile
+  document.addEventListener('click', (e) => {
+    if (window.innerWidth <= 768) {
+      if (!sidebar.contains(e.target) && !toggleBtn.contains(e.target) && sidebar.classList.contains('active')) {
+        sidebar.classList.remove('active');
+        document.body.classList.remove('sidebar-open');
+      }
+    }
   });
 
   // Highlight active link

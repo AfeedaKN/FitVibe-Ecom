@@ -92,15 +92,18 @@ const cancelOrder = async (req, res) => {
     if (!order) {
       return res.json({ success: false, message: 'Order not found.' });
     }
+    console.log("caaaa",order)
 
     order.orderStatus = 'cancelled';
+    order.paymentStatus='cancelled'
+     console.log("cance",order)
     order.cancelReason = reason || '';
 
     for (const item of order.products) { 
       const productId = item.product;
       const variantSize = item.variant.size;
       const quantityToAdd = item.quantity;
-
+      item.status= "cancelled"
       const product = await Product.findById(productId);
 
       if (product) {
@@ -207,6 +210,227 @@ const returnOrder = async (req, res) => {
   }
 };
 
+const cancelOrderItem = async (req, res) => {
+  try {
+    const { orderId, productId, variantSize, reason } = req.body;
+    const userId = req.user._id;
+
+    if (!mongoose.Types.ObjectId.isValid(orderId) || !mongoose.Types.ObjectId.isValid(productId)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid Order ID or Product ID'
+      });
+    }
+
+    if (!orderId || !productId || !variantSize) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Missing required fields: orderId, productId, or variantSize' 
+      });
+    }
+
+    // Find the order
+    const order = await Order.findOne({ _id: orderId, user: userId });
+    if (!order) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'Order not found or not owned by user' 
+      });
+    }
+
+    // Check if order can be cancelled
+    if (!['pending', 'processing'].includes(order.orderStatus)) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Order cannot be cancelled at this stage' 
+      });
+    }
+
+    // ✅ Find exact item (not using index)
+    const item = order.products.find(item =>
+      item.product.toString() === productId &&
+      item.variant.size === variantSize &&
+      item.status !== 'cancelled'
+    );
+
+    if (!item) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'Item not found or already cancelled' 
+      });
+    }
+
+    // ✅ Update item status
+    item.status = 'cancelled';
+    item.cancelReason = reason || '';
+    item.cancelDate = new Date();
+
+    // ✅ Subtotal (finalAmount & totalAmount) update cheyyuka
+    const cancelledItemSubtotal = item.variant.salePrice * item.quantity;
+    order.finalAmount = Math.max(0, order.finalAmount - cancelledItemSubtotal);
+    order.totalAmount = Math.max(0, order.totalAmount - cancelledItemSubtotal);
+
+    // ✅ Restore stock for the cancelled item
+    const product = await Product.findById(productId);
+    if (product) {
+      const variant = product.variants.find(v => v.size === variantSize);
+      if (variant) {
+        variant.varientquatity += item.quantity;
+        await product.save();
+      }
+    }
+
+    // ✅ If all items cancelled, change order & payment status
+    const allItemsCancelled = order.products.every(p => p.status === 'cancelled');
+    if (allItemsCancelled) {
+      order.orderStatus = 'cancelled';
+      order.paymentStatus = 'cancelled';
+    }
+
+    // ✅ Status history update
+    order.statusHistory.push({
+      status: 'item cancelled',
+      date: new Date(),
+      description: `Item cancelled: ${product?.name || 'Product'} (${variantSize})${reason ? ` - Reason: ${reason}` : ''}`
+    });
+
+    // ✅ Save order
+    await order.save();
+
+    return res.json({ 
+      success: true, 
+      message: 'Item cancelled successfully' 
+    });
+
+  } catch (error) {
+    console.error('Error cancelling item:', error);
+    return res.status(500).json({ 
+      success: false, 
+      message: 'Server error while cancelling item' 
+    });
+  }
+};
+
+
+
+const returnOrderItem = async (req, res) => {
+  try {
+    const { orderId, productId, variantSize, reason } = req.body;
+    const userId = req.user._id;
+
+    // ✅ Validate input
+    if (!orderId || !productId || !variantSize || !reason) {
+      return res.status(400).json({
+        success: false,
+        message: 'Missing required fields: orderId, productId, variantSize, or reason'
+      });
+    }
+
+    // ✅ Find the order
+    const order = await Order.findOne({ _id: orderId, user: userId });
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: 'Order not found or not owned by user'
+      });
+    }
+
+    // ✅ Check if order is delivered
+    if (order.orderStatus !== 'delivered' && order.orderStatus !== 'return pending') {
+      return res.status(400).json({
+        success: false,
+        message: 'Only delivered items can be returned'
+      });
+    }
+
+    // ✅ Debug all items
+    console.log("🟡 All Items in Order:");
+    order.products.forEach((item, idx) => {
+      console.log(`Item ${idx + 1}: Product=${item.product}, Size=${item.variant.size}, Status=${item.status}`);
+    });
+
+    // ✅ Find the specific item using equals
+    const itemIndex = order.products.findIndex(item =>
+      item.product.equals(productId) &&
+      item.variant.size === variantSize
+    );
+
+    if (itemIndex === -1) {
+      return res.status(404).json({
+        success: false,
+        message: 'Item not found in order'
+      });
+    }
+
+    const item = order.products[itemIndex];
+
+    // ✅ Debug selected item
+    console.log("🔵 Selected Item to Return:");
+    console.log(`Product: ${item.product}, Size: ${item.variant.size}, Status: ${item.status}`);
+
+    // ✅ Check if item already returned or requested
+    if (item.status === 'return pending') {
+      return res.status(400).json({
+        success: false,
+        message: 'Return already requested for this item'
+      });
+    }
+
+    if (item.status === 'returned') {
+      return res.status(400).json({
+        success: false,
+        message: 'Item is already returned'
+      });
+    }
+
+    // ✅ Update item status
+    item.status = 'return pending';
+    item.returnReason = reason;
+    item.returnRequestDate = new Date();
+
+    // ✅ Restore stock for the returned item
+    const product = await Product.findById(productId);
+    if (product) {
+      const variant = product.variants.find(v => v.size === variantSize);
+      if (variant) {
+        variant.varientquatity += item.quantity;
+        await product.save();
+      }
+    }
+
+    // ✅ Check if all items are return pending or returned
+    const allItemsReturnPending = order.products.every(item =>
+      ['return pending', 'returned'].includes(item.status)
+    );
+    if (allItemsReturnPending) {
+      order.orderStatus = 'return pending';
+    }
+
+    // ✅ Add to status history
+    order.statusHistory.push({
+      status: 'item return requested',
+      date: new Date(),
+      description: `Return requested for: ${product?.name || 'Product'} (${variantSize}) - Reason: ${reason}`
+    });
+
+    await order.save();
+
+    return res.json({
+      success: true,
+      message: 'Return request submitted successfully'
+    });
+
+  } catch (error) {
+    console.error('Error processing return request:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Server error while processing return request'
+    });
+  }
+};
+
+
+
 const downloadInvoice = async (req, res) => {
   try {
     const orderId = req.params.id;
@@ -308,6 +532,8 @@ module.exports = {
   getOrders,
   getOrderDetail,
   cancelOrder,
+  cancelOrderItem,
   returnOrder,
+  returnOrderItem,
   downloadInvoice
 };

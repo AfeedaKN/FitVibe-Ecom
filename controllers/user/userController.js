@@ -390,5 +390,5 @@ module.exports = {
     loadResetPassword,
     resetPassword,
     logout,
-    
+    sendVerificationEmail
 };

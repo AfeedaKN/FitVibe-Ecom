@@ -1,391 +1,692 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wallet - FitVibe</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FitVibe - My Wallet</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    /* Professional Wallet Page - Matching Profile Theme */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
 
-        :root {
-            --primary-color: #1a1a1a;
-            --secondary-color: #ffd700;
-            --accent-color: #e6c200;
-            --text-light: #ffffff;
-            --text-dark: #333333;
-            --background-light: #f9f9f9;
-            --card-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-            --transition: all 0.3s ease;
-        }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f8fafc;
+      color: #1e293b;
+      line-height: 1.6;
+      margin-left: 280px;
+    }
 
-        body {
-            font-family: 'Arial', sans-serif;
-            line-height: 1.6;
-            color: var(--text-dark);
-            background-color: var(--background-light);
-            margin-left: 250px;
-        }
+    .wallet-container {
+      padding: 2rem 1.5rem;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
 
-        .container {
-            padding: 40px 20px;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
+    /* Page Header */
+    .page-header {
+      margin-bottom: 2rem;
+      padding-bottom: 1rem;
+      border-bottom: 2px solid #e2e8f0;
+    }
 
-        h1 {
-            font-size: 28px;
-            margin-bottom: 20px;
-            color: var(--text-dark);
-            position: relative;
-            display: inline-block;
-        }
+    .page-title {
+      font-size: 2.25rem;
+      font-weight: 700;
+      color: #0f172a;
+      margin: 0;
+      letter-spacing: -0.025em;
+    }
 
-        h1::after {
-            content: '';
-            position: absolute;
-            bottom: -10px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 80px;
-            height: 3px;
-            background: var(--secondary-color);
-        }
+    .page-subtitle {
+      font-size: 1rem;
+      color: #64748b;
+      margin-top: 0.5rem;
+    }
 
-        .wallet-section, .transactions-section {
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: var(--card-shadow);
-            margin-bottom: 20px;
-        }
+    /* Wallet Grid */
+    .wallet-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+      margin-bottom: 2rem;
+    }
 
-        .wallet-section {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
+    /* Wallet Balance Card */
+    .balance-card {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: 20px;
+      padding: 2rem;
+      color: #ffffff;
+      box-shadow: 0 10px 15px -3px rgba(102, 126, 234, 0.4);
+      position: relative;
+      overflow: hidden;
+    }
 
-        .wallet-balance {
-            display: flex;
-            align-items: center;
-            gap: 20px;
-            padding: 20px;
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-            color: var(--text-light);
-            border-radius: 8px;
-        }
+    .balance-card::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      right: -50%;
+      width: 100%;
+      height: 100%;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 50%;
+    }
 
-        .wallet-balance i {
-            font-size: 40px;
-        }
+    .balance-header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+      position: relative;
+      z-index: 1;
+    }
 
-        .wallet-balance h2 {
-            font-size: 24px;
-            margin: 0;
-        }
+    .balance-icon {
+      width: 60px;
+      height: 60px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+    }
 
-        .wallet-balance span {
-            font-size: 32px;
-            font-weight: bold;
-        }
+    .balance-info h2 {
+      font-size: 1.125rem;
+      font-weight: 500;
+      margin: 0;
+      opacity: 0.9;
+    }
 
-        .wallet-actions {
-            display: flex;
-            gap: 10px;
-        }
+    .balance-amount {
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin: 0;
+      position: relative;
+      z-index: 1;
+    }
 
-        .wallet-actions button {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: var(--transition);
-            color: var(--text-light);
-            font-size: 16px;
-        }
+    /* Quick Actions Card */
+    .actions-card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 16px;
+      padding: 2rem;
+      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+    }
 
-        .add-funds-btn {
-            background: var(--primary-color);
-        }
+    .actions-header {
+      margin-bottom: 1.5rem;
+    }
 
-        .add-funds-btn:hover {
-            background: var(--secondary-color);
-            color: var(--primary-color);
-        }
+    .actions-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: #0f172a;
+      margin: 0;
+    }
 
-        .withdraw-btn {
-            background: #3498db;
-        }
+    .action-buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
 
-        .withdraw-btn:hover {
-            background: #2980b9;
-        }
+    .action-btn {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 1rem 1.5rem;
+      border: none;
+      border-radius: 12px;
+      font-size: 0.875rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-decoration: none;
+      color: #ffffff;
+    }
 
-        .transactions-section table {
-            width: 100%;
-            border-collapse: collapse;
-        }
+    .add-funds-btn {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    }
 
-        .transactions-section th, .transactions-section td {
-            padding: 12px;
-            text-align: left;
-            border-bottom: 1px solid #ddd;
-        }
+    .add-funds-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 15px -3px rgba(16, 185, 129, 0.4);
+      color: #ffffff;
+    }
 
-        .transactions-section th {
-            background: var(--primary-color);
-            color: var(--text-light);
-        }
+    .withdraw-btn {
+      background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    }
 
-        .transaction-type.credit {
-            color: #2ecc71;
-            font-weight: 500;
-        }
+    .withdraw-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 15px -3px rgba(245, 158, 11, 0.4);
+      color: #ffffff;
+    }
 
-        .transaction-type.debit {
-            color: #e74c3c;
-            font-weight: 500;
-        }
+    /* Transactions Section */
+    .transactions-section {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 16px;
+      padding: 2rem;
+      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+      grid-column: 1 / -1;
+    }
 
-        .full-body {
-            padding-top: 50px;
-            padding-left: 80px;
-            width: calc(100% - 80px);
-        }
+    .transactions-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid #e2e8f0;
+    }
 
-        @media (max-width: 768px) {
-            body {
-                margin-left: 0;
-            }
+    .transactions-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: #0f172a;
+      margin: 0;
+    }
 
-            .container {
-                padding: 20px;
-            }
+    .filter-btn {
+      padding: 0.5rem 1rem;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      font-size: 0.875rem;
+      color: #64748b;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
 
-            .full-body {
-                padding-left: 20px;
-                width: 100%;
-            }
+    .filter-btn:hover {
+      background: #f1f5f9;
+      border-color: #cbd5e1;
+    }
 
-            .wallet-balance {
-                flex-direction: column;
-                align-items: flex-start;
-            }
+    /* Transactions Table */
+    .transactions-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
 
-            .wallet-actions {
-                flex-direction: column;
-                width: 100%;
-            }
+    .transactions-table th {
+      background: #f8fafc;
+      color: #374151;
+      font-weight: 600;
+      font-size: 0.875rem;
+      text-align: left;
+      padding: 1rem 1.5rem;
+      border-bottom: 1px solid #e2e8f0;
+    }
 
-            .wallet-actions button {
-                width: 100%;
-            }
-        }
-    </style>
+    .transactions-table td {
+      padding: 1rem 1.5rem;
+      border-bottom: 1px solid #f1f5f9;
+      color: #374151;
+      font-size: 0.875rem;
+    }
+
+    .transactions-table tbody tr:hover {
+      background: #f8fafc;
+    }
+
+    .transactions-table tbody tr:last-child td {
+      border-bottom: none;
+    }
+
+    .transaction-type {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.25rem 0.75rem;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: capitalize;
+    }
+
+    .transaction-type.credit {
+      background: #d1fae5;
+      color: #065f46;
+    }
+
+    .transaction-type.debit {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
+    .transaction-amount {
+      font-weight: 600;
+    }
+
+    .transaction-amount.credit {
+      color: #059669;
+    }
+
+    .transaction-amount.debit {
+      color: #dc2626;
+    }
+
+    /* Empty State */
+    .empty-transactions {
+      text-align: center;
+      padding: 4rem 2rem;
+      color: #64748b;
+    }
+
+    .empty-transactions i {
+      font-size: 4rem;
+      margin-bottom: 1rem;
+      color: #cbd5e1;
+    }
+
+    .empty-transactions p {
+      font-size: 1.125rem;
+      margin-bottom: 1.5rem;
+    }
+
+    /* Stats Cards */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .stat-card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 1.5rem;
+      text-align: center;
+      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+    }
+
+    .stat-value {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #0f172a;
+      margin-bottom: 0.5rem;
+    }
+
+    .stat-label {
+      font-size: 0.875rem;
+      color: #64748b;
+      font-weight: 500;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      body {
+        margin-left: 0;
+      }
+
+      .wallet-container {
+        padding: 1rem;
+      }
+
+      .wallet-grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+      }
+
+      .page-title {
+        font-size: 1.875rem;
+      }
+
+      .balance-amount {
+        font-size: 2rem;
+      }
+
+      .transactions-table {
+        font-size: 0.75rem;
+      }
+
+      .transactions-table th,
+      .transactions-table td {
+        padding: 0.75rem;
+      }
+
+      .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    /* SweetAlert2 Custom Styling */
+    .swal2-popup {
+      border-radius: 16px;
+      font-family: 'Inter', sans-serif;
+    }
+
+    .swal2-title {
+      font-weight: 600;
+    }
+
+    .swal2-confirm {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+      border-radius: 8px !important;
+    }
+  </style>
 </head>
 <body>
-<div class="full-body">
-        <h1>Wallet</h1>
-    <%- include('./partials/sidebar', { page: 'wallet' }) %>
+  <%- include('./partials/sidebar') %>
 
-
-        <div class="wallet-section">
-            <div class="wallet-balance">
-                <i class="fas fa-wallet"></i>
-                <div>
-                    <h2>Wallet Balance</h2>
-                    <span>₹<%= wallet && wallet.balance ? wallet.balance.toFixed(2) : '0.00' %></span>
-                </div>
-            </div>
-            <div class="wallet-actions">
-                <button class="add-funds-btn" onclick="showAddFundsModal()">Add Funds</button>
-                <button class="withdraw-btn" onclick="showWithdrawModal()">Withdraw</button>
-            </div>
-        </div>
-
-        <div class="transactions-section">
-            <h2>Transaction History</h2>
-            <% if (wallet && wallet.transactions && wallet.transactions.length > 0) { %>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Date</th>
-                            <th>Type</th>
-                            <th>Amount</th>
-                            <th>Description</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <% wallet.transactions.forEach(transaction => { %>
-                            <tr>
-                                <td><%= new Date(transaction.createdAt).toLocaleDateString() %></td>
-                                <td class="transaction-type <%= transaction.type %>">
-                                    <%= transaction.type.charAt(0).toUpperCase() + transaction.type.slice(1) %>
-                                </td>
-                                <td>₹<%= transaction.amount.toFixed(2) %></td>
-                                <td><%= transaction.description || 'N/A' %></td>
-
-                            </tr>
-                        <% }) %>
-                    </tbody>
-                </table>
-            <% } else { %>
-                <p>No transactions found.</p>
-            <% } %>
-        </div>
-  
+  <div class="wallet-container">
+    <!-- Page Header -->
+    <div class="page-header">
+      <h1 class="page-title">My Wallet</h1>
+      <p class="page-subtitle">Manage your wallet balance and view transaction history</p>
     </div>
-</div>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script>
-        async function showAddFundsModal() {
-            const { value: amount } = await Swal.fire({
-                title: 'Add Funds to Wallet',
-                input: 'number',
-                inputLabel: 'Enter amount (₹)',
-                inputAttributes: {
-                    min: 1,
-                    step: 1
-                },
-                showCancelButton: true,
-                confirmButtonText: 'Add Funds',
-                cancelButtonText: 'Cancel',
-                confirmButtonColor: '#1a1a1a',
-                cancelButtonColor: '#6c757d',
-                reverseButtons: true,
-                focusCancel: true,
-                inputValidator: (value) => {
-                    if (!value || value <= 0) {
-                        return 'Please enter a valid amount';
-                    }
-                }
-            });
 
-            if (amount) {
-                try {
-                    const loadingSwal = Swal.fire({
-                        title: 'Processing...',
-                        text: 'Adding funds to your wallet.',
-                        allowOutsideClick: false,
-                        allowEscapeKey: false,
-                        didOpen: () => {
-                            Swal.showLoading();
-                        }
-                    });
+    <!-- Wallet Grid -->
+    <div class="wallet-grid">
+      <!-- Balance Card -->
+      <div class="balance-card">
+        <div class="balance-header">
+          <div class="balance-icon">
+            <i class="fas fa-wallet"></i>
+          </div>
+          <div class="balance-info">
+            <h2>Current Balance</h2>
+          </div>
+        </div>
+        <div class="balance-amount">
+          ₹<%= wallet && wallet.balance ? wallet.balance.toFixed(2) : '0.00' %>
+        </div>
+      </div>
 
-                    const response = await fetch('/wallet/add-funds', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ amount: parseFloat(amount) })
-                    });
+      <!-- Quick Actions Card -->
+      <div class="actions-card">
+        <div class="actions-header">
+          <h3 class="actions-title">Quick Actions</h3>
+        </div>
+        <div class="action-buttons">
+          <button class="action-btn add-funds-btn" onclick="showAddFundsModal()">
+            <i class="fas fa-plus"></i>
+            Add Funds
+          </button>
+          <!-- <button class="action-btn withdraw-btn" onclick="showWithdrawModal()">
+            <i class="fas fa-minus"></i>
+            Withdraw Funds
+          </button> -->
+        </div>
+      </div>
+    </div>
 
-                    const result = await response.json();
-                    await loadingSwal.close();
+    <!-- Transaction Statistics -->
+    <% if (wallet && wallet.transactions && wallet.transactions.length > 0) { %>
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-value">
+            <%= wallet.transactions.filter(t => t.type === 'credit').length %>
+          </div>
+          <div class="stat-label">Total Credits</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">
+            <%= wallet.transactions.filter(t => t.type === 'debit').length %>
+          </div>
+          <div class="stat-label">Total Debits</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">
+            ₹<%= wallet.transactions.filter(t => t.type === 'credit').reduce((sum, t) => sum + t.amount, 0).toFixed(2) %>
+          </div>
+          <div class="stat-label">Total Added</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">
+            ₹<%= wallet.transactions.filter(t => t.type === 'debit').reduce((sum, t) => sum + t.amount, 0).toFixed(2) %>
+          </div>
+          <div class="stat-label">Total Spent</div>
+        </div>
+      </div>
+    <% } %>
 
-                    if (result.success) {
-                        await Swal.fire({
-                            title: 'Success!',
-                            text: `₹${amount} added to your wallet successfully.`,
-                            icon: 'success',
-                            timer: 2000,
-                            showConfirmButton: false
-                        });
-                        window.location.reload();
-                    } else {
-                        throw new Error(result.message || 'Failed to add funds.');
-                    }
-                } catch (error) {
-                    await Swal.fire({
-                        title: 'Error!',
-                        text: error.message || 'Failed to add funds. Please try again.',
-                        icon: 'error',
-                        confirmButtonText: 'OK',
-                        confirmButtonColor: '#1a1a1a'
-                    });
-                }
-            }
+    <!-- Transactions Section -->
+    <div class="transactions-section">
+      <div class="transactions-header">
+        <h3 class="transactions-title">Transaction History</h3>
+        <button class="filter-btn">
+          <i class="fas fa-filter"></i>
+          Filter
+        </button>
+      </div>
+
+      <% if (wallet && wallet.transactions && wallet.transactions.length > 0) { %>
+        <table class="transactions-table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Type</th>
+              <th>Amount</th>
+              <th>Description</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% wallet.transactions.slice().reverse().forEach(transaction => { %>
+              <tr>
+                <td>
+                  <%= new Date(transaction.createdAt).toLocaleDateString('en-US', { 
+                    year: 'numeric', 
+                    month: 'short', 
+                    day: 'numeric' 
+                  }) %>
+                </td>
+                <td>
+                  <span class="transaction-type <%= transaction.type %>">
+                    <i class="fas fa-<%= transaction.type === 'credit' ? 'arrow-up' : 'arrow-down' %>"></i>
+                    <%= transaction.type.charAt(0).toUpperCase() + transaction.type.slice(1) %>
+                  </span>
+                </td>
+                <td class="transaction-amount <%= transaction.type %>">
+                  <%= transaction.type === 'credit' ? '+' : '-' %>₹<%= transaction.amount.toFixed(2) %>
+                </td>
+                <td><%= transaction.description || 'N/A' %></td>
+                <td>
+                  <span class="transaction-type credit">
+                    <i class="fas fa-check"></i>
+                    Completed
+                  </span>
+                </td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      <% } else { %>
+        <div class="empty-transactions">
+          <i class="fas fa-receipt"></i>
+          <p>No transactions found</p>
+          <button class="action-btn add-funds-btn" onclick="showAddFundsModal()">
+            <i class="fas fa-plus"></i>
+            Add Your First Transaction
+          </button>
+        </div>
+      <% } %>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script>
+    async function showAddFundsModal() {
+      const { value: amount } = await Swal.fire({
+        title: 'Add Funds to Wallet',
+        html: `
+          <div style="text-align: left; margin: 1rem 0;">
+            <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Enter amount (₹)</label>
+            <input type="number" id="amount-input" class="swal2-input" placeholder="Enter amount" min="1" step="1" style="margin: 0;">
+          </div>
+        `,
+        showCancelButton: true,
+        confirmButtonText: 'Add Funds',
+        cancelButtonText: 'Cancel',
+        confirmButtonColor: '#667eea',
+        cancelButtonColor: '#6b7280',
+        reverseButtons: true,
+        focusConfirm: false,
+        preConfirm: () => {
+          const amount = document.getElementById('amount-input').value;
+          if (!amount || amount <= 0) {
+            Swal.showValidationMessage('Please enter a valid amount');
+            return false;
+          }
+          return amount;
         }
+      });
 
-        async function showWithdrawModal() {
-            const maxBalance = <%= wallet && wallet.balance ? wallet.balance : 0 %>;
-            const { value: amount } = await Swal.fire({
-                title: 'Withdraw Funds',
-                input: 'number',
-                inputLabel: 'Enter amount to withdraw (₹)',
-                inputAttributes: {
-                    min: 1,
-                    step: 1,
-                    max: maxBalance
-                },
-                showCancelButton: true,
-                confirmButtonText: 'Withdraw',
-                cancelButtonText: 'Cancel',
-                confirmButtonColor: '#3498db',
-                cancelButtonColor: '#6c757d',
-                reverseButtons: true,
-                focusCancel: true,
-                inputValidator: (value) => {
-                    if (!value || value <= 0) {
-                        return 'Please enter a valid amount';
-                    }
-                    if (value > maxBalance) {
-                        return 'Insufficient wallet balance';
-                    }
-                }
-            });
-
-            if (amount) {
-                try {
-                    const loadingSwal = Swal.fire({
-                        title: 'Processing...',
-                        text: 'Withdrawing funds from your wallet.',
-                        allowOutsideClick: false,
-                        allowEscapeKey: false,
-                        didOpen: () => {
-                            Swal.showLoading();
-                        }
-                    });
-
-                    const response = await fetch('/wallet/withdraw', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ amount: parseFloat(amount) })
-                    });
-
-                    const result = await response.json();
-                    await loadingSwal.close();
-
-                    if (result.success) {
-                        await Swal.fire({
-                            title: 'Success!',
-                            text: `₹${amount} withdrawn successfully.`,
-                            icon: 'success',
-                            timer: 2000,
-                            showConfirmButton: false
-                        });
-                        window.location.reload();
-                    } else {
-                        throw new Error(result.message || 'Failed to withdraw funds.');
-                    }
-                } catch (error) {
-                    await Swal.fire({
-                        title: 'Error!',
-                        text: error.message || 'Failed to withdraw funds. Please try again.',
-                        icon: 'error',
-                        confirmButtonText: 'OK',
-                        confirmButtonColor: '#3498db'
-                    });
-                }
+      if (amount) {
+        try {
+          const loadingSwal = Swal.fire({
+            title: 'Processing...',
+            text: 'Adding funds to your wallet.',
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+            didOpen: () => {
+              Swal.showLoading();
             }
+          });
+
+          const response = await fetch('/wallet/add-funds', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ amount: parseFloat(amount) })
+          });
+
+          const result = await response.json();
+          await loadingSwal.close();
+
+          if (result.success) {
+            await Swal.fire({
+              title: 'Success!',
+              text: `₹${amount} added to your wallet successfully.`,
+              icon: 'success',
+              timer: 2000,
+              showConfirmButton: false,
+              confirmButtonColor: '#667eea'
+            });
+            window.location.reload();
+          } else {
+            throw new Error(result.message || 'Failed to add funds.');
+          }
+        } catch (error) {
+          await Swal.fire({
+            title: 'Error!',
+            text: error.message || 'Failed to add funds. Please try again.',
+            icon: 'error',
+            confirmButtonText: 'OK',
+            confirmButtonColor: '#667eea'
+          });
         }
-    </script>
+      }
+    }
+
+    async function showWithdrawModal() {
+      const maxBalance = <%= wallet && wallet.balance ? wallet.balance : 0 %>;
+      
+      if (maxBalance <= 0) {
+        await Swal.fire({
+          title: 'Insufficient Balance',
+          text: 'You don\'t have enough balance to withdraw.',
+          icon: 'warning',
+          confirmButtonText: 'OK',
+          confirmButtonColor: '#667eea'
+        });
+        return;
+      }
+
+      const { value: amount } = await Swal.fire({
+        title: 'Withdraw Funds',
+        html: `
+          <div style="text-align: left; margin: 1rem 0;">
+            <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Enter amount to withdraw (₹)</label>
+            <input type="number" id="withdraw-input" class="swal2-input" placeholder="Enter amount" min="1" step="1" max="${maxBalance}" style="margin: 0;">
+            <small style="color: #64748b; font-size: 0.875rem;">Available balance: ₹${maxBalance.toFixed(2)}</small>
+          </div>
+        `,
+        showCancelButton: true,
+        confirmButtonText: 'Withdraw',
+        cancelButtonText: 'Cancel',
+        confirmButtonColor: '#f59e0b',
+        cancelButtonColor: '#6b7280',
+        reverseButtons: true,
+        focusConfirm: false,
+        preConfirm: () => {
+          const amount = document.getElementById('withdraw-input').value;
+          if (!amount || amount <= 0) {
+            Swal.showValidationMessage('Please enter a valid amount');
+            return false;
+          }
+          if (amount > maxBalance) {
+            Swal.showValidationMessage('Insufficient wallet balance');
+            return false;
+          }
+          return amount;
+        }
+      });
+
+      if (amount) {
+        try {
+          const loadingSwal = Swal.fire({
+            title: 'Processing...',
+            text: 'Withdrawing funds from your wallet.',
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+            didOpen: () => {
+              Swal.showLoading();
+            }
+          });
+
+          const response = await fetch('/wallet/withdraw', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ amount: parseFloat(amount) })
+          });
+
+          const result = await response.json();
+          await loadingSwal.close();
+
+          if (result.success) {
+            await Swal.fire({
+              title: 'Success!',
+              text: `₹${amount} withdrawn successfully.`,
+              icon: 'success',
+              timer: 2000,
+              showConfirmButton: false,
+              confirmButtonColor: '#f59e0b'
+            });
+            window.location.reload();
+          } else {
+            throw new Error(result.message || 'Failed to withdraw funds.');
+          }
+        } catch (error) {
+          await Swal.fire({
+            title: 'Error!',
+            text: error.message || 'Failed to withdraw funds. Please try again.',
+            icon: 'error',
+            confirmButtonText: 'OK',
+            confirmButtonColor: '#f59e0b'
+          });
+        }
+      }
+    }
+  </script>
 </body>
 </html>
