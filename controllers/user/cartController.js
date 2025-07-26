@@ -202,21 +202,23 @@ const removeFromCart = async (req, res) => {
     }
 };
 
-
-const cartcount=async(req,res)=>{
+const getCartCount = async (req, res) => {
     try {
-        const userId=req.session.user._id
-        const cart=await Cart.find(userId).populate(items.product)
-        const count=await Cart.countDocuments()
-    } catch (error) {
+        const userId = req.session.user._id;
+        const cart = await Cart.findOne({ userId: userId });
+        const count = cart ? cart.items.length : 0;
         
+        res.json({ success: true, count: count });
+    } catch (error) {
+        console.error('Get cart count error:', error);
+        res.status(500).json({ success: false, message: 'Server error', count: 0 });
     }
-}
+};
 
 module.exports = {
     addToCart,
     getCart,
     updateCart,
-    removeFromCart
+    removeFromCart,
+    getCartCount
 };
-

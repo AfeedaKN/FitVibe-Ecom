@@ -8,6 +8,8 @@ const passport=require("./config/passport")
 const db=require("./config/db")
 const userRouter=require("./routes/userRouter")
 const adminRouter=require('./routes/adminRouter')
+const Cart = require('./models/cartSchema')
+const Wishlist = require('./models/wishlistSchema')
 db()
 
 
@@ -44,6 +46,33 @@ app.use((req,res,next)=>{
     res.locals.admin = req.session.admin || null
     next();
 }) 
+
+// Middleware to add cart count and wishlist count to all views
+app.use(async (req, res, next) => {
+    try {
+        if (req.session.user) {
+            // Get cart count
+            const cart = await Cart.findOne({ userId: req.session.user._id });
+            const cartCount = cart ? cart.items.length : 0;
+            
+            // Get wishlist count
+            const wishlist = await Wishlist.findOne({ user: req.session.user._id });
+            const wishlistCount = wishlist ? wishlist.items.length : 0;
+            
+            res.locals.cartCount = cartCount;
+            res.locals.wishlistCount = wishlistCount;
+        } else {
+            res.locals.cartCount = 0;
+            res.locals.wishlistCount = 0;
+        }
+        next();
+    } catch (error) {
+        console.error('Error fetching cart/wishlist counts:', error);
+        res.locals.cartCount = 0;
+        res.locals.wishlistCount = 0;
+        next();
+    }
+}); 
 
 
 

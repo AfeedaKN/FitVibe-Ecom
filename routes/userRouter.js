@@ -92,3 +92,6 @@ router.get("/profile/Wallet", userAuth, walletController.getWalletPage);
 router.post("/wallet/add-funds", userAuth, walletController.addFunds);
 
 module.exports=router 
+// API routes for cart and wishlist counts
+router.get("/api/cart/count", userAuth, cartController.getCartCount);
+router.get("/api/wishlist/count", userAuth, wishlistController.getWishlistCount);

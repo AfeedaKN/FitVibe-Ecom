@@ -45,6 +45,8 @@ router.post("/order/status", adminAuth, orderController.updateOrderStatus);
 router.get("/order/:id", adminAuth, orderController.viewOrderDetails);
 router.post("/order/return-approve/:orderId", adminAuth, orderController.approveReturn);
 router.post("/order/return-reject/:orderId", adminAuth, orderController.rejectReturn);
+router.post("/order/return-item-approve/:orderId", adminAuth, orderController.itemReturnApprove);
+router.post("/order/return-item-reject/:orderId", adminAuth, orderController.itemReturnReject);
 
 
 
