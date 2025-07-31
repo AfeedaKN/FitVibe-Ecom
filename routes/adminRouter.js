@@ -39,6 +39,7 @@ router.post('/editproducts', adminAuth, upload.array('productImages', 10), produ
 router.post("/update-product-offer", adminAuth, productController.updateProductOffer);
 router.delete("/deleteproduct/:id", adminAuth, productController.deleteProduct);
 router.put("/toggle-product-listing/:id", adminAuth, productController.toggleProductListing);
+router.patch("/products/:id/toggle-status", adminAuth, productController.toggleProductListing);
 
 router.get("/orders", adminAuth, orderController.loadOrders);
 router.post("/order/status", adminAuth, orderController.updateOrderStatus);

@@ -86,29 +86,29 @@ const productDetails = async (req, res) => {
 };
 
 const allproducts = async (req, res) => {
- try {
+  try {
     const {
       page = 1,
       limit = 12,
       search = '',
       sort = '',
       category = '',
-      brand = '',
       minPrice = '',
       maxPrice = ''
     } = req.query;
 
-    const listedCategories = await Category.find({ isDeleted: false, isListed: true });
-    const listedCategoryIds = listedCategories.map(cat => cat._id);
+    console.log('Query parameters:', { page, limit, search, sort, category, minPrice, maxPrice });
 
+    const listedCategories = await Category.find({ isDeleted: false, isListed: true });
+    const listedCategoryIds = listedCategories.map(cat => cat._id.toString());
     const categories = listedCategories;
 
-    let query = { isDeleted: false, isListed: true }; 
+    let query = { isDeleted: false, isListed: true, 'variants.0': { $exists: true } };
 
     if (category) {
-      query.categoryId = category; 
+      query.categoryId = category;
     } else {
-       query.categoryId = { $in: listedCategoryIds };
+      query.categoryId = { $in: listedCategoryIds };
     }
 
     if (search) {
@@ -118,26 +118,27 @@ const allproducts = async (req, res) => {
       ];
     }
 
-
-if (brand) {
-  query.brand = { $regex: new RegExp(brand, 'i') }; 
-}
-
-
     if (minPrice || maxPrice) {
-      query['variants.salePrice'] = {};
-      if (minPrice) query['variants.salePrice'].$gte = Number(minPrice);
-      if (maxPrice) query['variants.salePrice'].$lte = Number(maxPrice);
+      query['variants.0.salePrice'] = {};
+      if (minPrice && !isNaN(minPrice) && Number(minPrice) >= 0) {
+        query['variants.0.salePrice'].$gte = Number(minPrice);
+      }
+      if (maxPrice && !isNaN(maxPrice) && Number(maxPrice) >= 0) {
+        query['variants.0.salePrice'].$lte = Number(maxPrice);
+      }
+      if (minPrice && maxPrice && Number(minPrice) > Number(maxPrice)) {
+        query['variants.0.salePrice'] = { $gte: 0 }; // Reset invalid range
+        console.log('Invalid price range: minPrice > maxPrice');
+      }
     }
 
-    
     let sortOption = {};
     switch (sort) {
       case 'priceAsc':
-        sortOption['variants.salePrice'] = 1;
+        sortOption['variants.0.salePrice'] = 1;
         break;
       case 'priceDesc':
-        sortOption['variants.salePrice'] = -1;
+        sortOption['variants.0.salePrice'] = -1;
         break;
       case 'nameAsc':
         sortOption.name = 1;
@@ -145,23 +146,19 @@ if (brand) {
       case 'nameDesc':
         sortOption.name = -1;
         break;
-      case 'popularity':
-        sortOption.popularity = -1; 
-        break;
       case 'rating':
-        sortOption.rating = -1;
+        sortOption['ratings.average'] = -1;
         break;
       case 'newArrivals':
         sortOption.createdAt = -1;
-        break;
-      case 'featured':
-        sortOption.featured = -1; 
         break;
       default:
         sortOption.createdAt = -1;
     }
 
-    
+    console.log('MongoDB query:', query);
+    console.log('Sort option:', sortOption);
+
     const totalProducts = await Product.countDocuments(query);
     const totalPages = Math.ceil(totalProducts / limit);
     const products = await Product.find(query)
@@ -170,30 +167,42 @@ if (brand) {
       .limit(Number(limit))
       .populate('categoryId');
 
-    
-    const brands = await Product.distinct('brand');
+    console.log('Products found:', products.map(p => ({ 
+      name: p.name, 
+      price: p.variants[0]?.salePrice, 
+      categoryId: p.categoryId?._id.toString()
+    })));
 
-    
     const buildQuery = (params) => {
       const queryParams = { ...req.query, ...params };
       return `/products?${new URLSearchParams(queryParams).toString()}`;
     };
-    console.log('All products:', products);
 
     res.render('allproduct', {
       products,
       categories,
-      brands,
       query: req.query,
       currentPage: Number(page),
       totalPages,
       buildQuery
     });
   } catch (error) {
-    console.error(error);
-    res.status(500).send('Server Error');
+    console.error('Error in allproducts:', error);
+    res.render('allproduct', {
+      products: [],
+      categories: [],
+      query: req.query,
+      currentPage: Number(page),
+      totalPages: 0,
+      buildQuery: (params) => {
+        const queryParams = { ...req.query, ...params };
+        return `/products?${new URLSearchParams(queryParams).toString()}`;
+      },
+      error: 'An error occurred while fetching products. Please try again.'
+    });
   }
 };
+
 
 module.exports = { 
     loadHomepage,

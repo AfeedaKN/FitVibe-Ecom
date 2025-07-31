@@ -45,7 +45,7 @@
                     <i class="fas fa-box"></i>
                 </div>
                 <div class="stat-content">
-                    <div class="stat-number"><%= typeof totalProducts !== 'undefined' ? totalProducts : 0 %></div>
+                    <div class="stat-number"><%= typeof totalAllProducts !== 'undefined' ? totalAllProducts : 0 %></div>
                     <div class="stat-label">Total Products</div>
                 </div>
             </div>
@@ -55,7 +55,7 @@
                 </div>
                 <div class="stat-content">
                     <div class="stat-number">
-                        <%= typeof products !== 'undefined' && products ? products.filter(p => p.isListed).length : 0 %>
+                        <%= typeof allProducts !== 'undefined' && allProducts ? allProducts.filter(p => p.isListed).length : 0 %>
                     </div>
                     <div class="stat-label">Active Products</div>
                 </div>
@@ -66,7 +66,7 @@
                 </div>
                 <div class="stat-content">
                     <div class="stat-number">
-                        <%= typeof products !== 'undefined' && products ? products.filter(p => {
+                        <%= typeof allProducts !== 'undefined' && allProducts ? allProducts.filter(p => {
                             if (!p.variants || !p.variants.length) return false;
                             const totalStock = p.variants.reduce((sum, v) => sum + (v.varientquatity || 0), 0);
                             return totalStock <= 10 && totalStock > 0;
@@ -81,7 +81,7 @@
                 </div>
                 <div class="stat-content">
                     <div class="stat-number">
-                        <%= typeof products !== 'undefined' && products ? products.filter(p => {
+                        <%= typeof allProducts !== 'undefined' && allProducts ? allProducts.filter(p => {
                             if (!p.variants || !p.variants.length) return true;
                             const totalStock = p.variants.reduce((sum, v) => sum + (v.varientquatity || 0), 0);
                             return totalStock === 0;
@@ -136,26 +136,7 @@
                             </select>
                         </div>
                     </div>
-                    <div class="filter-row">
-                        <div class="filter-group">
-                            <label class="filter-label">Sort By</label>
-                            <select name="sortBy" class="filter-select">
-                                <option value="createdAt" <%= (typeof sortBy !== 'undefined' && sortBy === 'createdAt') ? 'selected' : '' %>>Date Created</option>
-                                <option value="name" <%= (typeof sortBy !== 'undefined' && sortBy === 'name') ? 'selected' : '' %>>Name</option>
-                                <option value="price" <%= (typeof sortBy !== 'undefined' && sortBy === 'price') ? 'selected' : '' %>>Price</option>
-                            </select>
-                        </div>
-                        <div class="filter-group">
-                            <label class="filter-label">Order</label>
-                            <select name="sortOrder" class="filter-select">
-                                <option value="desc" <%= (typeof sortOrder !== 'undefined' && sortOrder === 'desc') ? 'selected' : '' %>>Descending</option>
-                                <option value="asc" <%= (typeof sortOrder !== 'undefined' && sortOrder === 'asc') ? 'selected' : '' %>>Ascending</option>
-                            </select>
-                        </div>
-                        <div class="filter-group">
-                            <!-- Empty space for alignment -->
-                        </div>
-                    </div>
+                    
                     <div class="filter-actions">
                         <button type="submit" class="btn-primary">
                             <i class="fas fa-search"></i>

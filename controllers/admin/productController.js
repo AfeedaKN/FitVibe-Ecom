@@ -44,9 +44,9 @@ const loadProducts = async (req, res) => {
     }
 
     if (isActiveFilter === "true") {
-      filter.isActive = true
+      filter.isListed = true
     } else if (isActiveFilter === "false") {
-      filter.isActive = false
+      filter.isListed = false
     }
 
     if (priceRange) {
@@ -76,6 +76,9 @@ const loadProducts = async (req, res) => {
       .skip(skip)
       .limit(limit)
 
+    // Get all products for stats calculation (not filtered or paginated)
+    const allProducts = await Product.find({ isDeleted: false }).populate("categoryId")
+
     const categories = await Category.find({ isListed: true })
 
     const admin = req.session.admin
@@ -86,13 +89,18 @@ const loadProducts = async (req, res) => {
       }
       : {}
 
+    // Calculate total count of all products (not filtered)
+    const totalAllProducts = await Product.countDocuments({ isDeleted: false })
+
     res.render("adminProducts", {
       admin,
       products,
+      allProducts,
       categories,
       currentPage: page,
       totalPages,
       totalProducts,
+      totalAllProducts,
       searchQuery,
       category,
       limit,
@@ -107,10 +115,12 @@ const loadProducts = async (req, res) => {
     res.status(500).render("adminProducts", {
       admin: req.session.admin || {},
       products: [],
+      allProducts: [],
       categories: [],
       currentPage: 1,
       totalPages: 0,
       totalProducts: 0,
+      totalAllProducts: 0,
       searchQuery: req.query.search || "",
       category: req.query.category || "",
       priceRange: req.query.priceRange || "",
@@ -278,7 +288,7 @@ if (existingProduct) {
         average: 0,
         count: 0,
       },
-      isActive: true,
+      isListed: true,
     })
 
     await newProduct.save()
@@ -502,7 +512,7 @@ const categoryIdObj = new mongoose.Types.ObjectId(category);
       tags: tagArray,
       variants,
       images,
-      isActive: isActive === 'on',
+      isListed: isActive === 'on',
       updatedAt: Date.now(),
     });
 

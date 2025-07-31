@@ -9,22 +9,69 @@ const loadOrders = async (req, res) => {
     const limit = 5;
     const skip = (page - 1) * limit;
 
-    const totalOrders = await Order.countDocuments();
-    const totalPages = Math.ceil(totalOrders / limit);
+    // Build filter object based on query parameters
+    const filter = {};
+    
+    // Search functionality - we'll handle this after population
+    const searchQuery = req.query.search;
 
-    const orders = await Order.find({})
-      .populate("user")
-      .sort({ orderDate: -1 })
-      .skip(skip)
-      .limit(limit);
+    // Status filter
+    if (req.query.status) {
+      filter.orderStatus = req.query.status;
+    }
+
+    // Sort options
+    let sortOption = { orderDate: -1 }; // Default: newest first
+    if (req.query.sort) {
+      switch (req.query.sort) {
+        case 'orderDate':
+          sortOption = { orderDate: 1 };
+          break;
+        case '-orderDate':
+          sortOption = { orderDate: -1 };
+          break;
+        case 'finalAmount':
+          sortOption = { finalAmount: 1 };
+          break;
+        case '-finalAmount':
+          sortOption = { finalAmount: -1 };
+          break;
+        case 'orderStatus':
+          sortOption = { orderStatus: 1 };
+          break;
+      }
+    }
+
+    // Get all orders first, then apply search filter if needed
+    let allOrdersQuery = await Order.find(filter).populate("user").sort(sortOption);
+    
+    // Apply search filter after population
+    if (searchQuery) {
+      const searchRegex = new RegExp(searchQuery, 'i');
+      allOrdersQuery = allOrdersQuery.filter(order => 
+        order.orderID.match(searchRegex) ||
+        order.user.name.match(searchRegex) ||
+        order.user.email.match(searchRegex)
+      );
+    }
+
+    const totalFilteredOrders = allOrdersQuery.length;
+    const totalPages = Math.ceil(totalFilteredOrders / limit);
+
+    // Get paginated orders for display
+    const orders = allOrdersQuery.slice(skip, skip + limit);
+
+    // Get all orders for stats calculation (not filtered or paginated)
+    const allOrders = await Order.find({}).populate("user");
 
     res.render("adminOrders", {
       admin: req.session.admin,
       orders,
+      allOrders,
       currentPage: page,
       totalPages,
+      totalOrders: totalFilteredOrders,
       query: req.query,
-      
     });
   } catch (error) {
     console.log("Error loading admin orders:", error);
@@ -32,10 +79,11 @@ const loadOrders = async (req, res) => {
     res.render("adminOrders", {
       admin: req.session.admin,
       orders: [],
+      allOrders: [],
       currentPage: 1,
       totalPages: 1,
+      totalOrders: 0,
       query: req.query,
-     
     });
   }
 };

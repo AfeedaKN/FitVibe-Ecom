@@ -64,13 +64,7 @@
                 </div>
                 <div class="stat-content">
                     <div class="stat-number">
-                        <% if (typeof totalOrders !== 'undefined') { %>
-                            <%= totalOrders %>
-                        <% } else if (typeof allOrders !== 'undefined') { %>
-                            <%= allOrders.length %>
-                        <% } else { %>
-                            <%= orders ? orders.length : 0 %>
-                        <% } %>
+                        <%= typeof allOrders !== 'undefined' ? allOrders.length : 0 %>
                     </div>
                     <div class="stat-label">Total Orders</div>
                 </div>

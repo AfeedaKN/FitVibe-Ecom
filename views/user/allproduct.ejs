@@ -7,10 +7,9 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
   <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
-<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
 
   <style>
-    /* Professional Theme - Matching Home Page */
     * {
       margin: 0;
       padding: 0;
@@ -24,7 +23,6 @@
       line-height: 1.6;
     }
 
-    /* Main Container Layout */
     .main-container {
       max-width: 1400px;
       margin: 0 auto;
@@ -35,7 +33,6 @@
       align-items: start;
     }
 
-    /* Left Sidebar - Filter Section */
     .filter-sidebar {
       background: #ffffff;
       border: 1px solid #e5e7eb;
@@ -170,7 +167,6 @@
       flex: 1;
     }
 
-    /* Filter Reset Button */
     .filter-reset {
       margin-top: 1.5rem;
       padding-top: 1.5rem;
@@ -195,7 +191,6 @@
       border-color: #9ca3af;
     }
 
-    /* Right Content Area */
     .content-area {
       min-height: 100vh;
     }
@@ -222,7 +217,6 @@
       font-weight: 500;
     }
 
-    /* Products Grid */
     .products {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -352,7 +346,6 @@
       border-color: #ef4444;
     }
 
-    /* Pagination Styles */
     .pagination {
       display: flex;
       justify-content: center;
@@ -387,8 +380,7 @@
       border-color: #f1f5f9;
       pointer-events: none;
     }
-  
-    /* Mobile Filter Toggle */
+
     .mobile-filter-toggle {
       position: fixed;
       bottom: 2rem;
@@ -419,7 +411,6 @@
       transform: translateY(0);
     }
 
-    /* Responsive Design */
     @media (max-width: 1024px) {
       .main-container {
         grid-template-columns: 280px 1fr;
@@ -549,20 +540,16 @@
 <body>
   <%- include('./partials/header') %>
 
-  <!-- Mobile Filter Overlay -->
   <div class="filter-overlay" id="filterOverlay"></div>
 
-  <!-- Mobile Filter Toggle Button -->
   <button class="mobile-filter-toggle" id="mobileFilterToggle">
     <i class="fas fa-filter"></i>
   </button>
 
   <div class="main-container">
-    <!-- Left Sidebar - Filters -->
     <div class="filter-sidebar" id="filterSidebar">
       <h3><i class="fas fa-filter"></i> Filters</h3>
       
-      <!-- Search Bar -->
       <div class="search-bar">
         <input type="text" id="searchInput" placeholder="Search products..." value="<%= query.search || '' %>">
         <div class="search-buttons">
@@ -571,7 +558,6 @@
         </div>
       </div>
 
-      <!-- Sort Options -->
       <div class="filter-group">
         <label for="sortSelect"><i class="fas fa-sort"></i> Sort By</label>
         <select id="sortSelect">
@@ -580,48 +566,35 @@
           <option value="priceDesc" <%= query.sort === 'priceDesc' ? 'selected' : '' %>>Price: High to Low</option>
           <option value="nameAsc" <%= query.sort === 'nameAsc' ? 'selected' : '' %>>A - Z</option>
           <option value="nameDesc" <%= query.sort === 'nameDesc' ? 'selected' : '' %>>Z - A</option>
-          <option value="popularity" <%= query.sort === 'popularity' ? 'selected' : '' %>>Popularity</option>
           <option value="rating" <%= query.sort === 'rating' ? 'selected' : '' %>>Average Ratings</option>
           <option value="newArrivals" <%= query.sort === 'newArrivals' ? 'selected' : '' %>>New Arrivals</option>
-          <option value="featured" <%= query.sort === 'featured' ? 'selected' : '' %>>Featured</option>
         </select>
       </div>
 
-      <!-- Category Filter -->
       <div class="filter-group">
         <label for="categoryFilter"><i class="fas fa-tags"></i> Category</label>
         <select id="categoryFilter">
           <option value="" <%= !query.category ? 'selected' : '' %>>All Categories</option>
           <% categories.forEach(category => { %>
-            <option value="<%= category._id %>" <%= query.category === category._id ? 'selected' : '' %>><%= category.name %></option>
+            <option value="<%= category._id.toString() %>" <%= query.category === category._id.toString() ? 'selected' : '' %>><%= category.name %></option>
           <% }) %>
         </select>
       </div>
 
-      <!-- Brand Filter -->
-      <div class="filter-group">
-        <label for="brandFilter"><i class="fas fa-star"></i> Brand</label>
-        <select id="brandFilter">
-          <option value="" <%= !query.brand ? 'selected' : '' %>>All Brands</option>
-          <% brands.forEach(brand => { %>
-            <option value="<%= brand %>" <%= query.brand === brand ? 'selected' : '' %>><%= brand %></option>
-          <% }) %>
-        </select>
-      </div>
-
-      <!-- Price Range -->
       <div class="filter-group">
         <label><i class="fas fa-dollar-sign"></i> Price Range</label>
         <div class="price-range">
-          <input type="number" id="minPrice" placeholder="Min ₹" value="<%= query.minPrice || '' %>">
-          <input type="number" id="maxPrice" placeholder="Max ₹" value="<%= query.maxPrice || '' %>">
+          <input type="number" id="minPrice" placeholder="Min ₹" value="<%= query.minPrice || '' %>" min="0">
+          <input type="number" id="maxPrice" placeholder="Max ₹" value="<%= query.maxPrice || '' %>" min="0">
         </div>
+      </div>
+
+      <div class="filter-reset">
+        <button id="resetFiltersBtn"><i class="fas fa-redo"></i> Reset Filters</button>
       </div>
     </div>
 
-    <!-- Right Content Area -->
     <div class="content-area">
-      <!-- Content Header -->
       <div class="content-header">
         <h2>All Products</h2>
         <div class="results-count">
@@ -633,7 +606,6 @@
         </div>
       </div>
 
-      <!-- Products Grid -->
       <% if (products.length === 0) { %>
         <div style="text-align: center; padding: 4rem 2rem; color: #64748b;">
           <i class="fas fa-search" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.5;"></i>
@@ -653,13 +625,13 @@
               <h3><%= product.name %></h3>
 
               <div class="stars">
-                <% for(let i = 0; i < Math.floor(product.rating || 0); i++) { %>
+                <% for(let i = 0; i < Math.floor(product.ratings?.average || 0); i++) { %>
                   <i class="fas fa-star"></i>
                 <% } %>
-                <% if ((product.rating || 0) % 1 !== 0) { %>
+                <% if ((product.ratings?.average || 0) % 1 !== 0) { %>
                   <i class="fas fa-star-half-alt"></i>
                 <% } %>
-                <% for(let i = 0; i < 5 - Math.ceil(product.rating || 0); i++) { %>
+                <% for(let i = 0; i < 5 - Math.ceil(product.ratings?.average || 0); i++) { %>
                   <i class="far fa-star"></i>
                 <% } %>
               </div>
@@ -683,7 +655,6 @@
           <% }) %>
         </div>
 
-        <!-- Pagination -->
         <div class="pagination">
           <% if (currentPage > 1) { %>
             <a href="<%= buildQuery({ page: currentPage - 1 }) %>">
@@ -715,16 +686,150 @@
 
   <%- include('./partials/footer') %>
 
- 
   <script>
-    // Function to update button states based on wishlist status
-    function updateButtonStates() {
-      document.querySelectorAll('.wishlist-btn').forEach(btn => {
-        // Button states will be updated after checking wishlist status
+    document.addEventListener('DOMContentLoaded', async () => {
+      const wishlistBtns = document.querySelectorAll('.wishlist-btn');
+      const searchInput = document.getElementById('searchInput');
+      const categoryFilter = document.getElementById('categoryFilter');
+
+      for (const btn of wishlistBtns) {
+        const productId = btn.getAttribute('data-product-id');
+        try {
+          const response = await fetch(`/wishlist/check/${productId}`);
+          const result = await response.json();
+          if (result.exists) {
+            btn.classList.add('active');
+            btn.innerHTML = '<i class="fas fa-heart"></i>';
+            btn.title = 'Remove from Wishlist';
+          }
+        } catch (error) {
+          console.error('Error checking wishlist status:', error);
+        }
+      }
+
+      if (categoryFilter.value) {
+        const selectedOption = categoryFilter.options[categoryFilter.selectedIndex];
+        searchInput.placeholder = selectedOption.text;
+      }
+    });
+
+    function buildQueryString(params) {
+      const currentParams = new URLSearchParams(window.location.search);
+      Object.entries(params).forEach(([key, value]) => {
+        if (value || value === '') {
+          if (value === '') {
+            currentParams.delete(key);
+          } else {
+            currentParams.set(key, value);
+          }
+        }
       });
+      return '/products?' + currentParams.toString();
     }
 
-    // Wishlist functionality
+    const minPriceInput = document.getElementById('minPrice');
+    const maxPriceInput = document.getElementById('maxPrice');
+
+    function validatePriceRange() {
+      const minPrice = parseFloat(minPriceInput.value);
+      const maxPrice = parseFloat(maxPriceInput.value);
+
+      if (minPriceInput.value && (isNaN(minPrice) || minPrice < 0)) {
+        Toastify({
+          text: 'Minimum price must be a non-negative number',
+          duration: 3000,
+          gravity: 'top',
+          position: 'right',
+          backgroundColor: '#dc3545',
+          stopOnFocus: true,
+        }).showToast();
+        minPriceInput.value = '';
+        return false;
+      }
+
+      if (maxPriceInput.value && (isNaN(maxPrice) || maxPrice < 0)) {
+        Toastify({
+          text: 'Maximum price must be a non-negative number',
+          duration: 3000,
+          gravity: 'top',
+          position: 'right',
+          backgroundColor: '#dc3545',
+          stopOnFocus: true,
+        }).showToast();
+        maxPriceInput.value = '';
+        return false;
+      }
+
+      if (minPriceInput.value && maxPriceInput.value && minPrice > maxPrice) {
+        Toastify({
+          text: 'Minimum price cannot be greater than maximum price',
+          duration: 3000,
+          gravity: 'top',
+          position: 'right',
+          backgroundColor: '#dc3545',
+          stopOnFocus: true,
+        }).showToast();
+        minPriceInput.value = '';
+        maxPriceInput.value = '';
+        return false;
+      }
+
+      return true;
+    }
+
+    document.getElementById('searchBtn').addEventListener('click', () => {
+      const search = document.getElementById('searchInput').value;
+      window.location.href = buildQueryString({ search, page: 1 });
+    });
+
+    document.getElementById('clearSearchBtn').addEventListener('click', () => {
+      document.getElementById('searchInput').value = '';
+      document.getElementById('sortSelect').value = '';
+      document.getElementById('categoryFilter').value = '';
+      document.getElementById('minPrice').value = '';
+      document.getElementById('maxPrice').value = '';
+      document.getElementById('searchInput').placeholder = 'Search products...';
+      window.location.href = '/products';
+    });
+
+    document.getElementById('sortSelect').addEventListener('change', (e) => {
+      window.location.href = buildQueryString({ sort: e.target.value, page: 1 });
+    });
+
+    document.getElementById('categoryFilter').addEventListener('change', (e) => {
+      const selectedOption = e.target.options[e.target.selectedIndex];
+      const categoryName = selectedOption.text;
+      const searchInput = document.getElementById('searchInput');
+      if (e.target.value) {
+        searchInput.placeholder = categoryName;
+      } else {
+        searchInput.placeholder = 'Search products...';
+      }
+      window.location.href = buildQueryString({ category: e.target.value, page: 1 });
+    });
+
+    minPriceInput.addEventListener('change', () => {
+      if (validatePriceRange()) {
+        window.location.href = buildQueryString({ minPrice: minPriceInput.value, page: 1 });
+      }
+    });
+
+    maxPriceInput.addEventListener('change', () => {
+      if (validatePriceRange()) {
+        window.location.href = buildQueryString({ maxPrice: maxPriceInput.value, page: 1 });
+      }
+    });
+
+    document.getElementById('resetFiltersBtn').addEventListener('click', () => {
+      document.getElementById('searchInput').value = '';
+      document.getElementById('sortSelect').value = '';
+      document.getElementById('categoryFilter').value = '';
+      document.getElementById('minPrice').value = '';
+      document.getElementById('maxPrice').value = '';
+      document.getElementById('searchInput').placeholder = 'Search products...';
+      window.location.href = '/products';
+    });
+
     document.querySelectorAll('.wishlist-btn').forEach(btn => {
       btn.addEventListener('click', async (e) => {
         e.preventDefault();
@@ -743,49 +848,44 @@
             headers: {
               'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ productId, variantId })
-            
-
+            body: JSON.stringify({ productId, variantId }),
           });
-          window.location.reload()
-          
+
           const result = await response.json();
-          
+
           if (result.success) {
             if (isActive) {
-              // Remove from wishlist
               btn.classList.remove('active');
               btn.innerHTML = '<i class="far fa-heart"></i>';
               btn.title = 'Add to Wishlist';
               Toastify({
-                text: "Removed from wishlist!",
+                text: 'Removed from wishlist!',
                 duration: 3000,
-                gravity: "top",
-                position: "right",
-                backgroundColor: "#6366f1",
+                gravity: 'top',
+                position: 'right',
+                backgroundColor: '#6366f1',
                 stopOnFocus: true,
               }).showToast();
             } else {
-              // Add to wishlist
               btn.classList.add('active');
               btn.innerHTML = '<i class="fas fa-heart"></i>';
               btn.title = 'Remove from Wishlist';
               Toastify({
-                text: "Added to wishlist!",
+                text: 'Added to wishlist!',
                 duration: 3000,
-                gravity: "top",
-                position: "right",
-                backgroundColor: "#28a745",
+                gravity: 'top',
+                position: 'right',
+                backgroundColor: '#28a745',
                 stopOnFocus: true,
               }).showToast();
             }
           } else {
             Toastify({
-              text: result.message || "Failed to update wishlist",
+              text: result.message || 'Failed to update wishlist',
               duration: 3000,
-              gravity: "top",
-              position: "right",
-              backgroundColor: "#dc3545",
+              gravity: 'top',
+              position: 'right',
+              backgroundColor: '#dc3545',
               stopOnFocus: true,
             }).showToast();
             btn.innerHTML = originalIcon;
@@ -793,11 +893,11 @@
         } catch (error) {
           console.error('Error updating wishlist:', error);
           Toastify({
-            text: "Error updating wishlist. Please try again.",
+            text: 'Error updating wishlist. Please try again.',
             duration: 3000,
-            gravity: "top",
-            position: "right",
-            backgroundColor: "#ffc107",
+            gravity: 'top',
+            position: 'right',
+            backgroundColor: '#ffc107',
             stopOnFocus: true,
           }).showToast();
           btn.innerHTML = originalIcon;
@@ -807,71 +907,6 @@
       });
     });
 
-    // Check wishlist status for all products on page load
-    document.addEventListener('DOMContentLoaded', async () => {
-      const wishlistBtns = document.querySelectorAll('.wishlist-btn');
-      
-      for (const btn of wishlistBtns) {
-        const productId = btn.getAttribute('data-product-id');
-        
-        try {
-          const response = await fetch(`/wishlist/check/${productId}`);
-          const result = await response.json();
-          
-          if (result.exists) {
-            btn.classList.add('active');
-            btn.innerHTML = '<i class="fas fa-heart"></i>';
-            btn.title = 'Remove from Wishlist';
-          }
-        } catch (error) {
-          console.error('Error checking wishlist status:', error);
-        }
-      }
-    });
-    
-    function buildQueryString(params) {
-      const currentParams = new URLSearchParams(window.location.search);
-      Object.entries(params).forEach(([key, value]) => {
-        if (value) {
-          currentParams.set(key, value);
-        } else {
-          currentParams.delete(key);
-        }
-      });
-      return '?' + currentParams.toString();
-    }
-
-   
-    document.getElementById('searchBtn').addEventListener('click', () => {
-      const search = document.getElementById('searchInput').value;
-      window.location.href = buildQueryString({ search, page: 1 });
-    });
-
-    document.getElementById('clearSearchBtn').addEventListener('click', () => {
-      window.location.href = buildQueryString({ search: '', page: 1 });
-    });
-
-    document.getElementById('sortSelect').addEventListener('change', (e) => {
-      window.location.href = buildQueryString({ sort: e.target.value, page: 1 });
-    });
-
-    document.getElementById('categoryFilter').addEventListener('change', (e) => {
-      window.location.href = buildQueryString({ category: e.target.value, page: 1 });
-    });
-
-    document.getElementById('brandFilter').addEventListener('change', (e) => {
-      window.location.href = buildQueryString({ brand: e.target.value, page: 1 });
-    });
-
-    document.getElementById('minPrice').addEventListener('change', (e) => {
-      window.location.href = buildQueryString({ minPrice: e.target.value, page: 1 });
-    });
-
-    document.getElementById('maxPrice').addEventListener('change', (e) => {
-      window.location.href = buildQueryString({ maxPrice: e.target.value, page: 1 });
-    });
-
-    // Mobile filter toggle functionality
     const mobileFilterToggle = document.getElementById('mobileFilterToggle');
     const filterSidebar = document.getElementById('filterSidebar');
     const filterOverlay = document.getElementById('filterOverlay');
@@ -891,14 +926,12 @@
     mobileFilterToggle.addEventListener('click', toggleMobileFilter);
     filterOverlay.addEventListener('click', closeMobileFilter);
 
-    // Close filter on escape key
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape' && filterSidebar.classList.contains('active')) {
         closeMobileFilter();
       }
     });
 
-    // Handle window resize
     window.addEventListener('resize', () => {
       if (window.innerWidth > 768) {
         closeMobileFilter();
