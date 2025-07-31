@@ -11,13 +11,29 @@ const getWishlistPage = async (req, res) => {
       wishlist = await Wishlist.create({ user: userId, items: [] });
     }
 
-    // Manually populate variant details
+    // Enhanced population with all available sizes
     const populatedItems = await Promise.all(wishlist.items.map(async (item) => {
       const product = item.product;
-      const variant = product.variants.id(item.variant);
+      const selectedVariant = product.variants.id(item.variant);
+      
+      // Get all available variants (sizes) with stock > 0
+      const availableVariants = product.variants.filter(variant => variant.varientquatity > 0);
+      
+      // Get all variants for display (including out of stock)
+      const allVariants = product.variants.map(variant => ({
+        _id: variant._id,
+        size: variant.size,
+        salePrice: variant.salePrice,
+        varientPrice: variant.varientPrice,
+        varientquatity: variant.varientquatity,
+        isAvailable: variant.varientquatity > 0
+      }));
+
       return {
         product,
-        variant: variant || { size: 'N/A', salePrice: 0, varientquatity: 0 }
+        selectedVariant: selectedVariant || { size: 'N/A', salePrice: 0, varientquatity: 0 },
+        availableVariants,
+        allVariants
       };
     }));
 
@@ -85,55 +101,93 @@ const addToCartFromWishlist = async (req, res) => {
     const userId = req.session.user._id;
     const { productId, variantId } = req.body;
 
+    // Validation: Product ID and Variant ID undenkil mathram continue cheyyum
+    if (!productId || !variantId) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Product ID and Variant ID are required' 
+      });
+    }
+
+    // Product DB-il undenkil check cheyyuka
     const product = await Product.findById(productId);
     if (!product) {
       return res.status(404).json({ success: false, message: 'Product not found' });
     }
 
+    // Variant (size) product-il undenkil check cheyyuka
     const variant = product.variants.id(variantId);
     if (!variant) {
-      return res.status(400).json({ success: false, message: 'Variant not found' });
+      return res.status(400).json({ success: false, message: 'Selected size not found' });
     }
 
-    let cart = await Cart.findOne({ userId });
+    // Stock check: quantity 0 aanenkil cart-il add cheyyaruthu
+    if (variant.varientquatity === 0) {
+      return res.status(400).json({ 
+        success: false, 
+        message: `Out of stock for size ${variant.size}`,
+        stockStatus: 'out_of_stock'
+      });
+    }
 
+    // Usernte cart undenkil fetch cheyyuka illenkil create cheyyuka
+    let cart = await Cart.findOne({ userId });
     if (!cart) {
       cart = new Cart({ userId, items: [] });
     }
 
+    // Cart-il already same product + same variant undenkil eduthu vechirikunnu
     const existingItem = cart.items.find(
       item => item.productId.toString() === productId && item.variantId.toString() === variantId
     );
 
     if (existingItem) {
+      // Stock-nekkal kooduthal cart-il add cheyyaruthu
+      if (existingItem.quantity + 1 > variant.varientquatity) {
+        return res.status(400).json({ 
+          success: false, 
+          message: `Cannot add more items. Only ${variant.varientquatity} items available for size ${variant.size}, and you already have ${existingItem.quantity} in your cart`,
+          stockStatus: 'insufficient_stock'
+        });
+      }
+
+      // Max quantity limit 4 aanu (optional logic)
       if (existingItem.quantity >= 4) {
         return res.status(400).json({ success: false, message: 'Cart limit exceeded' });
       }
+
+      // Quantity update cheyyuka
       existingItem.quantity += 1;
       existingItem.totalPrice = existingItem.price * existingItem.quantity;
+
     } else {
+      // Cart-il item puthiyath aanenkil push cheyyuka
       cart.items.push({
         productId: product._id,
         variantId: variant._id,
         price: variant.salePrice,
         quantity: 1,
-        totalPrice: variant.salePrice * 1
+        totalPrice: variant.salePrice * 1,
+        status: "placed",
+        cancellationReason: "none"
       });
     }
 
     await cart.save();
 
+    // ✅ Fix: Wishlist ninn product remove cheyyanam — size match vendi illa
     await Wishlist.updateOne(
       { user: userId },
-      { $pull: { items: { product: productId, variant: variantId } } }
+      { $pull: { items: { product: productId } } } // Only product match mathi
     );
 
-    res.json({ success: true });
+    res.json({ success: true, message: 'Product added to cart successfully' });
   } catch (error) {
     console.error('Error adding to cart:', error);
     res.status(500).json({ success: false, message: 'Server error' });
   }
 };
+
 
 const checkWishlist = async (req, res) => {
   try {

@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Stock Check Test</title>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<body>
+    <h1>Stock Check Test</h1>
+    <button onclick="testStockCheck()">Test Stock Check</button>
+    <button onclick="testAddToCart()">Test Add to Cart</button>
+    
+    <script>
+        async function testStockCheck() {
+            try {
+                const response = await fetch("/cart/check-stock", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        productId: "675b8b8b8b8b8b8b8b8b8b8b", // Replace with actual product ID
+                        variantId: "675b8b8b8b8b8b8b8b8b8b8c", // Replace with actual variant ID
+                        quantity: 1,
+                    }),
+                });
+                
+                const result = await response.json();
+                console.log("Stock check result:", result);
+                alert("Stock check result: " + JSON.stringify(result, null, 2));
+            } catch (error) {
+                console.error("Error:", error);
+                alert("Error: " + error.message);
+            }
+        }
+        
+        async function testAddToCart() {
+            try {
+                const response = await fetch("/user/cart/add", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        productId: "675b8b8b8b8b8b8b8b8b8b8b", // Replace with actual product ID
+                        variantId: "675b8b8b8b8b8b8b8b8b8b8c", // Replace with actual variant ID
+                        quantity: 1,
+                    }),
+                });
+                
+                const result = await response.json();
+                console.log("Add to cart result:", result);
+                alert("Add to cart result: " + JSON.stringify(result, null, 2));
+            } catch (error) {
+                console.error("Error:", error);
+                alert("Error: " + error.message);
+            }
+        }
+    </script>
+</body>
+</html>

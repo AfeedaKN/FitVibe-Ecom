@@ -80,9 +80,13 @@ const updateOrderStatus = async (req, res) => {
 
     
     order.orderStatus = status;
-order.products.forEach(product => {
-  product.status = status;
-});
+    
+    // Only update status for products that are not cancelled or returned
+    order.products.forEach(product => {
+      if (!['cancelled', 'returned'].includes(product.status)) {
+        product.status = status;
+      }
+    });
     
     if (status.toLowerCase() === 'delivered') {
       order.paymentStatus = 'completed';
@@ -234,7 +238,7 @@ const rejectReturn = async (req, res) => {
 
     order.products.forEach(product => {
       if (product.status === 'return pending') {
-        product.status = 'processing';
+        product.status = 'delivered';
       }
     });
 
@@ -288,7 +292,7 @@ const itemReturnApprove = async (req, res) => {
     // Update stock for the specific variant
     const variant = product.variants.find((v) => v.size === variantSize);
     if (variant) {
-      variant.variantQuantity += item.quantity; // Fixed typo: 'varientquatity' to 'variantQuantity'
+      variant.varientquatity += item.quantity;
     } else {
       return res.status(400).json({ success: false, message: "Variant not found" });
     }

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -1357,8 +1357,25 @@
           <div class="modal-body">
             <p style="margin-bottom: 1.5rem; color: #64748b;">Are you sure you want to cancel the entire order? This action cannot be undone.</p>
             <div class="mb-3">
-              <label for="cancelReason" class="form-label">Reason for Cancellation (Optional)</label>
-              <textarea class="form-control" id="cancelReason" name="reason" rows="4" maxlength="500" placeholder="Please provide a reason for cancellation..."></textarea>
+              <label for="cancelReason" class="form-label">Reason for Cancellation (Required)</label>
+              <select class="form-control" id="cancelReasonSelect" name="reasonType" required>
+                <option value="">Select a reason</option>
+                <option value="Changed my mind">Changed my mind</option>
+                <option value="Found a better price elsewhere">Found a better price elsewhere</option>
+                <option value="Ordered by mistake">Ordered by mistake</option>
+                <option value="Delivery taking too long">Delivery taking too long</option>
+                <option value="Other">Other</option>
+              </select>
+              <div class="invalid-feedback">Please select a reason for cancellation.</div>
+            </div>
+            <div class="mb-3" id="cancelCustomReasonDiv" style="display: none;">
+              <label for="cancelCustomReason" class="form-label">Please specify your reason</label>
+              <textarea class="form-control" id="cancelCustomReason" name="customReason" rows="4" maxlength="500" placeholder="Please provide a detailed reason for cancellation..."></textarea>
+              <div class="invalid-feedback">Please provide a detailed reason for cancellation.</div>
+            </div>
+            <div class="mb-3" id="cancelAdditionalDetailsDiv" style="display: none;">
+              <label for="cancelAdditionalDetails" class="form-label">Additional Details (Optional)</label>
+              <textarea class="form-control" id="cancelAdditionalDetails" name="additionalDetails" rows="3" maxlength="300" placeholder="Any additional information about the cancellation..."></textarea>
             </div>
           </div>
           <div class="modal-footer">
@@ -1394,8 +1411,21 @@
             <input type="hidden" name="productId" id="cancelItemProductId">
             <input type="hidden" name="variantSize" id="cancelItemVariantSize">
             <div class="mb-3">
-              <label for="cancelItemReason" class="form-label">Reason for Cancellation (Optional)</label>
-              <textarea class="form-control" id="cancelItemReason" name="reason" rows="4" maxlength="500" placeholder="Please provide a reason for cancellation..."></textarea>
+              <label for="cancelItemReasonSelect" class="form-label">Reason for Cancellation (Required)</label>
+              <select class="form-control" id="cancelItemReasonSelect" name="reasonType" required>
+                <option value="">Select a reason</option>
+                <option value="Changed my mind">Changed my mind</option>
+                <option value="Found a better price elsewhere">Found a better price elsewhere</option>
+                <option value="Ordered by mistake">Ordered by mistake</option>
+                <option value="Delivery taking too long">Delivery taking too long</option>
+                <option value="Other">Other</option>
+              </select>
+              <div class="invalid-feedback">Please select a reason for cancellation.</div>
+            </div>
+            <div class="mb-3" id="cancelItemCustomReasonDiv" style="display: none;">
+              <label for="cancelItemCustomReason" class="form-label">Please specify your reason</label>
+              <textarea class="form-control" id="cancelItemCustomReason" name="customReason" rows="4" maxlength="500" placeholder="Please provide a detailed reason for cancellation..."></textarea>
+              <div class="invalid-feedback">Please provide a detailed reason for cancellation.</div>
             </div>
           </div>
           <div class="modal-footer">
@@ -1428,9 +1458,28 @@
           <div class="modal-body">
             <p style="margin-bottom: 1.5rem; color: #64748b;">Please provide a detailed reason for returning this order. Our team will review your request.</p>
             <div class="mb-3">
-              <label for="returnReason" class="form-label">Reason for Return (Required)</label>
-              <textarea class="form-control" id="returnReason" name="reason" rows="4" maxlength="500" required placeholder="Please provide a detailed reason for the return..."></textarea>
-              <div class="invalid-feedback">Please provide a reason for the return.</div>
+              <label for="returnReasonSelect" class="form-label">Reason for Return (Required)</label>
+              <select class="form-control" id="returnReasonSelect" name="reasonType" required>
+                <option value="">Select a reason</option>
+                <option value="Damaged product">Damaged product</option>
+                <option value="Wrong item received">Wrong item received</option>
+                <option value="Size issue">Size issue</option>
+                <option value="Delayed delivery">Delayed delivery</option>
+                <option value="Quality not as expected">Quality not as expected</option>
+                <option value="Product not as described">Product not as described</option>
+                <option value="Changed mind">Changed mind</option>
+                <option value="Other">Other</option>
+              </select>
+              <div class="invalid-feedback">Please select a reason for the return.</div>
+            </div>
+            <div class="mb-3" id="returnCustomReasonDiv" style="display: none;">
+              <label for="returnCustomReason" class="form-label">Please specify your reason</label>
+              <textarea class="form-control" id="returnCustomReason" name="customReason" rows="4" maxlength="500" placeholder="Please provide a detailed reason for the return..."></textarea>
+              <div class="invalid-feedback">Please provide a detailed reason for the return.</div>
+            </div>
+            <div class="mb-3" id="returnAdditionalDetailsDiv" style="display: none;">
+              <label for="returnAdditionalDetails" class="form-label">Additional Details (Optional)</label>
+              <textarea class="form-control" id="returnAdditionalDetails" name="additionalDetails" rows="3" maxlength="300" placeholder="Any additional information about the return..."></textarea>
             </div>
           </div>
           <div class="modal-footer">
@@ -1466,9 +1515,28 @@
             <input type="hidden" name="productId" id="returnItemProductId">
             <input type="hidden" name="variantSize" id="returnItemVariantSize">
             <div class="mb-3">
-              <label for="returnItemReason" class="form-label">Reason for Return (Required)</label>
-              <textarea class="form-control" id="returnItemReason" name="reason" rows="4" maxlength="500" required placeholder="Please provide a detailed reason for the return..."></textarea>
-              <div class="invalid-feedback">Please provide a reason for the return.</div>
+              <label for="returnItemReasonSelect" class="form-label">Reason for Return (Required)</label>
+              <select class="form-control" id="returnItemReasonSelect" name="reasonType" required>
+                <option value="">Select a reason</option>
+                <option value="Damaged product">Damaged product</option>
+                <option value="Wrong item received">Wrong item received</option>
+                <option value="Size issue">Size issue</option>
+                <option value="Delayed delivery">Delayed delivery</option>
+                <option value="Quality not as expected">Quality not as expected</option>
+                <option value="Product not as described">Product not as described</option>
+                <option value="Changed mind">Changed mind</option>
+                <option value="Other">Other</option>
+              </select>
+              <div class="invalid-feedback">Please select a reason for the return.</div>
+            </div>
+            <div class="mb-3" id="returnItemCustomReasonDiv" style="display: none;">
+              <label for="returnItemCustomReason" class="form-label">Please specify your reason</label>
+              <textarea class="form-control" id="returnItemCustomReason" name="customReason" rows="4" maxlength="500" placeholder="Please provide a detailed reason for the return..."></textarea>
+              <div class="invalid-feedback">Please provide a detailed reason for the return.</div>
+            </div>
+            <div class="mb-3" id="returnItemAdditionalDetailsDiv" style="display: none;">
+              <label for="returnItemAdditionalDetails" class="form-label">Additional Details (Optional)</label>
+              <textarea class="form-control" id="returnItemAdditionalDetails" name="additionalDetails" rows="3" maxlength="300" placeholder="Any additional information about the return..."></textarea>
             </div>
           </div>
           <div class="modal-footer">
@@ -1501,7 +1569,7 @@
     }
   });
 
-  // 🛑 Cancel Item Modal Data Populate
+  // ðŸ›‘ Cancel Item Modal Data Populate
   document.querySelectorAll('.cancel-item-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       document.getElementById('cancelItemOrderId').value = btn.dataset.orderId;
@@ -1510,7 +1578,7 @@
     });
   });
 
-  // 🔁 Return Item Modal Data Populate
+  // ðŸ” Return Item Modal Data Populate
   document.querySelectorAll('.return-item-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       document.getElementById('returnItemOrderId').value = btn.dataset.orderId;
@@ -1519,7 +1587,7 @@
     });
   });
 
-  // 🚀 Handle Cancel/Return Form Submissions
+  // ðŸš€ Handle Cancel/Return Form Submissions
   ['cancelOrderForm', 'cancelItemForm', 'returnOrderForm', 'returnItemForm'].forEach(formId => {
     const form = document.getElementById(formId);
     if (form) {
@@ -1530,9 +1598,39 @@
         const submitBtn = form.querySelector('button[type="submit"]');
         const originalContent = submitBtn.innerHTML;
 
-        if (formId === 'returnOrderForm' && !form.querySelector('#returnReason').value.trim()) {
-          form.querySelector('#returnReason').classList.add('is-invalid');
-          return;
+        // Validation for return forms
+        if (formId.includes('return')) {
+          const reasonSelect = form.querySelector('select[name="reasonType"]');
+          const customReasonTextarea = form.querySelector('textarea[name="customReason"]');
+          
+          if (!reasonSelect || !reasonSelect.value) {
+            reasonSelect.classList.add('is-invalid');
+            return;
+          }
+          
+          if (reasonSelect.value === 'Other' && (!customReasonTextarea || !customReasonTextarea.value.trim())) {
+            customReasonTextarea.classList.add('is-invalid');
+            return;
+          }
+          
+          // Combine reason fields into a single reason field for backend
+          let combinedReason = '';
+          if (data.reasonType === 'Other') {
+            combinedReason = data.customReason || '';
+          } else {
+            combinedReason = data.reasonType || '';
+          }
+          
+          // Add additional details if provided
+          if (data.additionalDetails && data.additionalDetails.trim()) {
+            combinedReason += (combinedReason ? ' - ' : '') + data.additionalDetails.trim();
+          }
+          
+          // Replace the separate fields with combined reason
+          data.reason = combinedReason;
+          delete data.reasonType;
+          delete data.customReason;
+          delete data.additionalDetails;
         }
 
         submitBtn.disabled = true;
@@ -1575,7 +1673,7 @@
     }
   });
 
-  // ✨ Fade-in animation on load
+  // âœ¨ Fade-in animation on load
   document.addEventListener('DOMContentLoaded', () => {
     const elements = document.querySelectorAll('.fade-in');
     elements.forEach((el, index) => {
@@ -1586,14 +1684,57 @@
     });
   });
 
-  // ❌ Remove invalid on input
+  // ðŸ”„ Handle Return Reason Dropdown Changes
+  function handleReasonDropdownChange(selectId, customReasonDivId, additionalDetailsDivId) {
+    const select = document.getElementById(selectId);
+    const customReasonDiv = document.getElementById(customReasonDivId);
+    const additionalDetailsDiv = document.getElementById(additionalDetailsDivId);
+    
+    if (select && customReasonDiv) {
+      select.addEventListener('change', function() {
+        if (this.value === 'Other') {
+          customReasonDiv.style.display = 'block';
+          if (additionalDetailsDiv) {
+            additionalDetailsDiv.style.display = 'block';
+          }
+          // Make custom reason required when "Other" is selected
+          const customReasonTextarea = customReasonDiv.querySelector('textarea');
+          if (customReasonTextarea) {
+            customReasonTextarea.required = true;
+          }
+        } else {
+          customReasonDiv.style.display = 'none';
+          if (additionalDetailsDiv) {
+            additionalDetailsDiv.style.display = this.value ? 'block' : 'none';
+          }
+          // Remove required attribute when not "Other"
+          const customReasonTextarea = customReasonDiv.querySelector('textarea');
+          if (customReasonTextarea) {
+            customReasonTextarea.required = false;
+            customReasonTextarea.value = ''; // Clear the value
+          }
+        }
+        
+        // Remove invalid class when selection changes
+        this.classList.remove('is-invalid');
+      });
+    }
+  }
+
+  // Initialize dropdown handlers for all modals
+  handleReasonDropdownChange('returnReasonSelect', 'returnCustomReasonDiv', 'returnAdditionalDetailsDiv');
+  handleReasonDropdownChange('returnItemReasonSelect', 'returnItemCustomReasonDiv', 'returnItemAdditionalDetailsDiv');
+  handleReasonDropdownChange('cancelReasonSelect', 'cancelCustomReasonDiv', 'cancelAdditionalDetailsDiv');
+  handleReasonDropdownChange('cancelItemReasonSelect', 'cancelItemCustomReasonDiv', null);
+
+  // âŒ Remove invalid on input
   document.querySelectorAll('.form-control').forEach(input => {
     input.addEventListener('input', () => {
       input.classList.remove('is-invalid');
     });
   });
 
-  // 📱 Responsive table scroll
+  // ðŸ“± Responsive table scroll
   window.addEventListener('resize', () => {
     const tables = document.querySelectorAll('.items-table-container');
     tables.forEach(container => {
@@ -1604,3 +1745,5 @@
 </body>
 
 </html>
+
+

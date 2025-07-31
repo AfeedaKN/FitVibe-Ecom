@@ -76,7 +76,7 @@
       box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
       transition: all 0.3s ease;
       display: flex;
-      align-items: center;
+      align-items: flex-start;
       gap: 1.5rem;
       position: relative;
       overflow: hidden;
@@ -151,14 +151,92 @@
       color: #e5e7eb;
     }
 
-    .wishlist-item-out-of-stock {
-      color: #ef4444;
-      font-weight: 600;
+    /* Size Selection Styles */
+    .size-selection {
+      margin: 1rem 0;
+    }
+
+    .size-selection h4 {
       font-size: 0.875rem;
-      background: #fef2f2;
-      padding: 0.25rem 0.75rem;
-      border-radius: 20px;
-      display: inline-block;
+      font-weight: 600;
+      color: #374151;
+      margin-bottom: 0.5rem;
+    }
+
+    .size-options {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      margin-bottom: 0.75rem;
+    }
+
+    .size-btn {
+      width: 40px;
+      height: 40px;
+      border: 1px solid #d1d5db;
+      background: #ffffff;
+      border-radius: 6px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.875rem;
+      color: #374151;
+    }
+
+    .size-btn:hover:not(:disabled) {
+      border-color: #667eea;
+      background: #667eea;
+      color: white;
+    }
+
+    .size-btn.selected {
+      border-color: #667eea;
+      background: #667eea;
+      color: white;
+    }
+
+    .size-btn.out-of-stock {
+      background: #f3f4f6;
+      color: #9ca3af;
+      cursor: not-allowed;
+      position: relative;
+    }
+
+    .size-btn.out-of-stock::after {
+      content: "";
+      position: absolute;
+      top: 50%;
+      left: 10%;
+      right: 10%;
+      height: 1px;
+      background: #ef4444;
+      transform: translateY(-50%) rotate(-45deg);
+    }
+
+    .selected-size-info {
+      font-size: 0.875rem;
+      color: #6b7280;
+      margin-top: 0.5rem;
+    }
+
+    .selected-size-info.selected {
+      color: #059669;
+      font-weight: 600;
+    }
+
+    .size-warning {
+      color: #ef4444;
+      font-size: 0.875rem;
+      font-weight: 500;
+      margin-top: 0.5rem;
+      display: none;
+    }
+
+    .size-warning.show {
+      display: block;
     }
 
     /* Action Buttons */
@@ -228,7 +306,7 @@
       box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
     }
 
-    .empty-wishlist {
+    .empty-wishlist p {
       font-size: 1.25rem;
       color: #64748b;
       margin-bottom: 2rem;
@@ -388,8 +466,8 @@
               <img src="<%= item.product.images && item.product.images.length > 0 ? item.product.images[0].url : '/path/to/default-image.jpg' %>" alt="<%= item.product.name %>" loading="lazy" />
               <div class="wishlist-item-details">
                 <h3><%= item.product.name %></h3>
-                <p><strong>Size:</strong> <%= item.variant.size %></p>
-                <p class="price">₹<%= item.variant.salePrice %></p>
+                
+                <p class="price" id="price-<%= item.product._id %>">₹<%= item.selectedVariant.salePrice %></p>
                 <div class="stars">
                   <% for(let i = 0; i < Math.floor(item.product.ratings.average || 0); i++) { %>
                     <i class="fas fa-star"></i>
@@ -401,16 +479,42 @@
                     <i class="far fa-star"></i>
                   <% } %>
                 </div>
-                <% if (item.variant.varientquatity === 0) { %>
-                  <p class="wishlist-item-out-of-stock">Out of Stock</p>
-                <% } %>
+                
+                <!-- Size Selection -->
+                <div class="size-selection">
+                  <h4>Available Sizes:</h4>
+                  <div class="size-options">
+                    <% item.allVariants.forEach(variant => { %>
+                      <button class="size-btn <%= !variant.isAvailable ? 'out-of-stock' : '' %>" 
+                              data-product-id="<%= item.product._id %>"
+                              data-variant-id="<%= variant._id %>"
+                              data-size="<%= variant.size %>"
+                              data-price="<%= variant.salePrice %>"
+                              data-stock="<%= variant.varientquatity %>"
+                              <%= !variant.isAvailable ? 'disabled' : '' %>
+                              onclick="selectSize(this)">
+                        <%= variant.size %>
+                      </button>
+                    <% }) %>
+                  </div>
+                  <div class="selected-size-info" id="size-info-<%= item.product._id %>">
+                    Please select a size to add to cart
+                  </div>
+                  <div class="size-warning" id="size-warning-<%= item.product._id %>">
+                    Please select a size first
+                  </div>
+                </div>
               </div>
               <div class="wishlist-item-actions">
-                <button class="add-to-cart-btn" data-product-id="<%= item.product._id %>" data-variant-id="<%= item.variant._id %>" <%= item.variant.varientquatity === 0 ? 'disabled' : '' %>>
+                <button class="add-to-cart-btn" 
+                        data-product-id="<%= item.product._id %>" 
+                        data-variant-id="" 
+                        id="add-cart-btn-<%= item.product._id %>"
+                        disabled>
                   <i class="fas fa-shopping-cart"></i>
                   Add to Cart
                 </button>
-                <button class="remove-btn" data-product-id="<%= item.product._id %>" data-variant-id="<%= item.variant._id %>">
+                <button class="remove-btn" data-product-id="<%= item.product._id %>" data-variant-id="<%= item.selectedVariant._id %>">
                   <i class="fas fa-heart-broken"></i>
                   Remove
                 </button>
@@ -449,12 +553,78 @@
       }
     });
 
+    let selectedSizes = {}; // Track selected sizes for each product
+
+    // Size selection function
+    function selectSize(button) {
+      const productId = button.getAttribute('data-product-id');
+      const variantId = button.getAttribute('data-variant-id');
+      const size = button.getAttribute('data-size');
+      const price = button.getAttribute('data-price');
+      const stock = parseInt(button.getAttribute('data-stock'));
+
+      // Remove selection from other size buttons for this product
+      document.querySelectorAll(`[data-product-id="${productId}"].size-btn`).forEach(btn => {
+        btn.classList.remove('selected');
+      });
+
+      // Add selection to clicked button
+      button.classList.add('selected');
+
+      // Store selected size
+      selectedSizes[productId] = {
+        variantId: variantId,
+        size: size,
+        price: price,
+        stock: stock
+      };
+
+      // Update price display
+      const priceElement = document.getElementById(`price-${productId}`);
+      if (priceElement) {
+        priceElement.textContent = `₹${price}`;
+      }
+
+      // Update size info
+      const sizeInfo = document.getElementById(`size-info-${productId}`);
+      if (sizeInfo) {
+        sizeInfo.textContent = `Selected: Size ${size} (${stock} available)`;
+        sizeInfo.classList.add('selected');
+      }
+
+      // Hide warning
+      const warning = document.getElementById(`size-warning-${productId}`);
+      if (warning) {
+        warning.classList.remove('show');
+      }
+
+      // Enable add to cart button
+      const addToCartBtn = document.getElementById(`add-cart-btn-${productId}`);
+      if (addToCartBtn) {
+        addToCartBtn.disabled = false;
+        addToCartBtn.setAttribute('data-variant-id', variantId);
+      }
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
-      // Add to cart from wishlist
+      // Add to cart from wishlist with size validation
       document.querySelectorAll('.add-to-cart-btn').forEach(button => {
         button.addEventListener('click', async () => {
           const productId = button.getAttribute('data-product-id');
           const variantId = button.getAttribute('data-variant-id');
+          
+          // Check if size is selected
+          if (!variantId || !selectedSizes[productId]) {
+            const warning = document.getElementById(`size-warning-${productId}`);
+            if (warning) {
+              warning.classList.add('show');
+            }
+            Toast.fire({
+              icon: 'warning',
+              title: 'Please select a size first'
+            });
+            return;
+          }
           
           button.disabled = true;
           button.innerHTML = '<span class="spinner"></span> Adding...';

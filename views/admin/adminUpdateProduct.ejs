@@ -60,6 +60,7 @@
         <!-- Edit Product Form -->
         <form id="editProductForm" action="/admin/editproducts" method="POST" enctype="multipart/form-data" class="needs-validation" novalidate>
             <input type="hidden" name="productId" value="<%= product._id %>">
+            <input type="hidden" name="deletedImages" id="deletedImagesInput" value="">
 
             <div class="row g-4">
                 <!-- Left Column - Product Information -->
@@ -531,6 +532,9 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
 
 <script>
+    // Array to track deleted image indices
+    let deletedImages = [];
+
     document.addEventListener('DOMContentLoaded', function() {
         initializeImageCropping();
         initializeFormValidation();
@@ -549,6 +553,9 @@
         const submitBtn = document.getElementById('submitBtn');
 
         form.addEventListener('submit', function(event) {
+            // Update the hidden input with deleted images before submitting
+            document.getElementById('deletedImagesInput').value = JSON.stringify(deletedImages);
+            
             if (!form.checkValidity()) {
                 event.preventDefault();
                 event.stopPropagation();
@@ -633,8 +640,27 @@
             if (result.isConfirmed) {
                 const imageItem = document.querySelector(`[data-image-index="${index}"]`);
                 if (imageItem) {
+                    // Add the image index to the deleted images array
+                    deletedImages.push(index);
+                    
+                    // Remove the image from the DOM
                     imageItem.remove();
+                    
                     showToast('Image removed successfully', 'success');
+                    
+                    // Check if there are any images left
+                    const remainingImages = document.querySelectorAll('#currentImagesContainer [data-image-index]');
+                    if (remainingImages.length === 0) {
+                        // Show "no images" message
+                        document.getElementById('currentImagesContainer').innerHTML = `
+                            <div class="col-12">
+                                <div class="text-center py-4">
+                                    <i class="fas fa-image text-muted-modern mb-2" style="font-size: 2rem;"></i>
+                                    <p class="text-muted-modern mb-0">No images available</p>
+                                </div>
+                            </div>
+                        `;
+                    }
                 }
             }
         });

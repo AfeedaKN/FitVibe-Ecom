@@ -28,14 +28,25 @@ const loadHomepage = async (req, res) => {
             }
         ];
 
-        const trending = await Product.find({ isListed: true, isDeleted: false })
+        // Only fetch category IDs that are listed
+        const listedCategories = await Category.find({ isDeleted: false, isListed: true });
+        const listedCategoryIds = listedCategories.map(cat => cat._id);
+
+        const query = {
+            isDeleted: false,
+            isListed: true,
+            categoryId: { $in: listedCategoryIds }
+        };
+
+        const trending = await Product.find(query)
             .populate('categoryId')
             .limit(5);
-        const newArrivals = await Product.find({ isListed: true, isDeleted: false })
+
+        const newArrivals = await Product.find(query)
             .populate('categoryId')
             .sort({ createdAt: -1 })
-            .limit(5); 
-        
+            .limit(5);
+
         if (!req.session.user) {
             res.render('home', { user: null, newArrivals, trending, collections });
         } else {
@@ -46,6 +57,7 @@ const loadHomepage = async (req, res) => {
         res.status(500).send("Server error");
     }
 };
+
 
 const productDetails = async (req, res) => {
     try {

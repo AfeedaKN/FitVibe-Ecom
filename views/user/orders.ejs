@@ -573,59 +573,89 @@
 
   <!-- Cancel Order Modal -->
   <div class="modal fade" id="cancelOrderModal" tabindex="-1" aria-labelledby="cancelOrderModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="cancelOrderModalLabel">Cancel Order</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <form id="cancelOrderForm" method="POST">
-          <input type="hidden" name="orderId" id="cancelOrderId">
-          <div class="modal-body">
-            <p>Are you sure you want to cancel this order?</p>
-            <div class="mb-3">
-              <label for="cancelReason" class="form-label">Reason for Cancellation (Optional)</label>
-              <textarea class="form-control" id="cancelReason" name="reason" rows="4" maxlength="500" placeholder="Please provide a reason for cancellation..."></textarea>
-            </div>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-            <button type="submit" class="btn btn-primary">Confirm Cancellation</button>
-          </div>
-        </form>
+  <div class="modal-dialog">
+    <div class="modal-content">
+    
+      <div class="modal-header">
+        <h5 class="modal-title" id="cancelOrderModalLabel">Cancel Order</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
+
+      <form id="cancelOrderForm" method="POST">
+        <input type="hidden" name="orderId" id="cancelOrderId">
+
+        <div class="modal-body">
+          <p>Are you sure you want to cancel this order?</p>
+
+          <div class="mb-3">
+            <label for="cancelReasonSelect" class="form-label">Reason for Cancellation</label>
+            <select class="form-select" id="cancelReasonSelect" name="reason" onchange="handleCancelReason(this)">
+              <option value="" selected disabled>Select a reason</option>
+              <option value="Ordered by mistake">Ordered by mistake</option>
+              <option value="Found a better price">Found a better price</option>
+              <option value="Item not needed anymore">Item not needed anymore</option>
+              <option value="Delivery time is too long">Delivery time is too long</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+
+          <div class="mb-3" id="otherCancelReasonContainer" style="display: none;">
+            <label for="otherCancelReason" class="form-label">Please specify your reason</label>
+            <textarea class="form-control" id="otherCancelReason" name="otherReason" rows="4" maxlength="500" placeholder="Write your reason here..."></textarea>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="submit" class="btn btn-primary">Confirm Cancellation</button>
+        </div>
+      </form>
+
     </div>
   </div>
+</div>
 
   <!-- Return Order Modal -->
-  <div class="modal fade" id="returnOrderModal" tabindex="-1" aria-labelledby="returnOrderModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="returnOrderModalLabel">Request Return</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <form id="returnOrderForm" method="POST">
-          <input type="hidden" name="orderId" id="returnOrderId">
-          <div class="modal-body">
-            <p>Please provide a reason for returning this order.</p>
-            <div class="mb-3">
-              <label for="returnReason" class="form-label">Reason for Return (Required)</label>
-              <textarea class="form-control" id="returnReason" name="reason" rows="4" maxlength="500"  placeholder="Please describe why you want to return this order..."></textarea>
-              <div class="invalid-feedback">Please provide a reason for the return.</div>
-            </div>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-            <button type="submit" class="btn btn-primary">Submit Return Request</button>
-          </div>
-        </form>
+<div class="modal fade" id="returnOrderModal" tabindex="-1" aria-labelledby="returnOrderModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="returnOrderModalLabel">Request Return</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
+      <form id="returnOrderForm" method="POST">
+        <input type="hidden" name="orderId" id="returnOrderId">
+        <div class="modal-body">
+          <p>Please select a reason for returning this order:</p>
+          <div class="mb-3">
+            <label for="returnReasonSelect" class="form-label">Return Reason</label>
+            <select class="form-select" id="returnReasonSelect" name="reason" onchange="handleReturnReason(this)" required>
+              <option value="" disabled selected>Select a reason</option>
+              <option value="Wrong item">Wrong item delivered</option>
+              <option value="Damaged">Damaged or defective product</option>
+              <option value="Not needed">Don't need the product</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+
+          <div class="mb-3" id="otherReturnReasonContainer" style="display: none;">
+            <label for="otherReason" class="form-label">Other Reason (required)</label>
+            <textarea class="form-control" id="otherReason" name="otherReason" rows="3" maxlength="500" placeholder="Specify your reason..."></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="submit" class="btn btn-primary">Submit Return Request</button>
+        </div>
+      </form>
     </div>
   </div>
-
+</div>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script>
+
+  
+
     // Modal event handlers
     document.querySelectorAll('.cancel-btn').forEach(btn => {
       btn.addEventListener('click', (e) => {
@@ -650,10 +680,11 @@
           const formData = new FormData(form);
           const action = formId === 'cancelOrderForm' ? 'cancel' : 'return';
           
-          if (action === 'return' && !form.querySelector('#returnReason').value.trim()) {
-            form.querySelector('#returnReason').classList.add('is-invalid');
-            return;
-          }
+          if (action === 'return' && !form.querySelector('#returnReasonSelect').value.trim()) {
+  form.querySelector('#returnReasonSelect').classList.add('is-invalid');
+  return;
+}
+
 
           try {
             const response = await fetch(`/order/${action}/${formData.get('orderId')}`, {

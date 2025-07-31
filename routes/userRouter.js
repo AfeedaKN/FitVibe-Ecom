@@ -48,6 +48,7 @@ router.post("/user/cart/add",userAuth,cartController.addToCart)
 router.get("/user/cart",userAuth,cartController.getCart)
 router.post("/cart/update",userAuth,cartController.updateCart);
 router.post("/cart/remove",userAuth,cartController.removeFromCart)
+router.post("/cart/check-stock",userAuth,cartController.checkStock)
 
 router.get("/user/wishlist",userAuth,wishlistController.getWishlistPage)
 router.post("/wishlist/add",userAuth,wishlistController.addToWishlist)

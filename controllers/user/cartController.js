@@ -33,9 +33,22 @@ const addToCart = async (req, res) => {
         }
 
 
+        // Enhanced stock validation with specific messages
+        if (variant.varientquatity === 0) {
+            return res.status(400).json({ 
+                success: false, 
+                message: `Out of stock for size ${variant.size}`,
+                stockStatus: 'out_of_stock'
+            });
+        }
+
         if (variant.varientquatity < quantity) {
-           
-            return res.status(400).json({ success: false, message: 'Not enough stock available' });
+            return res.status(400).json({ 
+                success: false, 
+                message: `Not enough quantity available. Only ${variant.varientquatity} items left for size ${variant.size}`,
+                availableStock: variant.varientquatity,
+                stockStatus: 'insufficient_stock'
+            });
         }
 
         let cart = await Cart.findOne({ userId: user._id });
@@ -51,10 +64,24 @@ const addToCart = async (req, res) => {
         );
 
         if (cartItemIndex > -1) {
+            // Check if adding more quantity would exceed cart limit
             if( cart.items[cartItemIndex].quantity > 4) {
                 console.log('Cart limit exceeded');
                 return res.status(400).json({ success: false, message: 'Cart limit exceeded' });
             }
+            
+            // Check if adding more quantity would exceed available stock
+            const newQuantity = cart.items[cartItemIndex].quantity + quantity;
+            if (newQuantity > variant.varientquatity) {
+                return res.status(400).json({ 
+                    success: false, 
+                    message: `Cannot add more items. Only ${variant.varientquatity} items available for size ${variant.size}, and you already have ${cart.items[cartItemIndex].quantity} in your cart`,
+                    availableStock: variant.varientquatity,
+                    currentCartQuantity: cart.items[cartItemIndex].quantity,
+                    stockStatus: 'insufficient_stock'
+                });
+            }
+            
             cart.items[cartItemIndex].quantity += quantity;
             cart.items[cartItemIndex].totalPrice =
                 cart.items[cartItemIndex].quantity * cart.items[cartItemIndex].price;
@@ -160,7 +187,12 @@ const updateCart = async (req, res) => {
             );
             
         } else if (cartItem.quantity > variant.varientquatity) {
-            return res.status(400).json({ success: false, message: 'Not enough stock available' });
+            return res.status(400).json({ 
+                success: false, 
+                message: `Not enough stock available. Only ${variant.varientquatity} items left for size ${variant.size}`,
+                availableStock: variant.varientquatity,
+                stockStatus: 'insufficient_stock'
+            });
         }else if (cartItem.quantity > 5) {
             return res.status(400).json({ success: false, message: 'Cart limit exceeded' }); 
         } else {
@@ -215,10 +247,88 @@ const getCartCount = async (req, res) => {
     }
 };
 
+const checkStock = async (req, res) => {
+    try {
+        const { productId, variantId, quantity } = req.body;
+        const user = req.session.user;
+
+        if (!user) {
+            return res.status(401).json({ success: false, message: 'Please log in to check stock' });
+        }
+
+        const product = await Product.findById(productId);
+        if (!product) {
+            return res.status(404).json({ success: false, message: 'Product not found' });
+        }
+
+        const variant = product.variants.find(v => v._id.toString() === variantId);
+        if (!variant) {
+            return res.status(404).json({ success: false, message: 'Variant not found' });
+        }
+
+        // Check current cart quantity for this variant
+        const cart = await Cart.findOne({ userId: user._id });
+        let currentCartQuantity = 0;
+        
+        if (cart) {
+            const cartItem = cart.items.find(item =>
+                item.productId.toString() === productId && item.variantId.toString() === variantId
+            );
+            if (cartItem) {
+                currentCartQuantity = cartItem.quantity;
+            }
+        }
+
+        const availableStock = variant.varientquatity;
+        const requestedQuantity = quantity || 1;
+        const totalQuantityAfterAdd = currentCartQuantity + requestedQuantity;
+
+        // Stock validation
+        if (availableStock === 0) {
+            return res.json({
+                success: false,
+                available: false,
+                message: `Out of stock for size ${variant.size}`,
+                stockStatus: 'out_of_stock',
+                availableStock: 0,
+                currentCartQuantity
+            });
+        }
+
+        if (totalQuantityAfterAdd > availableStock) {
+            return res.json({
+                success: false,
+                available: false,
+                message: `Not enough stock available. Only ${availableStock} items left for size ${variant.size}, and you already have ${currentCartQuantity} in your cart`,
+                stockStatus: 'insufficient_stock',
+                availableStock,
+                currentCartQuantity,
+                maxCanAdd: Math.max(0, availableStock - currentCartQuantity)
+            });
+        }
+
+        // Stock is available
+        return res.json({
+            success: true,
+            available: true,
+            message: 'Stock available',
+            stockStatus: 'available',
+            availableStock,
+            currentCartQuantity,
+            canAdd: availableStock - currentCartQuantity
+        });
+
+    } catch (error) {
+        console.error('Check stock error:', error);
+        res.status(500).json({ success: false, message: 'Server error' });
+    }
+};
+
 module.exports = {
     addToCart,
     getCart,
     updateCart,
     removeFromCart,
-    getCartCount
+    getCartCount,
+    checkStock
 };

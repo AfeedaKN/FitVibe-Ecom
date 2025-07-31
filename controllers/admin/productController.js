@@ -334,7 +334,8 @@ const updateProduct = async (req, res) => {
       fabric,
       sku,
       tags,
-      isActive
+      isActive,
+      deletedImages
     } = req.body;
 
 const productObjectId = new mongoose.Types.ObjectId(productId);
@@ -390,6 +391,49 @@ const categoryIdObj = new mongoose.Types.ObjectId(category);
     
     const existingProduct = await Product.findById(productObjectId);
     let images = existingProduct.images || [];
+
+    
+    if (deletedImages && deletedImages.trim() !== '') {
+      try {
+        const deletedIndices = JSON.parse(deletedImages);
+        
+        if (Array.isArray(deletedIndices) && deletedIndices.length > 0) {
+          console.log("Processing deleted images:", deletedIndices);
+          
+          
+          const imagesToDelete = [];
+          deletedIndices.forEach(index => {
+            if (images[index]) {
+              imagesToDelete.push(images[index]);
+            }
+          });
+
+          
+          for (const image of imagesToDelete) {
+            if (image.public_id) {
+              try {
+                await cloudinary.uploader.destroy(image.public_id);
+                console.log(`Deleted image from Cloudinary: ${image.public_id}`);
+              } catch (cloudinaryError) {
+                console.error("Error deleting image from Cloudinary:", cloudinaryError);
+              }
+            }
+          }
+
+          
+          images = images.filter((_, index) => !deletedIndices.includes(index));
+          
+          
+          if (images.length > 0 && !images.some(img => img.isMain)) {
+            images[0].isMain = true;
+          }
+          
+          console.log(`Successfully processed deletion of ${deletedIndices.length} images. Remaining images: ${images.length}`);
+        }
+      } catch (parseError) {
+        console.error("Error parsing deletedImages:", parseError);
+      }
+    }
 
     
     const seen = new Set();

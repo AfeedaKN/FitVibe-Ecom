@@ -122,6 +122,7 @@
 
     /* Mobile - disable zoom */
     @media (max-width: 768px) {
+
       .zoom-lens,
       .zoom-result {
         display: none !important;
@@ -312,6 +313,13 @@
       margin-bottom: 0.75rem;
     }
 
+    .size-option-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.25rem;
+    }
+
     .size-btn {
       width: 50px;
       height: 50px;
@@ -356,6 +364,14 @@
       height: 1px;
       background: #ef4444;
       transform: translateY(-50%) rotate(-45deg);
+    }
+
+    .out-of-stock-text {
+      font-size: 0.75rem;
+      color: #ef4444;
+      font-weight: 500;
+      text-align: center;
+      white-space: nowrap;
     }
 
     .stock-info {
@@ -952,15 +968,20 @@
                   <% if (product.variants && product.variants.length> 0) { %>
                     <% product.variants.forEach(variant=> { %>
                       <% if (variant.varientquatity> 0) { %>
-                        <button class="size-btn" data-size="<%= variant.size %>" data-price="<%= variant.salePrice %>"
-                          data-original="<%= variant.varientPrice %>" data-stock="<%= variant.varientquatity %>"
-                          data-variant-id="<%= variant._id %>" onclick="selectSize(this)">
-                          <%= variant.size %>
-                        </button>
-                        <% } else { %>
-                          <button class="size-btn out-of-stock" disabled>
+                        <div class="size-option-container">
+                          <button class="size-btn" data-size="<%= variant.size %>" data-price="<%= variant.salePrice %>"
+                            data-original="<%= variant.varientPrice %>" data-stock="<%= variant.varientquatity %>"
+                            data-variant-id="<%= variant._id %>" onclick="selectSize(this)">
                             <%= variant.size %>
                           </button>
+                        </div>
+                        <% } else { %>
+                          <div class="size-option-container">
+                            <button class="size-btn out-of-stock" disabled>
+                              <%= variant.size %>
+                            </button>
+                            <span class="out-of-stock-text">Out of Stock</span>
+                          </div>
                           <% } %>
                             <% }) %>
                               <% } %>
@@ -975,7 +996,7 @@
                 <h6>Quantity:</h6>
                 <div class="quantity-controls">
                   <button class="qty-btn" onclick="changeQuantity(-1)">-</button>
-                  <input type="number" id="quantity" value="1" min="1" max="10" readonly>
+                  <input type="number" id="quantity" value="1" min="1" max="5" readonly>
                   <button class="qty-btn" onclick="changeQuantity(1)">+</button>
                 </div>
               </div>
@@ -987,9 +1008,9 @@
                   <i class="fas fa-shopping-cart"></i> Add to Cart
                 </button>
 
-<button class="btn wishlist-btn" onclick="addToWishlist()" style="background: none; border: none;">
-  <i class="far fa-heart "></i>
-</button>
+                <button class="btn wishlist-btn" onclick="addToWishlist()" style="background: none; border: none;">
+                  <i class="far fa-heart "></i>
+                </button>
 
               </div>
 
@@ -1104,21 +1125,21 @@
     <%- include('./partials/footer') %>
 
       <!-- Bootstrap JS -->
-       <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+      <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
       <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
       <script src="/js/productDetail.js"></script>
       <script>
-  const Toast = Swal.mixin({
-    toast: true,
-    position: 'top-end', // you can use 'bottom-end' if needed
-    showConfirmButton: false,
-    timer: 3000,
-    timerProgressBar: true,
-    didOpen: (toast) => {
-      toast.addEventListener('mouseenter', Swal.stopTimer)
-      toast.addEventListener('mouseleave', Swal.resumeTimer)
-    }
-  });
+        const Toast = Swal.mixin({
+          toast: true,
+          position: 'top-end', // you can use 'bottom-end' if needed
+          showConfirmButton: false,
+          timer: 3000,
+          timerProgressBar: true,
+          didOpen: (toast) => {
+            toast.addEventListener('mouseenter', Swal.stopTimer)
+            toast.addEventListener('mouseleave', Swal.resumeTimer)
+          }
+        });
 
         document.querySelectorAll('.add-to-cart-btn').forEach(button => {
           button.addEventListener('click', async (e) => {
@@ -1134,8 +1155,9 @@
                 headers: {
                   'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ productId, variantId, quantity })  // ✅ FIXED!
+                body: JSON.stringify({ productId, variantId, quantity })  // ✅ FIXED
               });
+
 
               const data = await response.json();
 
@@ -1148,6 +1170,7 @@
                   backgroundColor: "#28a745",
                   stopOnFocus: true,
                 }).showToast();
+
               } else {
                 Toastify({
                   text: data.message || "Something went wrong",
@@ -1358,10 +1381,10 @@
         // Add to cart functionality
         async function addToCart() {
           if (!selectedSize) {
-           Toast.fire({
-    icon: 'warning',
-    title: 'Please select a size first'
-  });
+            Toast.fire({
+              icon: 'warning',
+              title: 'Please select a size first'
+            });
             return
           }
 
@@ -1384,34 +1407,43 @@
               headers: {
                 "Content-Type": "application/json",
               },
+
+
               body: JSON.stringify({
-                productId: window.productData.id,variantId: selectedVariant._id,   // ✅ Add this
-                 quantity: quantity,
-                 }),
+                productId: window.productData.id, variantId: selectedVariant._id,   // ✅ Add this
+                quantity: quantity,
+              }),
 
             })
-
             const result = await response.json()
-
             if (result.success) {
               Toast.fire({
-    icon: 'success',
-    title: 'Product added to cart successfully!'
-  });
-  updateCartCount(result.cartCount);
+                icon: 'success',
+                title: 'Product added to cart successfully!'
+
+              });
+              updateCartCount(result.cartCount);
+
+              setTimeout(() => {
+                window.location.reload();
+              }, 2000);
             } else {
               if (result.redirect) {
                 window.location.href = "/products"
                 return
               }
-               Toast.fire({
-    icon: 'error',
-    title: result.message || 'Failed to add product to cart'
-  });
+              Toast.fire({
+                icon: 'error',
+                title: result.message || 'Failed to add product to cart'
+              });
             }
+
+
           } catch (error) {
             console.error("Error adding to cart:", error)
             showAlert("error", "An error occurred. Please try again.")
+
+
           } finally {
             // Reset button state
             addToCartBtn.disabled = false
@@ -1419,101 +1451,117 @@
           }
         }
 
+
+
         // Add to wishlist functionality
-  document.addEventListener("DOMContentLoaded", async () => {
-  const wishlistBtn = document.querySelector(".wishlist-btn");
-  const productId = window.productData.id;
+        document.addEventListener("DOMContentLoaded", async () => {
+          const wishlistBtn = document.querySelector(".wishlist-btn");
+          const productId = window.productData.id;
 
-  // Check if product is in wishlist
-  try {
-    const check = await fetch(`/wishlist/check/${productId}`);
-    const data = await check.json();
+          // Check if product is in wishlist
+          try {
+            const check = await fetch(`/wishlist/check/${productId}`);
+            const data = await check.json();
 
-    if (data.exists) {
-      wishlistBtn.innerHTML = '<i class="fas fa-heart" style="color: red;"></i>';
-      wishlistBtn.dataset.inWishlist = "true";
-    } else {
-      wishlistBtn.innerHTML = '<i class="far fa-heart"></i>';
-      wishlistBtn.dataset.inWishlist = "false";
-    }
-  } catch (err) {
-    console.error("Error checking wishlist:", err);
-  }
+            if (data.exists) {
+              wishlistBtn.innerHTML = '<i class="fas fa-heart" style="color: red;"></i>';
+              wishlistBtn.dataset.inWishlist = "true";
+            } else {
+              wishlistBtn.innerHTML = '<i class="far fa-heart"></i>';
+              wishlistBtn.dataset.inWishlist = "false";
+            }
+          } catch (err) {
+            console.error("Error checking wishlist:", err);
+          }
 
-  // Toggle wishlist
-  window.addToWishlist = async function () {
-    if (!selectedSize) {
-      Toast.fire({
-        icon: 'warning',
-        title: 'Please select a size first'
-      });
-      return;
-    }
+          // Toggle wishlist
+          window.addToWishlist = async function () {
+            if (!selectedSize) {
+              Toast.fire({
+                icon: 'warning',
+                title: 'Please select a size first'
+              });
+              return;
+            }
 
-    if (!window.productData.isListed || window.productData.isDeleted) {
-      showProductUnavailable();
-      return;
-    }
+            if (!window.productData.isListed || window.productData.isDeleted) {
+              showProductUnavailable();
+              return;
+            }
 
-    const variantId = document.getElementById("addToCartBtn").getAttribute("data-variant-id");
-    const inWishlist = wishlistBtn.dataset.inWishlist === "true";
-    wishlistBtn.disabled = true;
+            const variantId = document.getElementById("addToCartBtn").getAttribute("data-variant-id");
+            const inWishlist = wishlistBtn.dataset.inWishlist === "true";
+            wishlistBtn.disabled = true;
 
-    try {
-      if (!inWishlist) {
-        const response = await fetch("/wishlist/add", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ productId, variantId })
+            try {
+              if (!inWishlist) {
+                const response = await fetch("/wishlist/add", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ productId, variantId })
+                });
+
+
+                const result = await response.json();
+
+                if (result.success) {
+                  wishlistBtn.innerHTML = '<i class="fas fa-heart" style="color: red;"></i>';
+                  wishlistBtn.dataset.inWishlist = "true";
+                  Toast.fire({
+                    icon: 'success',
+                    title: 'Product added to Wishlist successfully!'
+                  });
+
+                  setTimeout(() => {
+                    window.location.reload();
+                  }, 1500);
+
+
+                } else {
+                  Toast.fire({
+                    icon: 'error',
+                    title: result.message || 'Failed to add product to wishlist'
+                  });
+                }
+              } else {
+                const response = await fetch("/wishlist/remove", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ productId, variantId })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                  wishlistBtn.innerHTML = '<i class="far fa-heart"></i>';
+                  wishlistBtn.dataset.inWishlist = "false";
+                  Toast.fire({
+                    icon: 'success',
+                    title: 'Removed from wishlist!'
+                  });
+
+                  setTimeout(() => {
+                    window.location.reload();
+                  }, 1500);
+
+                } else {
+                  Toast.fire({
+                    icon: 'error',
+                    title: result.message || 'Failed to remove product from wishlist'
+                  });
+                }
+              }
+            } catch (err) {
+              console.error("Toggle wishlist error:", err);
+              Toast.fire({
+                icon: 'error',
+                title: 'Error occurred!'
+              });
+            } finally {
+              wishlistBtn.disabled = false;
+            }
+          };
         });
-        const result = await response.json();
-
-        if (result.success) {
-          wishlistBtn.innerHTML = '<i class="fas fa-heart" style="color: red;"></i>';
-          wishlistBtn.dataset.inWishlist = "true";
-          Toast.fire({
-            icon: 'success',
-            title: 'Product added to Wishlist successfully!'
-          });
-        } else {
-          Toast.fire({
-            icon: 'error',
-            title: result.message || 'Failed to add product to wishlist'
-          });
-        }
-      } else {
-        const response = await fetch("/wishlist/remove", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ productId, variantId })
-        });
-        const result = await response.json();
-
-        if (result.success) {
-          wishlistBtn.innerHTML = '<i class="far fa-heart"></i>';
-          wishlistBtn.dataset.inWishlist = "false";
-          Toast.fire({
-            icon: 'success',
-            title: 'Removed from wishlist!'
-          });
-        } else {
-          Toast.fire({
-            icon: 'error',
-            title: result.message || 'Failed to remove product from wishlist'
-          });
-        }
-      }
-    } catch (err) {
-      console.error("Toggle wishlist error:", err);
-      Toast.fire({
-        icon: 'error',
-        title: 'Error occurred!'
-      });
-    } finally {
-      wishlistBtn.disabled = false;
-    }
-  };
-});
 
 
         // Load related products
@@ -1606,7 +1654,7 @@
           const container = document.querySelector(".container")
           container.insertBefore(alertDiv, container.firstChild)
 
-          
+
           setTimeout(() => {
             if (alertDiv.parentNode) {
               alertDiv.remove()
@@ -1614,7 +1662,7 @@
           }, 5000)
         }
 
-      
+
         document.addEventListener("visibilitychange", () => {
           if (!document.hidden) {
             checkProductAvailability()

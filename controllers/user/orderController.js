@@ -315,120 +315,142 @@ const cancelOrderItem = async (req, res) => {
 
 const returnOrderItem = async (req, res) => {
   try {
-    const { orderId, productId, variantSize, reason } = req.body;
-    const userId = req.user._id;
+    console.log("Incoming request headers:", req.headers);
+    console.log("Raw request body:", req.body);
 
-    // ✅ Validate input
-    if (!orderId || !productId || !variantSize || !reason) {
+    if (!req.body) {
+      console.error("req.body is undefined");
       return res.status(400).json({
         success: false,
-        message: 'Missing required fields: orderId, productId, variantSize, or reason'
+        message: "Request body is missing",
       });
     }
 
-    // ✅ Find the order
+    const { orderId, productId, variantSize, reason } = req.body;
+    console.log("Destructured:", { orderId, productId, variantSize, reason });
+
+    const userId = req.user._id;
+
+    // Validate input
+    if (!orderId || !productId || !variantSize || !reason) {
+      console.log("Missing fields:", { orderId, productId, variantSize, reason });
+      return res.status(400).json({
+        success: false,
+        message: "Missing required fields: orderId, productId, variantSize, or reason",
+      });
+    }
+
+    // Validate ObjectIds
+    if (!mongoose.Types.ObjectId.isValid(orderId) || !mongoose.Types.ObjectId.isValid(productId)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid Order ID or Product ID",
+      });
+    }
+
+    // Find the order
     const order = await Order.findOne({ _id: orderId, user: userId });
     if (!order) {
       return res.status(404).json({
         success: false,
-        message: 'Order not found or not owned by user'
+        message: "Order not found or not owned by user",
       });
     }
 
-    // ✅ Check if order is delivered
-    if (order.orderStatus !== 'delivered' && order.orderStatus !== 'return pending') {
+    // Check if order is delivered
+    if (order.orderStatus !== "delivered" && order.orderStatus !== "return pending") {
       return res.status(400).json({
         success: false,
-        message: 'Only delivered items can be returned'
+        message: "Only delivered items can be returned",
       });
     }
 
-    // ✅ Debug all items
-    console.log("🟡 All Items in Order:");
+    // Debug all items
+    console.log("All Items in Order:");
     order.products.forEach((item, idx) => {
-      console.log(`Item ${idx + 1}: Product=${item.product}, Size=${item.variant.size}, Status=${item.status}`);
+      console.log(
+        `Item ${idx + 1}: Product=${item.product}, Size=${item.variant.size}, Status=${item.status}`
+      );
     });
 
-    // ✅ Find the specific item using equals
-    const itemIndex = order.products.findIndex(item =>
-      item.product.equals(productId) &&
-      item.variant.size === variantSize
+    // Find the specific item
+    const itemIndex = order.products.findIndex(
+      (item) => item.product.equals(productId) && item.variant.size === variantSize
     );
 
     if (itemIndex === -1) {
       return res.status(404).json({
         success: false,
-        message: 'Item not found in order'
+        message: "Item not found in order",
       });
     }
 
     const item = order.products[itemIndex];
 
-    // ✅ Debug selected item
-    console.log("🔵 Selected Item to Return:");
+    // Debug selected item
+    console.log("Selected Item to Return:");
     console.log(`Product: ${item.product}, Size: ${item.variant.size}, Status: ${item.status}`);
 
-    // ✅ Check if item already returned or requested
-    if (item.status === 'return pending') {
+    // Check if item already returned or requested
+    if (item.status === "return pending") {
       return res.status(400).json({
         success: false,
-        message: 'Return already requested for this item'
+        message: "Return already requested for this item",
       });
     }
 
-    if (item.status === 'returned') {
+    if (item.status === "returned") {
       return res.status(400).json({
         success: false,
-        message: 'Item is already returned'
+        message: "Item is already returned",
       });
     }
 
-    // ✅ Update item status
-    item.status = 'return pending';
+    // Update item status
+    item.status = "return pending";
     item.returnReason = reason;
     item.returnRequestDate = new Date();
 
-    // ✅ Restore stock for the returned item
+    // Restore stock for the returned item
     const product = await Product.findById(productId);
     if (product) {
-      const variant = product.variants.find(v => v.size === variantSize);
+      const variant = product.variants.find((v) => v.size === variantSize);
       if (variant) {
         variant.varientquatity += item.quantity;
         await product.save();
       }
     }
 
-    // ✅ Check if all items are return pending or returned
-    const allItemsReturnPending = order.products.every(item =>
-      ['return pending', 'returned'].includes(item.status)
+    // Check if all items are return pending or returned
+    const allItemsReturnPending = order.products.every((item) =>
+      ["return pending", "returned"].includes(item.status)
     );
     if (allItemsReturnPending) {
-      order.orderStatus = 'return pending';
+      order.orderStatus = "return pending";
     }
 
-    // ✅ Add to status history
+    // Add to status history
     order.statusHistory.push({
-      status: 'item return requested',
+      status: "item return requested",
       date: new Date(),
-      description: `Return requested for: ${product?.name || 'Product'} (${variantSize}) - Reason: ${reason}`
+      description: `Return requested for: ${product?.name || "Product"} (${variantSize}) - Reason: ${reason}`,
     });
 
     await order.save();
 
     return res.json({
       success: true,
-      message: 'Return request submitted successfully'
+      message: "Return request submitted successfully",
     });
-
   } catch (error) {
-    console.error('Error processing return request:', error);
+    console.error("Error processing return request:", error);
     return res.status(500).json({
       success: false,
-      message: 'Server error while processing return request'
+      message: "Server error while processing return request",
+      error: error.message,
     });
   }
 };
-
 
 
 const downloadInvoice = async (req, res) => {

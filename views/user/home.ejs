@@ -681,6 +681,7 @@
             },
             body: JSON.stringify({ productId, variantId })
           });
+          window.location.reload()
           
           const result = await response.json();
           

@@ -147,6 +147,16 @@
       display: inline-block;
     }
 
+    .stock-warning {
+      color: #f59e0b;
+      font-weight: 600;
+      font-size: 0.875rem;
+      background: #fffbeb;
+      padding: 0.25rem 0.75rem;
+      border-radius: 20px;
+      display: inline-block;
+    }
+
     /* Quantity Controls */
     .cart-item-quantity {
       display: flex;
@@ -414,8 +424,12 @@
                 <h3><%= item.product.name %></h3>
                 <p><strong>Size:</strong> <%= item.variant.size %></p>
                 <p class="price">₹<%= item.variant.salePrice.toFixed(2) %> x <%= item.quantity %></p>
-                <% if (item.variant.stock === 0) { %>
+                <% if (item.variant.varientquatity === 0) { %>
                   <p class="cart-item-out-of-stock">Out of Stock</p>
+                <% } else if (item.quantity > item.variant.varientquatity) { %>
+                  <p class="cart-item-out-of-stock">Quantity exceeds available stock (<%= item.variant.varientquatity %> available)</p>
+                <% } else if (item.quantity >= item.variant.varientquatity && item.variant.varientquatity > 0) { %>
+                  <p class="stock-warning">Only <%= item.variant.varientquatity %> items available</p>
                 <% } %>
                 <div class="cart-item-quantity">
                   <button class="decrement-btn" 
@@ -426,7 +440,8 @@
                   <button class="increment-btn"
                     data-product-id="<%= item.product._id %>"
                     data-variant-id="<%= item.variant._id %>"
-                    title="Increase quantity">+</button>
+                    data-available-stock="<%= item.variant.varientquatity %>"
+                    <%= (item.quantity >= item.variant.varientquatity || item.variant.varientquatity === 0) ? 'disabled title="No more stock available"' : 'title="Increase quantity"' %>>+</button>
                 </div>
               </div>
               <button class="cart-item-remove"
@@ -439,7 +454,7 @@
         </div>
         <div class="cart-summary fade-in">
           <p class="price">Total: ₹<%= cartItems.reduce((total, item) => total + (item.variant.salePrice * item.quantity), 0).toFixed(2) %></p>
-          <a href="/checkout" class="checkout-btn" <%= cartItems.some(item => item.variant.stock === 0) ? 'disabled' : '' %>>
+          <a href="/checkout" class="checkout-btn" <%= cartItems.some(item => item.variant.varientquatity === 0 || item.quantity > item.variant.varientquatity) ? 'disabled' : '' %>>
             <i class="fas fa-shopping-bag"></i>
             Proceed to Checkout
           </a>
@@ -527,12 +542,14 @@
       }
     }
 
-    // Function to update button states based on quantity
+    // Function to update button states based on quantity and stock
     function updateButtonStates() {
       document.querySelectorAll('.cart-item').forEach(cartItem => {
         const quantityInput = cartItem.querySelector('input[type="number"]');
         const decrementBtn = cartItem.querySelector('.decrement-btn');
+        const incrementBtn = cartItem.querySelector('.increment-btn');
         const currentQuantity = parseInt(quantityInput.value);
+        const availableStock = parseInt(incrementBtn.getAttribute('data-available-stock'));
         
         // Disable decrement button if quantity is 1 or less
         if (currentQuantity <= 1) {
@@ -542,6 +559,15 @@
           decrementBtn.disabled = false;
           decrementBtn.title = 'Decrease quantity';
         }
+        
+        // Disable increment button if quantity equals or exceeds available stock
+        if (currentQuantity >= availableStock || availableStock === 0) {
+          incrementBtn.disabled = true;
+          incrementBtn.title = 'No more stock available';
+        } else {
+          incrementBtn.disabled = false;
+          incrementBtn.title = 'Increase quantity';
+        }
       });
     }
 
@@ -549,8 +575,18 @@
       button.addEventListener('click', async () => {
         const productId = button.getAttribute('data-product-id');
         const variantId = button.getAttribute('data-variant-id');
+        const availableStock = parseInt(button.getAttribute('data-available-stock'));
         const quantityInput = button.parentElement.querySelector('input[type="number"]');
         const currentQuantity = parseInt(quantityInput.value);
+        
+        // Check if we can increment based on available stock
+        if (currentQuantity >= availableStock) {
+          Toast.fire({
+            icon: 'warning',
+            title: `Only ${availableStock} items available`
+          });
+          return;
+        }
         
         button.disabled = true;
         button.innerHTML = '<span class="spinner"></span>';
@@ -561,14 +597,12 @@
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ productId, variantId, change: 1 }) 
           });
+          
           const data = await response.json();
           
           if (data.success) {
-            updateCartItemQuantity(productId, variantId, currentQuantity + 1);
-            Toast.fire({
-              icon: 'success',
-              title: 'Quantity updated!'
-            });
+            // Reload page to get updated stock information
+            window.location.reload();
           } else {
             Toast.fire({
               icon: 'error',
@@ -665,6 +699,8 @@
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ productId, variantId }) 
             });
+            window.location.reload()
+
             const data = await response.json();
             
             if (data.success) {
