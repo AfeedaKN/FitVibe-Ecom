@@ -69,9 +69,7 @@ const getCheckout = async (req, res) => {
 const placeOrder = async (req, res) => {
   try {
     const { paymentMethod, addressId } = req.body;
-    console.log("Payment Method:", req.body);
-    console.log('Request Body:', req.body);
-    console.log("Placing order with method:", paymentMethod);
+    
 
     const userId = req.user._id;
     const user = await User.findById(userId);
@@ -81,7 +79,6 @@ const placeOrder = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Cart is empty' });
     }
 
-    // First, let's match variants for each cart item
     cart.items.forEach(item => {
       const product = item.productId;
       const matchedVariant = product.variants.find(variant => 
@@ -91,7 +88,6 @@ const placeOrder = async (req, res) => {
       console.log(`Item: ${product.name}, Selected Variant: ${matchedVariant?.size}, VariantId: ${item.variantId}`);
     });
 
-    // Check stock using the correct variants
     const outOfStock = cart.items.some(item => {
       if (!item.variant) {
         console.error(`Variant not found for item: ${item.productId._id}, variantId: ${item.variantId}`);
@@ -104,7 +100,7 @@ const placeOrder = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Some items are out of stock' });
     }
 
-    console.log("Stock is fine:", !outOfStock);
+    
 
     const address = await Address.findOne({ _id: addressId, user: userId });
     if (!address) {
@@ -122,7 +118,7 @@ const placeOrder = async (req, res) => {
 
     const orderID = generateOrderID();
 
-    // Calculate subtotal using the correct variants
+    
     const subtotal = cart.items.reduce((sum, item) => {
       if (!item.variant) {
         console.error(`Variant not found for subtotal calculation: ${item.productId._id}`);
@@ -137,7 +133,6 @@ const placeOrder = async (req, res) => {
     const totalAmount = subtotal + taxAmount;
     const finalAmount = totalAmount - discount + shippingCharge;
 
-    // Create products array using the correct variants
     const products = cart.items.map(item => {
       if (!item.variant) {
         throw new Error(`Variant not found for product: ${item.productId._id}, variantId: ${item.variantId}`);
@@ -153,7 +148,7 @@ const placeOrder = async (req, res) => {
           salePrice: item.variant.salePrice,
         },
         quantity: item.quantity,
-        status: 'pending', // Add default status for each item
+        status: 'pending', 
       };
     });
 
@@ -183,7 +178,6 @@ const placeOrder = async (req, res) => {
     await order.save();
     console.log("Order saved successfully with ID:", order.orderID);
 
-    // Update stock using the correct variants
     for (const item of cart.items) {
       if (!item.variant) {
         console.error(`Variant not found for stock update: ${item.productId._id}`);
@@ -193,7 +187,6 @@ const placeOrder = async (req, res) => {
       const product = item.productId;
       console.log("Updating product:", product.name, "Variant:", item.variant.size);
       
-      // Find the variant in the product and update its stock
       const variantToUpdate = product.variants.find(v => v._id.toString() === item.variantId.toString());
       if (variantToUpdate) {
         const oldStock = variantToUpdate.varientquatity;

@@ -18,7 +18,7 @@ cloudinary.config({
 const loadProducts = async (req, res) => {
   try {
     const page = Number.parseInt(req.query.page) || 1
-    const limit = 6
+    const limit = 5
     const skip = (page - 1) * limit
     const searchQuery = req.query.search || ""
     const category = req.query.category || ""

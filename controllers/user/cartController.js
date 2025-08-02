@@ -13,18 +13,13 @@ const addToCart = async (req, res) => {
             return res.status(401).json({ success: false, message: 'Please log in to add to cart' });
         }
 
-        console.log(" User is logged in", user._id);
+        
 
         const product = await Product.findById(productId);
         if (!product) {
-            console.log(" Step 4: Product not found",productId)
+            
             return res.status(404).json({ success: false, message: 'Product not found' });
         }
-
-        
-        console.log(" Variant ID from request:", variantId);
-        console.log(" Available variant IDs:", product.variants.map(v => v._id.toString()));
-
 
         const variant = product.variants.find(v => v._id.toString() === variantId);
         if (!variant) {
@@ -33,7 +28,6 @@ const addToCart = async (req, res) => {
         }
 
 
-        // Enhanced stock validation with specific messages
         if (variant.varientquatity === 0) {
             return res.status(400).json({ 
                 success: false, 
@@ -53,7 +47,7 @@ const addToCart = async (req, res) => {
 
         let cart = await Cart.findOne({ userId: user._id });
         if (!cart) {
-            console.log("  Creating new cart");
+           
             cart = new Cart({ userId: user._id, items: [] });
         } else {
             console.log(" Cart found");
@@ -64,13 +58,11 @@ const addToCart = async (req, res) => {
         );
 
         if (cartItemIndex > -1) {
-            // Check if adding more quantity would exceed cart limit
             if( cart.items[cartItemIndex].quantity > 4) {
                 console.log('Cart limit exceeded');
                 return res.status(400).json({ success: false, message: 'Cart limit exceeded' });
             }
             
-            // Check if adding more quantity would exceed available stock
             const newQuantity = cart.items[cartItemIndex].quantity + quantity;
             if (newQuantity > variant.varientquatity) {
                 return res.status(400).json({ 
@@ -155,6 +147,8 @@ const getCart = async (req, res) => {
 const updateCart = async (req, res) => {
     try {
         const { productId, variantId, change } = req.body;
+        
+        
         const user = req.session.user;
 
         if (!user) {
@@ -179,7 +173,6 @@ const updateCart = async (req, res) => {
         if (!variant) {
             return res.status(404).json({ success: false, message: 'Variant not found' });
         }
-        console.log("Variant stock:", variant);
         cartItem.quantity += change;
         if (cartItem.quantity <= 0) {
             cart.items = cart.items.filter(item => 
@@ -266,7 +259,6 @@ const checkStock = async (req, res) => {
             return res.status(404).json({ success: false, message: 'Variant not found' });
         }
 
-        // Check current cart quantity for this variant
         const cart = await Cart.findOne({ userId: user._id });
         let currentCartQuantity = 0;
         
@@ -283,7 +275,6 @@ const checkStock = async (req, res) => {
         const requestedQuantity = quantity || 1;
         const totalQuantityAfterAdd = currentCartQuantity + requestedQuantity;
 
-        // Stock validation
         if (availableStock === 0) {
             return res.json({
                 success: false,
@@ -307,7 +298,6 @@ const checkStock = async (req, res) => {
             });
         }
 
-        // Stock is available
         return res.json({
             success: true,
             available: true,

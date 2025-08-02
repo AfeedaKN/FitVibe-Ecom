@@ -92,11 +92,11 @@ const cancelOrder = async (req, res) => {
     if (!order) {
       return res.json({ success: false, message: 'Order not found.' });
     }
-    console.log("caaaa",order)
+    
 
     order.orderStatus = 'cancelled';
     order.paymentStatus='cancelled'
-     console.log("cance",order)
+     
     order.cancelReason = reason || '';
 
     for (const item of order.products) { 
@@ -229,7 +229,7 @@ const cancelOrderItem = async (req, res) => {
       });
     }
 
-    // Find the order
+    
     const order = await Order.findOne({ _id: orderId, user: userId });
     if (!order) {
       return res.status(404).json({ 
@@ -238,7 +238,6 @@ const cancelOrderItem = async (req, res) => {
       });
     }
 
-    // Check if order can be cancelled
     if (!['pending', 'processing'].includes(order.orderStatus)) {
       return res.status(400).json({ 
         success: false, 
@@ -246,7 +245,6 @@ const cancelOrderItem = async (req, res) => {
       });
     }
 
-    // ✅ Find exact item (not using index)
     const item = order.products.find(item =>
       item.product.toString() === productId &&
       item.variant.size === variantSize &&
@@ -260,17 +258,14 @@ const cancelOrderItem = async (req, res) => {
       });
     }
 
-    // ✅ Update item status
     item.status = 'cancelled';
     item.cancelReason = reason || '';
     item.cancelDate = new Date();
 
-    // ✅ Subtotal (finalAmount & totalAmount) update cheyyuka
     const cancelledItemSubtotal = item.variant.salePrice * item.quantity;
     order.finalAmount = Math.max(0, order.finalAmount - cancelledItemSubtotal);
     order.totalAmount = Math.max(0, order.totalAmount - cancelledItemSubtotal);
 
-    // ✅ Restore stock for the cancelled item
     const product = await Product.findById(productId);
     if (product) {
       const variant = product.variants.find(v => v.size === variantSize);
@@ -280,21 +275,18 @@ const cancelOrderItem = async (req, res) => {
       }
     }
 
-    // ✅ If all items cancelled, change order & payment status
     const allItemsCancelled = order.products.every(p => p.status === 'cancelled');
     if (allItemsCancelled) {
       order.orderStatus = 'cancelled';
       order.paymentStatus = 'cancelled';
     }
 
-    // ✅ Status history update
     order.statusHistory.push({
       status: 'item cancelled',
       date: new Date(),
       description: `Item cancelled: ${product?.name || 'Product'} (${variantSize})${reason ? ` - Reason: ${reason}` : ''}`
     });
 
-    // ✅ Save order
     await order.save();
 
     return res.json({ 
@@ -331,7 +323,6 @@ const returnOrderItem = async (req, res) => {
 
     const userId = req.user._id;
 
-    // Validate input
     if (!orderId || !productId || !variantSize || !reason) {
       console.log("Missing fields:", { orderId, productId, variantSize, reason });
       return res.status(400).json({
@@ -340,7 +331,6 @@ const returnOrderItem = async (req, res) => {
       });
     }
 
-    // Validate ObjectIds
     if (!mongoose.Types.ObjectId.isValid(orderId) || !mongoose.Types.ObjectId.isValid(productId)) {
       return res.status(400).json({
         success: false,
@@ -348,7 +338,6 @@ const returnOrderItem = async (req, res) => {
       });
     }
 
-    // Find the order
     const order = await Order.findOne({ _id: orderId, user: userId });
     if (!order) {
       return res.status(404).json({
@@ -357,7 +346,6 @@ const returnOrderItem = async (req, res) => {
       });
     }
 
-    // Check if order is delivered
     if (order.orderStatus !== "delivered" && order.orderStatus !== "return pending") {
       return res.status(400).json({
         success: false,
@@ -365,7 +353,6 @@ const returnOrderItem = async (req, res) => {
       });
     }
 
-    // Debug all items
     console.log("All Items in Order:");
     order.products.forEach((item, idx) => {
       console.log(
@@ -373,7 +360,6 @@ const returnOrderItem = async (req, res) => {
       );
     });
 
-    // Find the specific item
     const itemIndex = order.products.findIndex(
       (item) => item.product.equals(productId) && item.variant.size === variantSize
     );
@@ -387,11 +373,9 @@ const returnOrderItem = async (req, res) => {
 
     const item = order.products[itemIndex];
 
-    // Debug selected item
     console.log("Selected Item to Return:");
     console.log(`Product: ${item.product}, Size: ${item.variant.size}, Status: ${item.status}`);
 
-    // Check if item already returned or requested
     if (item.status === "return pending") {
       return res.status(400).json({
         success: false,
@@ -406,12 +390,10 @@ const returnOrderItem = async (req, res) => {
       });
     }
 
-    // Update item status
     item.status = "return pending";
     item.returnReason = reason;
     item.returnRequestDate = new Date();
 
-    // Restore stock for the returned item
     const product = await Product.findById(productId);
     if (product) {
       const variant = product.variants.find((v) => v.size === variantSize);
@@ -421,7 +403,6 @@ const returnOrderItem = async (req, res) => {
       }
     }
 
-    // Check if all items are return pending or returned
     const allItemsReturnPending = order.products.every((item) =>
       ["return pending", "returned"].includes(item.status)
     );
@@ -429,7 +410,6 @@ const returnOrderItem = async (req, res) => {
       order.orderStatus = "return pending";
     }
 
-    // Add to status history
     order.statusHistory.push({
       status: "item return requested",
       date: new Date(),

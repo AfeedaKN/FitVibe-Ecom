@@ -9,19 +9,16 @@ const loadOrders = async (req, res) => {
     const limit = 5;
     const skip = (page - 1) * limit;
 
-    // Build filter object based on query parameters
+    
     const filter = {};
     
-    // Search functionality - we'll handle this after population
     const searchQuery = req.query.search;
 
-    // Status filter
     if (req.query.status) {
       filter.orderStatus = req.query.status;
     }
 
-    // Sort options
-    let sortOption = { orderDate: -1 }; // Default: newest first
+    let sortOption = { orderDate: -1 }; 
     if (req.query.sort) {
       switch (req.query.sort) {
         case 'orderDate':
@@ -42,10 +39,8 @@ const loadOrders = async (req, res) => {
       }
     }
 
-    // Get all orders first, then apply search filter if needed
     let allOrdersQuery = await Order.find(filter).populate("user").sort(sortOption);
     
-    // Apply search filter after population
     if (searchQuery) {
       const searchRegex = new RegExp(searchQuery, 'i');
       allOrdersQuery = allOrdersQuery.filter(order => 
@@ -58,10 +53,8 @@ const loadOrders = async (req, res) => {
     const totalFilteredOrders = allOrdersQuery.length;
     const totalPages = Math.ceil(totalFilteredOrders / limit);
 
-    // Get paginated orders for display
     const orders = allOrdersQuery.slice(skip, skip + limit);
 
-    // Get all orders for stats calculation (not filtered or paginated)
     const allOrders = await Order.find({}).populate("user");
 
     res.render("adminOrders", {
@@ -89,7 +82,7 @@ const loadOrders = async (req, res) => {
 };
 const updateOrderStatus = async (req, res) => {
   try {
-    console.log('Request body:', req.body);
+    
 
     const { orderId, status } = req.body;
 
@@ -129,7 +122,6 @@ const updateOrderStatus = async (req, res) => {
     
     order.orderStatus = status;
     
-    // Only update status for products that are not cancelled or returned
     order.products.forEach(product => {
       if (!['cancelled', 'returned'].includes(product.status)) {
         product.status = status;
@@ -311,18 +303,15 @@ const itemReturnApprove = async (req, res) => {
     const { orderId } = req.params;
     const { productId, variantSize } = req.body;
 
-    // Validate orderId and productId
     if (!mongoose.Types.ObjectId.isValid(orderId) || !mongoose.Types.ObjectId.isValid(productId)) {
       return res.status(400).json({ success: false, message: "Invalid order or product ID" });
     }
 
-    // Find the order and populate product details
     const order = await Order.findById(orderId).populate('products.product');
     if (!order) {
       return res.status(404).json({ success: false, message: "Order not found" });
     }
 
-    // Find the specific item in the order's products array
     const item = order.products.find(
       (p) => p.product._id.toString() === productId && p.variant.size === variantSize && p.status === "return pending"
     );
@@ -331,13 +320,11 @@ const itemReturnApprove = async (req, res) => {
       return res.status(400).json({ success: false, message: "Item not found or not eligible for return" });
     }
 
-    // Find the product to update stock
     const product = await Product.findById(productId);
     if (!product) {
       return res.status(404).json({ success: false, message: "Product not found" });
     }
 
-    // Update stock for the specific variant
     const variant = product.variants.find((v) => v.size === variantSize);
     if (variant) {
       variant.varientquatity += item.quantity;
@@ -345,13 +332,10 @@ const itemReturnApprove = async (req, res) => {
       return res.status(400).json({ success: false, message: "Variant not found" });
     }
 
-    // Update item status to 'returned'
     item.status = "returned";
 
-    // Calculate refund for the specific item
     const refundAmount = item.variant.salePrice * item.quantity;
 
-    // Update or create wallet
     let wallet = await Wallet.findOne({ userId: order.user });
     if (!wallet) {
       wallet = new Wallet({
@@ -374,27 +358,22 @@ const itemReturnApprove = async (req, res) => {
       });
     }
 
-    // Update order's refund amount
     order.refundAmount = (order.refundAmount || 0) + refundAmount;
 
-    // Update status history with product name
     order.statusHistory.push({
       status: "returned",
       date: new Date(),
       description: `Admin approved return for product ${product.name} (Size: ${variantSize})`,
     });
 
-    // Check if all items are returned and update order status if necessary
     const allItemsReturned = order.products.every(p => p.status === "returned");
     if (allItemsReturned) {
       order.orderStatus = "returned";
       order.paymentStatus = "refunded";
     } else {
-      // If not all items are returned, ensure order status is appropriate
       order.orderStatus = order.products.some(p => p.status === "return pending") ? "return pending" : "delivered";
     }
 
-    // Save changes
     await product.save();
     await wallet.save();
     await order.save();

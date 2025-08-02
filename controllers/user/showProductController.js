@@ -127,7 +127,7 @@ const allproducts = async (req, res) => {
         query['variants.0.salePrice'].$lte = Number(maxPrice);
       }
       if (minPrice && maxPrice && Number(minPrice) > Number(maxPrice)) {
-        query['variants.0.salePrice'] = { $gte: 0 }; // Reset invalid range
+        query['variants.0.salePrice'] = { $gte: 0 }; 
         console.log('Invalid price range: minPrice > maxPrice');
       }
     }

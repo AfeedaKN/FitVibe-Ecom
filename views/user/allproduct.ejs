@@ -850,6 +850,7 @@
             },
             body: JSON.stringify({ productId, variantId }),
           });
+          window.location.reload()
 
           const result = await response.json();
 
@@ -906,7 +907,7 @@
         }
       });
     });
-
+     
     const mobileFilterToggle = document.getElementById('mobileFilterToggle');
     const filterSidebar = document.getElementById('filterSidebar');
     const filterOverlay = document.getElementById('filterOverlay');
