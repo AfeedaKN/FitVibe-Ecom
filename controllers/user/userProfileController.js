@@ -2,7 +2,7 @@ const User = require("../../models/userSchema")
 const Order = require("../../models/orderSchema");
 const { sendVerificationEmail } = require("../../controllers/user/userController");
 
-// Generate OTP function
+
 function generateOtp() {
   return Math.floor(100000 + Math.random() * 900000).toString();
 }
@@ -138,13 +138,11 @@ const loadEditProfile = async (req, res) => {
   }
 };
 
-// Send OTP for email verification
 const sendProfileOtp = async (req, res) => {
   try {
     const { email } = req.body;
     const userId = req.session.user._id;
 
-    // Check if email is already in use by another user
     const existingUser = await User.findOne({ email, _id: { $ne: userId } });
     if (existingUser) {
       return res.json({ success: false, message: "Email is already in use by another account" });
@@ -152,10 +150,9 @@ const sendProfileOtp = async (req, res) => {
 
     const otp = generateOtp();
     
-    // Store OTP and new email in session
     req.session.profileOtp = otp;
     req.session.newEmail = email;
-    req.session.otpExpiry = Date.now() + 600000; // 10 minutes
+    req.session.otpExpiry = Date.now() + 600000; 
 
     const emailSent = await sendVerificationEmail(
       email,
@@ -175,7 +172,6 @@ const sendProfileOtp = async (req, res) => {
   }
 };
 
-// Load OTP verification page for profile
 const loadProfileOtpVerification = async (req, res) => {
   try {
     if (!req.session.profileOtp || !req.session.newEmail) {
@@ -192,7 +188,6 @@ const loadProfileOtpVerification = async (req, res) => {
   }
 };
 
-// Verify OTP for profile update
 const verifyProfileOtp = async (req, res) => {
   try {
     const { otp } = req.body;
@@ -213,17 +208,13 @@ const verifyProfileOtp = async (req, res) => {
       return res.json({ success: false, message: "Invalid OTP. Please try again." });
     }
 
-    // OTP verified successfully - update the email immediately
     const userId = req.session.user._id;
     const newEmail = req.session.newEmail;
     
-    // Update user email in database
     await User.findByIdAndUpdate(userId, { email: newEmail }, { new: true });
     
-    // Update session user data
     req.session.user.email = newEmail;
     
-    // Clear OTP data and email verification session
     delete req.session.profileOtp;
     delete req.session.otpExpiry;
     delete req.session.newEmail;
@@ -239,7 +230,6 @@ const verifyProfileOtp = async (req, res) => {
   }
 };
 
-// Resend OTP for profile
 const resendProfileOtp = async (req, res) => {
   try {
     if (!req.session.newEmail) {
@@ -249,7 +239,7 @@ const resendProfileOtp = async (req, res) => {
     const otp = generateOtp();
     
     req.session.profileOtp = otp;
-    req.session.otpExpiry = Date.now() + 600000; // 10 minutes
+    req.session.otpExpiry = Date.now() + 600000; 
 
     const emailSent = await sendVerificationEmail(
       req.session.newEmail,
@@ -274,7 +264,6 @@ const updateProfile = async (req, res) => {
     const userId = req.session.user._id;
     const { name, email, phone } = req.body;
     
-    // Get current user to check if email changed
     const currentUser = await User.findById(userId);
     if (!currentUser) {
       return res.json({ success: false, message: "User not found" });
@@ -282,7 +271,6 @@ const updateProfile = async (req, res) => {
 
     let updateData = { name, phone };
 
-    // Always include email in update (it will be the same if unchanged, or already updated if verified)
     updateData.email = email;
 
     if (req.file) {
@@ -296,7 +284,6 @@ const updateProfile = async (req, res) => {
 
     await User.findByIdAndUpdate(userId, updateData, { new: true });
     
-    // Update session user data
     req.session.user = { ...req.session.user, ...updateData };
 
     return res.json({ success: true, message: "Profile updated successfully" });

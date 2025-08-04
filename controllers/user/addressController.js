@@ -83,7 +83,6 @@ const getAddress = async (req, res) => {
         $push: { addresses: newAddress._id }
       });
 
-      // Check if request is AJAX (from checkout page) or form submission
       if (req.headers['content-type'] === 'application/json') {
         res.json({ success: true, message: "Address added successfully" });
       } else {
@@ -113,7 +112,6 @@ const setDefaultAddress = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Address not found' });
     }
 
-    // Check if request is from checkout page (AJAX) or addresses page (form)
     if (req.headers['content-type'] === 'application/json') {
       return res.json({ success: true, message: 'Default address updated successfully' });
     } else {

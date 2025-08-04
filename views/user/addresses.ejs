@@ -528,33 +528,40 @@
             <div class="mb-3">
               <label for="editName" class="form-label">Full Name</label>
               <input type="text" class="form-control" id="editName" name="name">
+              <small class="text-danger" id="editNameError"></small>
             </div>
             <div class="mb-3">
               <label for="editPhone" class="form-label">Phone Number</label>
               <input type="tel" class="form-control" id="editPhone" name="phone">
+              <small class="text-danger" id="editPhoneError"></small>
             </div>
             <div class="mb-3">
               <label for="editAddress" class="form-label">Street Address</label>
               <input type="text" class="form-control" id="editAddress" name="address">
+              <small class="text-danger" id="editAddressError"></small>
             </div>
             <div class="row">
               <div class="col-md-6 mb-3">
                 <label for="editCity" class="form-label">City</label>
                 <input type="text" class="form-control" id="editCity" name="city">
+                <small class="text-danger" id="editCityError"></small>
               </div>
               <div class="col-md-6 mb-3">
                 <label for="editState" class="form-label">State</label>
                 <input type="text" class="form-control" id="editState" name="state">
+                <small class="text-danger" id="editStateError"></small>
               </div>
             </div>
             <div class="row">
               <div class="col-md-6 mb-3">
                 <label for="editZipCode" class="form-label">Zip Code</label>
                 <input type="text" class="form-control" id="editZipCode" name="zipCode">
+                <small class="text-danger" id="editZipCodeError"></small>
               </div>
               <div class="col-md-6 mb-3">
                 <label for="editCountry" class="form-label">Country</label>
                 <input type="text" class="form-control" id="editCountry" name="country">
+                <small class="text-danger" id="editCountryError"></small>
               </div>
             </div>
             <div class="mb-3 form-check">
@@ -595,6 +602,310 @@
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script>
+    // ===== ADDRESS FORM VALIDATION =====
+    
+    // Helper Functions for Validation
+    const ValidationHelpers = {
+      // Name validation: Required, should contain valid alphabets, not only dashes/spaces
+      validateName: function(name) {
+        const trimmed = name.trim();
+        if (!trimmed) {
+          return "Name is required";
+        }
+        if (/^[\s\-]+$/.test(trimmed)) {
+          return "Name cannot contain only dashes or spaces";
+        }
+        if (!/[a-zA-Z]/.test(trimmed)) {
+          return "Name should contain valid alphabets";
+        }
+        return null;
+      },
+
+      // Phone validation: Required, exactly 10 digits, cannot start with 0, cannot be all same digits
+      validatePhone: function(phone) {
+        const trimmed = phone.trim();
+        if (!trimmed) {
+          return "Phone number is required";
+        }
+        if (!/^\d{10}$/.test(trimmed)) {
+          return "Phone number must be exactly 10 digits";
+        }
+        if (trimmed.charAt(0) === '0') {
+          return "Phone number cannot start with 0";
+        }
+        if (/^(\d)\1{9}$/.test(trimmed)) {
+          return "Phone number cannot be all same digits";
+        }
+        return null;
+      },
+
+      // Address validation: Required, should not contain only numbers/special chars/dashes, must have some alphabets
+      validateAddress: function(address) {
+        const trimmed = address.trim();
+        if (!trimmed) {
+          return "Address is required";
+        }
+        if (/^[\d\s\-\.,#@!$%^&*()_+={}[\]|\\:";'<>?/~`]+$/.test(trimmed)) {
+          return "Address should contain house name, street name or other valid characters";
+        }
+        if (!/[a-zA-Z]/.test(trimmed)) {
+          return "Address must contain at least some alphabets";
+        }
+        return null;
+      },
+
+      // City/State/Country validation: Required, should not contain only dashes/numbers, should contain letters
+      validateLocation: function(location, fieldName) {
+        const trimmed = location.trim();
+        if (!trimmed) {
+          return `${fieldName} is required`;
+        }
+        if (/^[\s\-\d]+$/.test(trimmed)) {
+          return `${fieldName} cannot contain only dashes or numbers`;
+        }
+        if (!/[a-zA-Z]/.test(trimmed)) {
+          return `${fieldName} should contain letters`;
+        }
+        return null;
+      },
+
+      // Zip Code validation: Required, must be 5 or 6 digits only, no characters
+      validateZipCode: function(zipCode) {
+        const trimmed = zipCode.trim();
+        if (!trimmed) {
+          return "Zip code is required";
+        }
+        if (!/^\d{5,6}$/.test(trimmed)) {
+          return "Zip code must be 5 or 6 digits only";
+        }
+        return null;
+      },
+
+      // Clear all error messages for a specific modal
+      clearErrors: function(modalId) {
+        document.querySelectorAll(`${modalId} small.text-danger`).forEach(errorElement => {
+          errorElement.textContent = '';
+        });
+      },
+
+      // Display error message
+      showError: function(errorElementId, message) {
+        const errorElement = document.getElementById(errorElementId);
+        if (errorElement) {
+          errorElement.textContent = message;
+        }
+      }
+    };
+
+    // Comprehensive Form Validation Function
+    function validateAddressForm(formData, modalType) {
+      const errors = {};
+      let isValid = true;
+
+      // Validate Name
+      const nameError = ValidationHelpers.validateName(formData.name);
+      if (nameError) {
+        errors.name = nameError;
+        isValid = false;
+      }
+
+      // Validate Phone
+      const phoneError = ValidationHelpers.validatePhone(formData.phone);
+      if (phoneError) {
+        errors.phone = phoneError;
+        isValid = false;
+      }
+
+      // Validate Address
+      const addressError = ValidationHelpers.validateAddress(formData.address);
+      if (addressError) {
+        errors.address = addressError;
+        isValid = false;
+      }
+
+      // Validate City
+      const cityError = ValidationHelpers.validateLocation(formData.city, 'City');
+      if (cityError) {
+        errors.city = cityError;
+        isValid = false;
+      }
+
+      // Validate State
+      const stateError = ValidationHelpers.validateLocation(formData.state, 'State');
+      if (stateError) {
+        errors.state = stateError;
+        isValid = false;
+      }
+
+      // Validate Country
+      const countryError = ValidationHelpers.validateLocation(formData.country, 'Country');
+      if (countryError) {
+        errors.country = countryError;
+        isValid = false;
+      }
+
+      // Validate Zip Code
+      const zipCodeError = ValidationHelpers.validateZipCode(formData.zipCode);
+      if (zipCodeError) {
+        errors.zipCode = zipCodeError;
+        isValid = false;
+      }
+
+      return { isValid, errors };
+    }
+
+    // Add Address Form Validation
+    document.querySelector('#addAddressModal form').addEventListener('submit', function (e) {
+      e.preventDefault(); // Always prevent default first
+      
+      const form = e.target;
+      const formData = {
+        name: form.name.value,
+        phone: form.phone.value,
+        address: form.address.value,
+        city: form.city.value,
+        state: form.state.value,
+        zipCode: form.zipCode.value,
+        country: form.country.value
+      };
+
+      // Clear previous errors
+      ValidationHelpers.clearErrors('#addAddressModal');
+
+      // Validate form
+      const validation = validateAddressForm(formData, 'add');
+
+      if (!validation.isValid) {
+        // Display errors
+        if (validation.errors.name) {
+          ValidationHelpers.showError('nameError', validation.errors.name);
+        }
+        if (validation.errors.phone) {
+          ValidationHelpers.showError('phoneError', validation.errors.phone);
+        }
+        if (validation.errors.address) {
+          ValidationHelpers.showError('addressError', validation.errors.address);
+        }
+        if (validation.errors.city) {
+          ValidationHelpers.showError('cityError', validation.errors.city);
+        }
+        if (validation.errors.state) {
+          ValidationHelpers.showError('stateError', validation.errors.state);
+        }
+        if (validation.errors.country) {
+          ValidationHelpers.showError('countryError', validation.errors.country);
+        }
+        if (validation.errors.zipCode) {
+          ValidationHelpers.showError('zipCodeError', validation.errors.zipCode);
+        }
+        return; // Stop form submission
+      }
+
+      // If validation passes, submit the form
+      form.submit();
+    });
+
+    // Edit Address Form Validation
+    document.querySelector('#editAddressModal form').addEventListener('submit', function (e) {
+      e.preventDefault(); // Always prevent default first
+      
+      const form = e.target;
+      const formData = {
+        name: form.name.value,
+        phone: form.phone.value,
+        address: form.address.value,
+        city: form.city.value,
+        state: form.state.value,
+        zipCode: form.zipCode.value,
+        country: form.country.value
+      };
+
+      // Clear previous errors
+      ValidationHelpers.clearErrors('#editAddressModal');
+
+      // Validate form
+      const validation = validateAddressForm(formData, 'edit');
+
+      if (!validation.isValid) {
+        // Display errors
+        if (validation.errors.name) {
+          ValidationHelpers.showError('editNameError', validation.errors.name);
+        }
+        if (validation.errors.phone) {
+          ValidationHelpers.showError('editPhoneError', validation.errors.phone);
+        }
+        if (validation.errors.address) {
+          ValidationHelpers.showError('editAddressError', validation.errors.address);
+        }
+        if (validation.errors.city) {
+          ValidationHelpers.showError('editCityError', validation.errors.city);
+        }
+        if (validation.errors.state) {
+          ValidationHelpers.showError('editStateError', validation.errors.state);
+        }
+        if (validation.errors.country) {
+          ValidationHelpers.showError('editCountryError', validation.errors.country);
+        }
+        if (validation.errors.zipCode) {
+          ValidationHelpers.showError('editZipCodeError', validation.errors.zipCode);
+        }
+        return; // Stop form submission
+      }
+
+      // If validation passes, submit the form
+      form.submit();
+    });
+
+    // Real-time validation (optional - shows errors as user types)
+    function setupRealTimeValidation() {
+      // Add modal real-time validation
+      const addInputs = {
+        name: { input: '#addName', error: 'nameError', validator: ValidationHelpers.validateName },
+        phone: { input: '#addPhone', error: 'phoneError', validator: ValidationHelpers.validatePhone },
+        address: { input: '#addAddress', error: 'addressError', validator: ValidationHelpers.validateAddress },
+        city: { input: '#addCity', error: 'cityError', validator: (val) => ValidationHelpers.validateLocation(val, 'City') },
+        state: { input: '#addState', error: 'stateError', validator: (val) => ValidationHelpers.validateLocation(val, 'State') },
+        country: { input: '#addCountry', error: 'countryError', validator: (val) => ValidationHelpers.validateLocation(val, 'Country') },
+        zipCode: { input: '#addZipCode', error: 'zipCodeError', validator: ValidationHelpers.validateZipCode }
+      };
+
+      // Edit modal real-time validation
+      const editInputs = {
+        name: { input: '#editName', error: 'editNameError', validator: ValidationHelpers.validateName },
+        phone: { input: '#editPhone', error: 'editPhoneError', validator: ValidationHelpers.validatePhone },
+        address: { input: '#editAddress', error: 'editAddressError', validator: ValidationHelpers.validateAddress },
+        city: { input: '#editCity', error: 'editCityError', validator: (val) => ValidationHelpers.validateLocation(val, 'City') },
+        state: { input: '#editState', error: 'editStateError', validator: (val) => ValidationHelpers.validateLocation(val, 'State') },
+        country: { input: '#editCountry', error: 'editCountryError', validator: (val) => ValidationHelpers.validateLocation(val, 'Country') },
+        zipCode: { input: '#editZipCode', error: 'editZipCodeError', validator: ValidationHelpers.validateZipCode }
+      };
+
+      // Setup real-time validation for add modal
+      Object.values(addInputs).forEach(({ input, error, validator }) => {
+        const inputElement = document.querySelector(input);
+        if (inputElement) {
+          inputElement.addEventListener('blur', function() {
+            const errorMsg = validator(this.value);
+            ValidationHelpers.showError(error, errorMsg || '');
+          });
+        }
+      });
+
+      // Setup real-time validation for edit modal
+      Object.values(editInputs).forEach(({ input, error, validator }) => {
+        const inputElement = document.querySelector(input);
+        if (inputElement) {
+          inputElement.addEventListener('blur', function() {
+            const errorMsg = validator(this.value);
+            ValidationHelpers.showError(error, errorMsg || '');
+          });
+        }
+      });
+    }
+
+    // Initialize real-time validation
+    setupRealTimeValidation();
+
     // Populate edit modal
     document.querySelectorAll('.edit-btn').forEach(button => {
       button.addEventListener('click', () => {
@@ -609,6 +920,9 @@
         modal.querySelector('#editZipCode').value = button.dataset.zipcode;
         modal.querySelector('#editCountry').value = button.dataset.country;
         modal.querySelector('#editIsDefault').checked = button.dataset.isdefault === 'true';
+        
+        // Clear any existing errors when opening edit modal
+        ValidationHelpers.clearErrors('#editAddressModal');
       });
     });
 
@@ -622,66 +936,14 @@
       });
     });
 
-    // Form validation for add address
-    document.querySelector('#addAddressModal form').addEventListener('submit', function (e) {
-      const form = e.target;
-      const name = form.name;
-      const phone = form.phone;
-      const address = form.address;
-      const city = form.city;
-      const state = form.state;
-      const zipCode = form.zipCode;
-      const country = form.country;
+    // Clear errors when modals are closed
+    document.getElementById('addAddressModal').addEventListener('hidden.bs.modal', function () {
+      ValidationHelpers.clearErrors('#addAddressModal');
+      this.querySelector('form').reset();
+    });
 
-      // Clear old errors
-      document.querySelectorAll('#addAddressModal small.text-danger').forEach(s => s.textContent = '');
-
-      let isValid = true;
-
-      if (!name.value.trim()) {
-        document.getElementById('nameError').textContent = "Full name is required";
-        isValid = false;
-      }
-
-      if (!phone.value.trim()) {
-        document.getElementById('phoneError').textContent = "Phone number is required";
-        isValid = false;
-      } else if (!/^\d{10}$/.test(phone.value.trim())) {
-        document.getElementById('phoneError').textContent = "Enter valid 10-digit phone number";
-        isValid = false;
-      }
-
-      if (!address.value.trim()) {
-        document.getElementById('addressError').textContent = "Street address is required";
-        isValid = false;
-      }
-
-      if (!city.value.trim()) {
-        document.getElementById('cityError').textContent = "City is required";
-        isValid = false;
-      }
-
-      if (!state.value.trim()) {
-        document.getElementById('stateError').textContent = "State is required";
-        isValid = false;
-      }
-
-      if (!zipCode.value.trim()) {
-        document.getElementById('zipCodeError').textContent = "Zip code is required";
-        isValid = false;
-      } else if (!/^\d{5,6}$/.test(zipCode.value.trim())) {
-        document.getElementById('zipCodeError').textContent = "Invalid zip code";
-        isValid = false;
-      }
-
-      if (!country.value.trim()) {
-        document.getElementById('countryError').textContent = "Country is required";
-        isValid = false;
-      }
-
-      if (!isValid) {
-        e.preventDefault();
-      }
+    document.getElementById('editAddressModal').addEventListener('hidden.bs.modal', function () {
+      ValidationHelpers.clearErrors('#editAddressModal');
     });
   </script>
 </body>

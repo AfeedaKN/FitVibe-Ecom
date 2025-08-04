@@ -13,8 +13,6 @@ const addToCart = async (req, res) => {
             return res.status(401).json({ success: false, message: 'Please log in to add to cart' });
         }
 
-        
-
         const product = await Product.findById(productId);
         if (!product) {
             
@@ -147,7 +145,7 @@ const getCart = async (req, res) => {
 const updateCart = async (req, res) => {
     try {
         const { productId, variantId, change } = req.body;
-        
+                                                                                                    
         
         const user = req.session.user;
 

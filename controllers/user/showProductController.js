@@ -28,7 +28,6 @@ const loadHomepage = async (req, res) => {
             }
         ];
 
-        // Only fetch category IDs that are listed
         const listedCategories = await Category.find({ isDeleted: false, isListed: true });
         const listedCategoryIds = listedCategories.map(cat => cat._id);
 
@@ -69,15 +68,10 @@ const productDetails = async (req, res) => {
             isDeleted: false 
         }).populate('categoryId');
 
-        
-        
-        
-
         if (!product) {
             return res.status(404).render('pageNotFound', { message: 'Product not found' });
         }
 
-        console.log('Product details:', product);
         res.render('productDetail', { product });
     } catch (error) {
         console.error("Product details error:", error);
@@ -156,8 +150,7 @@ const allproducts = async (req, res) => {
         sortOption.createdAt = -1;
     }
 
-    console.log('MongoDB query:', query);
-    console.log('Sort option:', sortOption);
+
 
     const totalProducts = await Product.countDocuments(query);
     const totalPages = Math.ceil(totalProducts / limit);

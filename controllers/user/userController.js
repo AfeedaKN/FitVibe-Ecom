@@ -200,6 +200,7 @@ const login = async (req, res) => {
     }
 };
 
+
 const loadForgotPassword = async (req, res) => {
     try {
         res.render("forgot-password", { message: null });

@@ -5,7 +5,7 @@ const getWalletPage = async (req, res) => {
     try {
         const userId = req.session.user?._id;
         if (!userId) {
-            console.error('Session user ID not found');
+            
             return res.status(401).render('pageNotFound', { message: 'Please log in to access your wallet' });
         }
 
