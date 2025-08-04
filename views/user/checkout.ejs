@@ -7,8 +7,8 @@
   <title>FitVibe - Checkout</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
   <style>
-    /* Professional Checkout Page - Matching Home Page Theme */
     * {
       margin: 0;
       padding: 0;
@@ -22,7 +22,6 @@
       line-height: 1.6;
     }
 
-    /* Checkout Section */
     .checkout-section {
       max-width: 1400px;
       margin: 0 auto;
@@ -53,7 +52,6 @@
       border-radius: 2px;
     }
 
-    /* Address Section */
     .checkout-address {
       background: #ffffff;
       border: 1px solid #e2e8f0;
@@ -190,7 +188,6 @@
       border-style: solid;
     }
 
-    /* Address Form */
     .address-form {
       display: none;
       background: #ffffff;
@@ -243,7 +240,6 @@
       box-shadow: 0 15px 35px rgba(102, 126, 234, 0.4);
     }
 
-    /* Order Summary Section */
     .checkout-order {
       background: #ffffff;
       border: 1px solid #e2e8f0;
@@ -322,7 +318,6 @@
       font-size: 1rem;
     }
 
-    /* Order Summary */
     .order-summary {
       background: #f8fafc;
       padding: 1.5rem;
@@ -352,7 +347,6 @@
       color: #059669;
     }
 
-    /* Payment Methods */
     .payment-methods {
       margin-bottom: 2rem;
     }
@@ -401,7 +395,6 @@
       font-size: 1.25rem;
     }
 
-    /* Place Order Button */
     .place-order-btn {
       width: 100%;
       padding: 1rem 2rem;
@@ -432,7 +425,6 @@
       box-shadow: none;
     }
 
-    /* Empty State */
     .empty-cart {
       text-align: center;
       padding: 3rem 2rem;
@@ -471,7 +463,6 @@
       text-decoration: none;
     }
 
-    /* Responsive Design */
     @media (max-width: 1024px) {
       .checkout-section {
         grid-template-columns: 1fr;
@@ -535,7 +526,6 @@
       }
     }
 
-    /* Loading States */
     .loading {
       opacity: 0.6;
       pointer-events: none;
@@ -557,7 +547,6 @@
       }
     }
 
-    /* Animations */
     @keyframes fadeIn {
       from {
         opacity: 0;
@@ -576,12 +565,9 @@
 </head>
 
 <body>
-  <!-- Header Partial -->
   <%- include('./partials/header') %>
 
-  <!-- Checkout Section -->
   <div class="checkout-section">
-    <!-- Address Section -->
     <div class="checkout-address">
       <h2><i class="fas fa-map-marker-alt"></i> Shipping Address</h2>
       <% if (addresses && addresses.length > 0) { %>
@@ -634,38 +620,36 @@
       </form>
     </div>
 
-    <!-- Order Summary Section -->
     <div class="checkout-order">
       <h2><i class="fas fa-shopping-bag"></i> Order Summary</h2>
       <% if (cart && cart.items.length > 0) { %>
         <div class="order-items">
           <% cart.items.forEach(item => { %>
             <div class="order-item">
-              <img src="<%= item.productId && item.productId.images && item.productId.images.length > 0 ? item.productId.images[0].url : '/path/to/default-image.jpg' %>" 
+              <img src="<%= item.productId && item.productId.images && item.productId.images.length > 0 ? item.productId.images[0].url : '/images/default-product.jpg' %>" 
                    alt="<%= item.productId ? item.productId.name : 'Product' %>" loading="lazy" />
               <div class="order-item-details">
                 <h3><%= item.productId ? item.productId.name : 'Product Name' %></h3>
                 <p><strong>Quantity:</strong> <%= item.quantity %></p>
-                <p><strong>Size:</strong> <%= item.variant?.size %></p>
-                <p class="item-price">₹<%= item.productId && item.productId.variants && item.productId.variants[0] ? (item.productId.variants[0].salePrice * item.quantity).toFixed(2) : '0.00' %></p>
+                <p><strong>Size:</strong> <%= item.variant?.size || 'N/A' %></p>
+                <p class="item-price">₹<%= item.variant ? (item.variant.salePrice * item.quantity).toLocaleString('en-IN', { minimumFractionDigits: 2 }) : '0.00' %></p>
               </div>
             </div>
           <% }) %>
         </div>
         
         <div class="order-summary">
-          <p><span>Subtotal:</span> <span>₹<%= subtotal.toFixed(2) %></span></p>
+          <p><span>Subtotal:</span> <span>₹<%= subtotal.toLocaleString('en-IN', { minimumFractionDigits: 2 }) %></span></p>
           <% if (tax > 0) { %>
-            <p><span>GST (5%):</span> <span>₹<%= tax.toFixed(2) %></span></p>
+            <p><span>GST (5%):</span> <span>₹<%= tax.toLocaleString('en-IN', { minimumFractionDigits: 2 }) %></span></p>
           <% } %>
           <% if (discount > 0) { %>
-            <p class="discount"><span>Discount (10%):</span> <span>-₹<%= discount.toFixed(2) %></span></p>
+            <p class="discount"><span>Discount (10%):</span> <span>-₹<%= discount.toLocaleString('en-IN', { minimumFractionDigits: 2 }) %></span></p>
           <% } %>
-          <p><span>Shipping:</span> <span>₹<%= shipping.toFixed(2) %></span></p>
-          <p class="total"><span>Total:</span> <span>₹<%= total.toFixed(2) %></span></p>
+          <p><span>Shipping:</span> <span>₹<%= shipping.toLocaleString('en-IN', { minimumFractionDigits: 2 }) %></span></p>
+          <p class="total"><span>Total:</span> <span>��<%= total.toLocaleString('en-IN', { minimumFractionDigits: 2 }) %></span></p>
         </div>
 
-        <!-- Payment Method Selection -->
         <div class="payment-methods">
           <h3>Select Payment Method</h3>
           <label>
@@ -683,8 +667,8 @@
         <% const isOutOfStock = cart.items.some(item => 
           item.productId && 
           item.productId.variants && 
-          item.productId.variants.length > 0 && 
-          item.productId.variants[0].stock === 0
+          item.variant && 
+          item.variant.varientquatity < item.quantity
         ); %>
 
         <% const hasSelectedAddress = addresses && addresses.length > 0; %>
@@ -706,10 +690,8 @@
     </div>
   </div>
 
-  <!-- Footer Partial -->
   <%- include('./partials/footer') %>
 
-  <!-- JavaScript for Address and Order Interactions -->
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script>
     const Toast = Swal.mixin({
@@ -779,7 +761,7 @@
     });
 
     // Edit Address
-    document.addEventListener("DOMContentLoaded", () => {
+    document.addEventListener('DOMContentLoaded', () => {
       document.querySelectorAll('.edit-btn').forEach(button => {
         button.addEventListener('click', async () => {
           const addressId = button.getAttribute('data-address-id');
@@ -865,18 +847,15 @@
     // Handle address selection
     document.querySelectorAll('input[name="address"]').forEach(radio => {
       radio.addEventListener('change', () => {
-        // Remove default class from all address cards
         document.querySelectorAll('.address-card').forEach(card => {
           card.classList.remove('default');
         });
         
-        // Add default class to selected address card
         const selectedCard = radio.closest('.address-card');
         if (selectedCard) {
           selectedCard.classList.add('default');
         }
         
-        // Enable place order button if an address is selected
         const placeOrderBtn = document.querySelector('.place-order-btn');
         if (placeOrderBtn) {
           placeOrderBtn.disabled = false;
@@ -884,7 +863,7 @@
       });
     });
 
-    // Place Order
+    // Place Order - FIXED VERSION
     document.querySelector('.place-order-btn').addEventListener('click', async () => {
       const paymentMethod = document.querySelector('input[name="paymentMethod"]:checked')?.value;
       const addressId = document.querySelector('input[name="address"]:checked')?.value;
@@ -902,13 +881,8 @@
       placeOrderBtn.innerHTML = '<span class="spinner"></span> Placing Order...';
 
       try {
-        if (paymentMethod === 'Online') {
-          Toast.fire({
-            icon: 'info',
-            title: 'Redirecting to payment gateway...'
-          });
-        }
-
+        console.log('Placing order with:', { paymentMethod, addressId });
+        
         const response = await fetch('/order/place', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -916,8 +890,136 @@
         });
 
         const result = await response.json();
+        console.log('Order response:', result);
 
-        if (result.success) {
+        if (!result.success) {
+          Toast.fire({
+            icon: 'error',
+            title: result.message || 'Failed to place order'
+          });
+          placeOrderBtn.disabled = false;
+          placeOrderBtn.innerHTML = '<i class="fas fa-check-circle"></i> Place Order';
+          return;
+        }
+
+        if (paymentMethod === 'Online') {
+          // Check if Razorpay is loaded
+          if (typeof Razorpay === 'undefined') {
+            Toast.fire({
+              icon: 'error',
+              title: 'Payment gateway not loaded. Please refresh and try again.'
+            });
+            placeOrderBtn.disabled = false;
+            placeOrderBtn.innerHTML = '<i class="fas fa-check-circle"></i> Place Order';
+            return;
+          }
+
+          console.log('Initializing Razorpay with:', {
+            key: result.key_id,
+            amount: result.amount,
+            currency: result.currency,
+            order_id: result.razorpayOrderId
+          });
+
+          const options = {
+            key: result.key_id,
+            amount: result.amount,
+            currency: result.currency,
+            name: 'FitVibe',
+            description: 'Order Payment',
+            order_id: result.razorpayOrderId,
+            handler: async function (response) {
+              try {
+                console.log('Payment successful:', response);
+                
+                // Show loading state
+                Toast.fire({
+                  icon: 'info',
+                  title: 'Verifying payment...'
+                });
+                
+                const verifyResponse = await fetch('/order/verify-payment', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    orderId: result.orderId,
+                    razorpay_payment_id: response.razorpay_payment_id,
+                    razorpay_order_id: response.razorpay_order_id,
+                    razorpay_signature: response.razorpay_signature
+                  })
+                });
+
+                const verifyResult = await verifyResponse.json();
+                console.log('Verification result:', verifyResult);
+                
+                if (verifyResult.success) {
+                  Toast.fire({
+                    icon: 'success',
+                    title: 'Payment successful! Redirecting...'
+                  });
+                  setTimeout(() => {
+                    window.location.href = `/order/success/${result.orderId}`;
+                  }, 1500);
+                } else {
+                  Toast.fire({
+                    icon: 'error',
+                    title: verifyResult.message || 'Payment verification failed'
+                  });
+                  placeOrderBtn.disabled = false;
+                  placeOrderBtn.innerHTML = '<i class="fas fa-check-circle"></i> Place Order';
+                }
+              } catch (error) {
+                console.error('Error verifying payment:', error);
+                Toast.fire({
+                  icon: 'error',
+                  title: 'Error verifying payment. Please contact support.'
+                });
+                placeOrderBtn.disabled = false;
+                placeOrderBtn.innerHTML = '<i class="fas fa-check-circle"></i> Place Order';
+              }
+            },
+            prefill: {
+              name: result.user?.name || '',
+              email: result.user?.email || '',
+              contact: result.user?.phone || ''
+            },
+            theme: {
+              color: '#667eea'
+            },
+            modal: {
+              ondismiss: function() {
+                console.log('Payment modal dismissed');
+                Toast.fire({
+                  icon: 'info',
+                  title: 'Payment cancelled'
+                });
+                placeOrderBtn.disabled = false;
+                placeOrderBtn.innerHTML = '<i class="fas fa-check-circle"></i> Place Order';
+              }
+            }
+          };
+
+          console.log('Opening Razorpay with options:', options);
+          
+          const rzp = new Razorpay(options);
+          
+          rzp.on('payment.failed', function (response) {
+            console.error('Payment failed:', response);
+            Toast.fire({
+              icon: 'error',
+              title: 'Payment failed: ' + (response.error?.description || 'Unknown error')
+            });
+            placeOrderBtn.disabled = false;
+            placeOrderBtn.innerHTML = '<i class="fas fa-check-circle"></i> Place Order';
+          });
+
+          // Reset button state before opening modal
+          placeOrderBtn.disabled = false;
+          placeOrderBtn.innerHTML = '<i class="fas fa-check-circle"></i> Place Order';
+          
+          rzp.open();
+        } else {
+          // COD order
           Toast.fire({
             icon: 'success',
             title: 'Order placed successfully!'
@@ -925,19 +1027,12 @@
           setTimeout(() => {
             window.location.href = `/order/success/${result.orderId}`;
           }, 1000);
-        } else {
-          Toast.fire({
-            icon: 'error',
-            title: result.message || 'Failed to place order'
-          });
-          placeOrderBtn.disabled = false;
-          placeOrderBtn.innerHTML = '<i class="fas fa-check-circle"></i> Place Order';
         }
       } catch (error) {
         console.error('Error placing order:', error);
         Toast.fire({
           icon: 'error',
-          title: 'Error placing order'
+          title: 'Error placing order. Please try again.'
         });
         placeOrderBtn.disabled = false;
         placeOrderBtn.innerHTML = '<i class="fas fa-check-circle"></i> Place Order';

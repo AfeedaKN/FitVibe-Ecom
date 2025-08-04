@@ -66,7 +66,6 @@ const orderSchema = new mongoose.Schema(
       required: true,
     },
     addressDetails: {
-      
       name: { type: String, required: true },
       address: { type: String, required: true },
       city: { type: String, required: true },
@@ -116,13 +115,21 @@ const orderSchema = new mongoose.Schema(
     },
     paymentMethod: {
       type: String,
-      enum: ["COD", "online", "paypal", "wallet"],
+      enum: ["COD", "Online", "paypal", "wallet"],
       required: true,
     },
     paymentStatus: {
       type: String,
       enum: ["pending", "completed", "failed", "refunded","cancelled"],
       default: "pending",
+    },
+    paymentId: {
+      type: String,
+      default: null,
+    },
+    razorpayOrderId: {
+      type: String,
+      default: null,
     },
     paymentDetails: {
       transactionId: String,
@@ -133,6 +140,7 @@ const orderSchema = new mongoose.Schema(
       currency: String,
       status: String,
       createdAt: Date,
+      razorpaySignature: String,
     },
     orderStatus: {
       type: String,

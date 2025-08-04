@@ -12,6 +12,7 @@ const wishlistController=require("../controllers/user/wishlistController")
 const userProfileController=require("../controllers/user/userProfileController")
 const addressController=require("../controllers/user/addressController")
 const orderController = require("../controllers/user/orderController");
+const razorpayController = require("../controllers/user/razorpayController");
 const passport = require("passport");
 const Wishlist = require("../models/wishlistSchema");
 const walletController = require("../controllers/user/walletController");
@@ -58,6 +59,8 @@ router.get("/wishlist/check/:productId", userAuth, wishlistController.checkWishl
 
 router.get('/checkout',userAuth,checkoutController.getCheckout)
 router.post('/order/place', userAuth, checkoutController.placeOrder)
+// Use improved payment verification with correct enum values
+router.post('/order/verify-payment', userAuth, razorpayController.verifyRazorpayPayment)
 router.get('/success/:orderId', userAuth, checkoutController.getOrderSuccess)
 router.get("/order/success/:orderId", userAuth, checkoutController.getOrderSuccess);
 router.get("/order/:id", userAuth, checkoutController.getOrderDetails);
@@ -92,7 +95,8 @@ router.post("/order/return/:orderId",userAuth, orderController.returnOrder);
 router.get("/profile/Wallet", userAuth, walletController.getWalletPage);
 router.post("/wallet/add-funds", userAuth, walletController.addFunds);
 
-module.exports=router 
 // API routes for cart and wishlist counts
 router.get("/api/cart/count", userAuth, cartController.getCartCount);
 router.get("/api/wishlist/count", userAuth, wishlistController.getWishlistCount);
+
+module.exports=router 

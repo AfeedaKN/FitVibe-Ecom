@@ -602,11 +602,8 @@
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script>
-    // ===== ADDRESS FORM VALIDATION =====
     
-    // Helper Functions for Validation
     const ValidationHelpers = {
-      // Name validation: Required, should contain valid alphabets, not only dashes/spaces
       validateName: function(name) {
         const trimmed = name.trim();
         if (!trimmed) {
@@ -621,7 +618,6 @@
         return null;
       },
 
-      // Phone validation: Required, exactly 10 digits, cannot start with 0, cannot be all same digits
       validatePhone: function(phone) {
         const trimmed = phone.trim();
         if (!trimmed) {
@@ -639,7 +635,6 @@
         return null;
       },
 
-      // Address validation: Required, should not contain only numbers/special chars/dashes, must have some alphabets
       validateAddress: function(address) {
         const trimmed = address.trim();
         if (!trimmed) {
@@ -654,7 +649,6 @@
         return null;
       },
 
-      // City/State/Country validation: Required, should not contain only dashes/numbers, should contain letters
       validateLocation: function(location, fieldName) {
         const trimmed = location.trim();
         if (!trimmed) {
@@ -669,7 +663,6 @@
         return null;
       },
 
-      // Zip Code validation: Required, must be 5 or 6 digits only, no characters
       validateZipCode: function(zipCode) {
         const trimmed = zipCode.trim();
         if (!trimmed) {
@@ -681,14 +674,12 @@
         return null;
       },
 
-      // Clear all error messages for a specific modal
       clearErrors: function(modalId) {
         document.querySelectorAll(`${modalId} small.text-danger`).forEach(errorElement => {
           errorElement.textContent = '';
         });
       },
 
-      // Display error message
       showError: function(errorElementId, message) {
         const errorElement = document.getElementById(errorElementId);
         if (errorElement) {
@@ -697,47 +688,40 @@
       }
     };
 
-    // Comprehensive Form Validation Function
     function validateAddressForm(formData, modalType) {
       const errors = {};
       let isValid = true;
 
-      // Validate Name
       const nameError = ValidationHelpers.validateName(formData.name);
       if (nameError) {
         errors.name = nameError;
         isValid = false;
       }
 
-      // Validate Phone
       const phoneError = ValidationHelpers.validatePhone(formData.phone);
       if (phoneError) {
         errors.phone = phoneError;
         isValid = false;
       }
 
-      // Validate Address
       const addressError = ValidationHelpers.validateAddress(formData.address);
       if (addressError) {
         errors.address = addressError;
         isValid = false;
       }
 
-      // Validate City
       const cityError = ValidationHelpers.validateLocation(formData.city, 'City');
       if (cityError) {
         errors.city = cityError;
         isValid = false;
       }
 
-      // Validate State
       const stateError = ValidationHelpers.validateLocation(formData.state, 'State');
       if (stateError) {
         errors.state = stateError;
         isValid = false;
       }
 
-      // Validate Country
       const countryError = ValidationHelpers.validateLocation(formData.country, 'Country');
       if (countryError) {
         errors.country = countryError;
