@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FitVibe - Payment Failed</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #1e293b;
+      padding: 2rem;
+    }
+
+    .failure-container {
+      background: #ffffff;
+      border-radius: 24px;
+      padding: 3rem;
+      box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+      text-align: center;
+      max-width: 600px;
+      width: 100%;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .failure-container::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 6px;
+      background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    }
+
+    .failure-icon {
+      width: 120px;
+      height: 120px;
+      background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 2rem;
+      border: 4px solid #fecaca;
+    }
+
+    .failure-icon i {
+      font-size: 3.5rem;
+      color: #ef4444;
+      animation: shake 0.5s ease-in-out;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-5px); }
+      75% { transform: translateX(5px); }
+    }
+
+    .failure-title {
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: #0f172a;
+      margin-bottom: 1rem;
+      letter-spacing: -0.025em;
+    }
+
+    .failure-message {
+      font-size: 1.125rem;
+      color: #64748b;
+      margin-bottom: 2rem;
+      line-height: 1.6;
+    }
+
+    .order-details {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 16px;
+      padding: 1.5rem;
+      margin: 2rem 0;
+      text-align: left;
+    }
+
+    .order-details h3 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: #0f172a;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .order-details p {
+      margin: 0.5rem 0;
+      color: #64748b;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .order-details .order-id {
+      font-weight: 600;
+      color: #ef4444;
+      font-family: 'Courier New', monospace;
+    }
+
+    .failure-reasons {
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      border-radius: 12px;
+      padding: 1rem;
+      margin: 1.5rem 0;
+      text-align: left;
+    }
+
+    .failure-reasons h4 {
+      color: #dc2626;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .failure-reasons p {
+      color: #7f1d1d;
+      font-size: 0.875rem;
+      margin: 0;
+    }
+
+    .retry-attempts {
+      background: #fef3c7;
+      border: 1px solid #fcd34d;
+      border-radius: 12px;
+      padding: 1rem;
+      margin: 1.5rem 0;
+      text-align: left;
+    }
+
+    .retry-attempts h4 {
+      color: #d97706;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .retry-attempts p {
+      color: #92400e;
+      font-size: 0.875rem;
+      margin: 0;
+    }
+
+    .action-buttons {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-top: 2rem;
+    }
+
+    .btn {
+      padding: 1rem 2rem;
+      border: none;
+      border-radius: 50px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 1rem;
+      transition: all 0.3s ease;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      min-width: 160px;
+      justify-content: center;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: #ffffff;
+      box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 15px 35px rgba(102, 126, 234, 0.4);
+      color: #ffffff;
+      text-decoration: none;
+    }
+
+    .btn-secondary {
+      background: #ffffff;
+      color: #64748b;
+      border: 2px solid #e2e8f0;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    }
+
+    .btn-secondary:hover {
+      background: #f8fafc;
+      border-color: #667eea;
+      color: #667eea;
+      transform: translateY(-2px);
+      text-decoration: none;
+    }
+
+    .btn-retry {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      color: #ffffff;
+      box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3);
+    }
+
+    .btn-retry:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 15px 35px rgba(16, 185, 129, 0.4);
+      color: #ffffff;
+      text-decoration: none;
+    }
+
+    .btn-retry:disabled {
+      background: #d1d5db;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .help-section {
+      margin-top: 2rem;
+      padding-top: 2rem;
+      border-top: 1px solid #e2e8f0;
+    }
+
+    .help-section h4 {
+      color: #374151;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+
+    .help-section p {
+      color: #6b7280;
+      font-size: 0.875rem;
+      margin-bottom: 1rem;
+    }
+
+    .contact-info {
+      display: flex;
+      justify-content: center;
+      gap: 2rem;
+      flex-wrap: wrap;
+    }
+
+    .contact-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: #667eea;
+      font-weight: 500;
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      padding: 0.25rem 0.75rem;
+      background: #fef2f2;
+      color: #dc2626;
+      border-radius: 50px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    @media (max-width: 768px) {
+      .failure-container {
+        padding: 2rem;
+        margin: 1rem;
+      }
+
+      .failure-title {
+        font-size: 2rem;
+      }
+
+      .failure-message {
+        font-size: 1rem;
+      }
+
+      .action-buttons {
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .btn {
+        width: 100%;
+        max-width: 280px;
+      }
+
+      .contact-info {
+        flex-direction: column;
+        gap: 1rem;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .failure-title {
+        font-size: 1.75rem;
+      }
+
+      .failure-icon {
+        width: 100px;
+        height: 100px;
+      }
+
+      .failure-icon i {
+        font-size: 3rem;
+      }
+    }
+
+    .fade-in {
+      animation: fadeIn 0.6s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="failure-container fade-in">
+    <div class="failure-icon">
+      <i class="fas fa-times-circle"></i>
+    </div>
+    
+    <h1 class="failure-title">Oops! Payment Failed</h1>
+    <p class="failure-message">
+      Your payment could not be processed at this time. Don't worry, your order has been saved and you can try again.
+    </p>
+
+    <% if (order) { %>
+      <div class="order-details">
+        <h3>
+          <i class="fas fa-receipt"></i>
+          Order Details
+        </h3>
+        <p>
+          <span>Order ID:</span>
+          <span class="order-id"><%= order.orderID %></span>
+        </p>
+        <p>
+          <span>Amount:</span>
+          <span>₹<%= order.finalAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 }) %></span>
+        </p>
+        <p>
+          <span>Status:</span>
+          <span class="status-badge">
+            <i class="fas fa-exclamation-triangle"></i>
+            Payment Failed
+          </span>
+        </p>
+        <p>
+          <span>Date:</span>
+          <span><%= new Date(order.orderDate).toLocaleDateString('en-IN', { 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+          }) %></span>
+        </p>
+      </div>
+
+      <% if (order.paymentDetails && order.paymentDetails.failureReason) { %>
+        <div class="failure-reasons">
+          <h4>
+            <i class="fas fa-info-circle"></i>
+            Failure Reason
+          </h4>
+          <p><%= order.paymentDetails.failureReason %></p>
+        </div>
+      <% } %>
+
+      <% 
+      const retryCount = order.statusHistory ? order.statusHistory.filter(h => 
+        h.status.includes('retry') || h.status.includes('payment-failed')
+      ).length : 1;
+      %>
+      
+      <% if (retryCount > 1) { %>
+        <div class="retry-attempts">
+          <h4>
+            <i class="fas fa-redo"></i>
+            Retry Attempts
+          </h4>
+          <p>This is attempt #<%= retryCount %>. You can continue trying until payment is successful.</p>
+        </div>
+      <% } %>
+    <% } %>
+
+    <div class="action-buttons">
+      <a href="/profile/orders" class="btn btn-secondary">
+        <i class="fas fa-list"></i>
+        View All Orders
+      </a>
+      
+      <% if (order) { %>
+        <button id="retryPaymentBtn" onclick="retryPaymentFromFailurePage('<%= order._id %>', <%= order.finalAmount %>)" class="btn btn-retry">
+          <i class="fas fa-redo"></i>
+          Retry Payment
+        </button>
+      <% } %>
+      
+      <a href="/products" class="btn btn-primary">
+        <i class="fas fa-shopping-bag"></i>
+        Continue Shopping
+      </a>
+    </div>
+
+    <div class="help-section">
+      <h4>Need Help?</h4>
+      <p>If you continue to experience issues with payment, please contact our support team.</p>
+      
+      <div class="contact-info">
+        <div class="contact-item">
+          <i class="fas fa-envelope"></i>
+          <span>support@fitvibe.com</span>
+        </div>
+        <div class="contact-item">
+          <i class="fas fa-phone"></i>
+          <span>+91 12345 67890</span>
+        </div>
+        <div class="contact-item">
+          <i class="fas fa-clock"></i>
+          <span>24/7 Support</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script>
+    const Toast = Swal.mixin({
+      toast: true,
+      position: 'top-end',
+      showConfirmButton: false,
+      timer: 3000,
+      timerProgressBar: true,
+      didOpen: (toast) => {
+        toast.addEventListener('mouseenter', Swal.stopTimer);
+        toast.addEventListener('mouseleave', Swal.resumeTimer);
+      }
+    });
+
+    // Handle payment failure and redirect to failure page
+    async function handlePaymentFailure(orderId, error) {
+      try {
+        console.log('Handling payment failure for order:', orderId, 'Error:', error);
+        
+        // Call the payment failure handler
+        const response = await fetch('/order/payment-failed', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            orderId: orderId,
+            error: error
+          })
+        });
+
+        const result = await response.json();
+        console.log('Payment failure handler response:', result);
+
+        if (result.success) {
+          // Show failure message and reload the page to show updated failure info
+          Toast.fire({
+            icon: 'error',
+            title: 'Payment failed. Reloading page...',
+            timer: 2000
+          });
+          
+          // Reload the current failure page to show updated attempt count
+          setTimeout(() => {
+            window.location.reload();
+          }, 2000);
+        } else {
+          Toast.fire({
+            icon: 'error',
+            title: 'Error recording payment failure',
+            text: result.message || 'Please try again'
+          });
+        }
+      } catch (error) {
+        console.error('Error handling payment failure:', error);
+        Toast.fire({
+          icon: 'error',
+          title: 'Error processing payment failure',
+          text: 'Please refresh the page and try again'
+        });
+      }
+    }
+
+    // Payment Retry Function from Failure Page
+    async function retryPaymentFromFailurePage(orderId, amount) {
+      try {
+        console.log('Retrying payment from failure page for order:', orderId, 'Amount:', amount);
+        
+        // Disable retry button to prevent multiple clicks
+        const retryBtn = document.getElementById('retryPaymentBtn');
+        if (retryBtn) {
+          retryBtn.disabled = true;
+          retryBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Preparing...';
+        }
+        
+        // Show loading state
+        Toast.fire({
+          icon: 'info',
+          title: 'Preparing payment retry...'
+        });
+
+        // Create new Razorpay order for retry
+        const response = await fetch('/order/retry-payment', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ orderId, amount })
+        });
+
+        const result = await response.json();
+        console.log('Retry payment response:', result);
+
+        if (!result.success) {
+          Toast.fire({
+            icon: 'error',
+            title: result.message || 'Failed to prepare payment retry'
+          });
+          
+          // Re-enable retry button
+          if (retryBtn) {
+            retryBtn.disabled = false;
+            retryBtn.innerHTML = '<i class="fas fa-redo"></i> Retry Payment';
+          }
+          return;
+        }
+
+        // Check if Razorpay is loaded
+        if (typeof Razorpay === 'undefined') {
+          Toast.fire({
+            icon: 'error',
+            title: 'Payment gateway not loaded. Please refresh and try again.'
+          });
+          
+          // Re-enable retry button
+          if (retryBtn) {
+            retryBtn.disabled = false;
+            retryBtn.innerHTML = '<i class="fas fa-redo"></i> Retry Payment';
+          }
+          return;
+        }
+
+        const options = {
+          key: result.key_id,
+          amount: result.amount,
+          currency: result.currency,
+          name: 'FitVibe',
+          description: 'Order Payment Retry',
+          order_id: result.razorpayOrderId,
+          handler: async function (response) {
+            try {
+              console.log('Payment successful:', response);
+              
+              Toast.fire({
+                icon: 'info',
+                title: 'Verifying payment...'
+              });
+              
+              const verifyResponse = await fetch('/order/verify-payment', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  orderId: orderId,
+                  razorpay_payment_id: response.razorpay_payment_id,
+                  razorpay_order_id: response.razorpay_order_id,
+                  razorpay_signature: response.razorpay_signature
+                })
+              });
+
+              const verifyResult = await verifyResponse.json();
+              console.log('Verification result:', verifyResult);
+              
+              if (verifyResult.success) {
+                Toast.fire({
+                  icon: 'success',
+                  title: 'Payment successful! Redirecting...'
+                });
+                setTimeout(() => {
+                  window.location.href = `/success/${orderId}`;
+                }, 1500);
+              } else {
+                Toast.fire({
+                  icon: 'error',
+                  title: verifyResult.message || 'Payment verification failed'
+                });
+                
+                // Re-enable retry button
+                if (retryBtn) {
+                  retryBtn.disabled = false;
+                  retryBtn.innerHTML = '<i class="fas fa-redo"></i> Retry Payment';
+                }
+              }
+            } catch (error) {
+              console.error('Error verifying payment:', error);
+              Toast.fire({
+                icon: 'error',
+                title: 'Error verifying payment. Please contact support.'
+              });
+              
+              // Re-enable retry button
+              if (retryBtn) {
+                retryBtn.disabled = false;
+                retryBtn.innerHTML = '<i class="fas fa-redo"></i> Retry Payment';
+              }
+            }
+          },
+          prefill: {
+            name: result.user?.name || '',
+            email: result.user?.email || '',
+            contact: result.user?.phone || ''
+          },
+          theme: {
+            color: '#667eea'
+          },
+          modal: {
+            ondismiss: function() {
+              console.log('Payment retry modal dismissed');
+              Toast.fire({
+                icon: 'info',
+                title: 'Payment retry cancelled'
+              });
+              
+              // Re-enable retry button
+              if (retryBtn) {
+                retryBtn.disabled = false;
+                retryBtn.innerHTML = '<i class="fas fa-redo"></i> Retry Payment';
+              }
+            }
+          }
+        };
+
+        console.log('Opening Razorpay for retry with options:', options);
+        
+        const rzp = new Razorpay(options);
+        
+        // Enhanced payment failure handling for retry attempts
+        rzp.on('payment.failed', function (response) {
+          console.error('Payment retry failed:', response);
+          
+          // Handle payment failure by calling the failure handler
+          handlePaymentFailure(orderId, response.error);
+          
+          // Re-enable retry button
+          if (retryBtn) {
+            retryBtn.disabled = false;
+            retryBtn.innerHTML = '<i class="fas fa-redo"></i> Retry Payment';
+          }
+        });
+        
+        rzp.open();
+        
+      } catch (error) {
+        console.error('Error retrying payment:', error);
+        Toast.fire({
+          icon: 'error',
+          title: 'Error preparing payment retry. Please try again.'
+        });
+        
+        // Re-enable retry button
+        const retryBtn = document.getElementById('retryPaymentBtn');
+        if (retryBtn) {
+          retryBtn.disabled = false;
+          retryBtn.innerHTML = '<i class="fas fa-redo"></i> Retry Payment';
+        }
+      }
+    }
+
+    // Add some interactive feedback
+    document.addEventListener('DOMContentLoaded', () => {
+      // Add click feedback to buttons
+      document.querySelectorAll('.btn').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+          // Add a small animation on click
+          this.style.transform = 'scale(0.95)';
+          setTimeout(() => {
+            this.style.transform = '';
+          }, 150);
+        });
+      });
+
+      // Auto-focus on retry button if available
+      const retryBtn = document.querySelector('#retryPaymentBtn');
+      if (retryBtn) {
+        setTimeout(() => {
+          retryBtn.focus();
+        }, 1000);
+      }
+    });
+  </script>
+</body>
+
+</html>

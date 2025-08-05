@@ -61,6 +61,10 @@ router.get('/checkout',userAuth,checkoutController.getCheckout)
 router.post('/order/place', userAuth, checkoutController.placeOrder)
 // Use improved payment verification with correct enum values
 router.post('/order/verify-payment', userAuth, razorpayController.verifyRazorpayPayment)
+// Handle payment failures
+router.post('/order/payment-failed', userAuth, razorpayController.handlePaymentFailure)
+router.post('/order/fail', userAuth, razorpayController.handlePaymentFailure)
+router.get('/order/failure/:orderId', userAuth, checkoutController.getOrderFailure)
 router.get('/success/:orderId', userAuth, checkoutController.getOrderSuccess)
 router.get("/order/success/:orderId", userAuth, checkoutController.getOrderSuccess);
 router.get("/order/:id", userAuth, checkoutController.getOrderDetails);
@@ -91,6 +95,7 @@ router.post("/order/cancel/:orderId",  orderController.cancelOrder);
 router.post("/order/return/item", userAuth, orderController.returnOrderItem);
 router.get("/order/invoice/:id", userAuth, orderController.downloadInvoice);
 router.post("/order/return/:orderId",userAuth, orderController.returnOrder);
+router.post("/order/retry-payment", userAuth, orderController.retryPayment);
 
 router.get("/profile/Wallet", userAuth, walletController.getWalletPage);
 router.post("/wallet/add-funds", userAuth, walletController.addFunds);

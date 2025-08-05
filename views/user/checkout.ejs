@@ -647,7 +647,7 @@
             <p class="discount"><span>Discount (10%):</span> <span>-₹<%= discount.toLocaleString('en-IN', { minimumFractionDigits: 2 }) %></span></p>
           <% } %>
           <p><span>Shipping:</span> <span>₹<%= shipping.toLocaleString('en-IN', { minimumFractionDigits: 2 }) %></span></p>
-          <p class="total"><span>Total:</span> <span>��<%= total.toLocaleString('en-IN', { minimumFractionDigits: 2 }) %></span></p>
+          <p class="total"><span>Total:</span> <span><%= total.toLocaleString('en-IN', { minimumFractionDigits: 2 }) %></span></p>
         </div>
 
         <div class="payment-methods">
@@ -863,7 +863,7 @@
       });
     });
 
-    // Place Order - FIXED VERSION
+    // Place Order - NO BACKGROUND TOAST ON FAILURE
     document.querySelector('.place-order-btn').addEventListener('click', async () => {
       const paymentMethod = document.querySelector('input[name="paymentMethod"]:checked')?.value;
       const addressId = document.querySelector('input[name="address"]:checked')?.value;
@@ -932,12 +932,6 @@
               try {
                 console.log('Payment successful:', response);
                 
-                // Show loading state
-                Toast.fire({
-                  icon: 'info',
-                  title: 'Verifying payment...'
-                });
-                
                 const verifyResponse = await fetch('/order/verify-payment', {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
@@ -953,13 +947,8 @@
                 console.log('Verification result:', verifyResult);
                 
                 if (verifyResult.success) {
-                  Toast.fire({
-                    icon: 'success',
-                    title: 'Payment successful! Redirecting...'
-                  });
-                  setTimeout(() => {
-                    window.location.href = `/order/success/${result.orderId}`;
-                  }, 1500);
+                  // Redirect to success page immediately
+                  window.location.href = `/order/success/${result.orderId}`;
                 } else {
                   Toast.fire({
                     icon: 'error',
@@ -989,12 +978,30 @@
             modal: {
               ondismiss: function() {
                 console.log('Payment modal dismissed');
-                Toast.fire({
-                  icon: 'info',
-                  title: 'Payment cancelled'
-                });
-                placeOrderBtn.disabled = false;
-                placeOrderBtn.innerHTML = '<i class="fas fa-check-circle"></i> Place Order';
+                
+                // Record payment cancellation and redirect to failure page - NO BACKGROUND TOAST
+                fetch('/order/fail', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    orderId: result.orderId,
+                    error: { description: 'Payment cancelled by user', code: 'PAYMENT_CANCELLED' },
+                    razorpay_order_id: result.razorpayOrderId,
+                    razorpay_payment_id: null
+                  })
+                }).then(failureResponse => failureResponse.json())
+                  .then(failureResult => {
+                    console.log('Payment cancellation recorded:', failureResult);
+                    if (failureResult.success && failureResult.redirectUrl) {
+                      window.location.href = failureResult.redirectUrl;
+                    } else {
+                      window.location.href = `/order/failure/${result.orderId}`;
+                    }
+                  })
+                  .catch(error => {
+                    console.error('Error recording payment cancellation:', error);
+                    window.location.href = `/order/failure/${result.orderId}`;
+                  });
               }
             }
           };
@@ -1003,14 +1010,35 @@
           
           const rzp = new Razorpay(options);
           
+          // Payment failure handler - direct redirect without background toast
           rzp.on('payment.failed', function (response) {
             console.error('Payment failed:', response);
-            Toast.fire({
-              icon: 'error',
-              title: 'Payment failed: ' + (response.error?.description || 'Unknown error')
-            });
-            placeOrderBtn.disabled = false;
-            placeOrderBtn.innerHTML = '<i class="fas fa-check-circle"></i> Place Order';
+            
+            // Record payment failure and redirect to failure page immediately
+            fetch('/order/fail', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                orderId: result.orderId,
+                error: response.error,
+                razorpay_order_id: result.razorpayOrderId,
+                razorpay_payment_id: response.error?.metadata?.payment_id || null
+              })
+            }).then(failureResponse => failureResponse.json())
+              .then(failureResult => {
+                console.log('Payment failure recorded:', failureResult);
+                
+                // Redirect to failure page immediately
+                if (failureResult.success && failureResult.redirectUrl) {
+                  window.location.href = failureResult.redirectUrl;
+                } else {
+                  window.location.href = `/order/failure/${result.orderId}`;
+                }
+              })
+              .catch(error => {
+                console.error('Error recording payment failure:', error);
+                window.location.href = `/order/failure/${result.orderId}`;
+              });
           });
 
           // Reset button state before opening modal

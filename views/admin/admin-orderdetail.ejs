@@ -129,6 +129,15 @@
                             <%= order.paymentStatus %>
                         </span>
                     </div>
+                    <% if (order.isLocked) { %>
+                        <div class="detail-row">
+                            <span class="detail-label">Order Status</span>
+                            <span class="locked-indicator">
+                                <i class="fas fa-lock"></i>
+                                Locked (Payment Failed)
+                            </span>
+                        </div>
+                    <% } %>
                 </div>
             </div>
         </div>
@@ -364,12 +373,33 @@
 
         <!-- Action Buttons -->
         <div class="action-buttons-section">
-            <% if (!['cancelled', 'returned'].includes(order.orderStatus)) { %>
+            <% 
+            const isOnlinePaymentPendingOrFailed = (order.paymentMethod && 
+              (order.paymentMethod.toLowerCase() === 'online' || order.paymentMethod === 'Online') && 
+              (order.paymentStatus === 'pending' || order.paymentStatus === 'failed'));
+            
+            const canUpdateStatus = !['cancelled', 'returned', 'payment-failed'].includes(order.orderStatus) && 
+              !order.isLocked && 
+              !isOnlinePaymentPendingOrFailed;
+            %>
+            
+            <% if (canUpdateStatus) { %>
                 <button class="btn-primary" data-order-id="<%= order._id %>" data-bs-toggle="modal" data-bs-target="#updateStatusModal">
                     <i class="fas fa-edit"></i>
                     Update Status
                 </button>
+            <% } else if (order.isLocked || order.orderStatus === 'payment-failed') { %>
+                <div class="locked-order-notice">
+                    <i class="fas fa-lock"></i>
+                    <span>This order is locked due to payment failure and cannot be modified.</span>
+                </div>
+            <% } else if (isOnlinePaymentPendingOrFailed) { %>
+                <div class="locked-order-notice">
+                    <i class="fas fa-credit-card"></i>
+                    <span>Cannot update status - Online payment is <%= order.paymentStatus %>. Payment must be completed first.</span>
+                </div>
             <% } %>
+            
             <a href="/admin/order/invoice/<%= order._id %>" class="btn-secondary">
                 <i class="fas fa-download"></i>
                 Download Invoice
@@ -627,6 +657,20 @@
         font-size: 0.875rem;
     }
 
+    /* Locked Indicator */
+    .locked-indicator {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: #dc2626;
+        font-weight: 600;
+        font-size: 0.875rem;
+    }
+
+    .locked-indicator i {
+        color: #dc2626;
+    }
+
     /* Address Section */
     .address-section {
         display: flex;
@@ -799,6 +843,18 @@
         background: rgba(16, 185, 129, 0.1);
         color: #059669;
         border: 1px solid rgba(16, 185, 129, 0.2);
+    }
+
+    .status-payment-failed {
+        background: rgba(239, 68, 68, 0.1);
+        color: #dc2626;
+        border: 1px solid rgba(239, 68, 68, 0.2);
+    }
+
+    .status-failed {
+        background: rgba(239, 68, 68, 0.1);
+        color: #dc2626;
+        border: 1px solid rgba(239, 68, 68, 0.2);
     }
 
     /* Return Requests */
@@ -999,6 +1055,24 @@
         color: #dc2626;
     }
 
+    /* Locked Order Notice */
+    .locked-order-notice {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1rem;
+        background: rgba(239, 68, 68, 0.1);
+        color: #dc2626;
+        border: 1px solid rgba(239, 68, 68, 0.2);
+        border-radius: 12px;
+        font-size: 0.875rem;
+        font-weight: 500;
+    }
+
+    .locked-order-notice i {
+        color: #dc2626;
+    }
+
     /* Buttons */
     .btn-primary {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -1175,6 +1249,11 @@
 
         .timeline {
             padding-left: 1.5rem;
+        }
+
+        .locked-order-notice {
+            flex-direction: column;
+            text-align: center;
         }
     }
 </style>

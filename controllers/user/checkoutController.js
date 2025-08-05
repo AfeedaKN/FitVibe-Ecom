@@ -251,12 +251,51 @@ const placeOrder = async (req, res) => {
 const getOrderSuccess = async (req, res) => {
   try {
     const { orderId } = req.params;
-     const order = await Order.find({ user: req.user._id })
-          .sort({ createdAt: -1 })
-          .populate('products.product') 
-    res.render('order-success', { orderId, order });
+    
+    // Find the specific order by ID
+    const order = await Order.findById(orderId)
+      .populate('products.product')
+      .populate('address');
+    
+    if (!order) {
+      return res.status(404).render('pageNotFound', { message: 'Order not found' });
+    }
+    
+    // Pass the specific order and its orderID
+    res.render('order-success', { 
+      orderId: order.orderID, 
+      order: [order] // Keep as array for template compatibility
+    });
   } catch (error) {
-    console.error(error);
+    console.error('Error in getOrderSuccess:', error);
+    res.status(500).send('Server Error');
+  }
+};
+
+const getOrderFailure = async (req, res) => {
+  try {
+    const { orderId } = req.params;
+    
+    // Find the specific order by ID
+    const order = await Order.findById(orderId)
+      .populate('products.product')
+      .populate('address');
+    
+    if (!order) {
+      return res.status(404).render('pageNotFound', { message: 'Order not found' });
+    }
+    
+    // Verify this is actually a failed order
+    if (order.orderStatus !== 'payment-failed') {
+      return res.redirect(`/order/success/${orderId}`);
+    }
+    
+    // Render the failure page with order details
+    res.render('order-failure', { 
+      order: order
+    });
+  } catch (error) {
+    console.error('Error in getOrderFailure:', error);
     res.status(500).send('Server Error');
   }
 };
@@ -389,5 +428,6 @@ module.exports = {
   placeOrder,
   verifyPayment,
   getOrderSuccess,
+  getOrderFailure,
   getOrderDetails
 };

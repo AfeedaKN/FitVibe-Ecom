@@ -303,8 +303,6 @@ const cancelOrderItem = async (req, res) => {
   }
 };
 
-
-
 const returnOrderItem = async (req, res) => {
   try {
     console.log("Incoming request headers:", req.headers);
@@ -432,7 +430,6 @@ const returnOrderItem = async (req, res) => {
   }
 };
 
-
 const downloadInvoice = async (req, res) => {
   try {
     const orderId = req.params.id;
@@ -530,6 +527,142 @@ const downloadInvoice = async (req, res) => {
   }
 };
 
+const retryPayment = async (req, res) => {
+  try {
+    console.log('Retry payment request:', req.body);
+    console.log('User:', req.user);
+    
+    const { orderId, amount } = req.body;
+    const userId = req.user._id;
+
+    // Validate input
+    if (!orderId) {
+      return res.status(400).json({ success: false, message: 'Order ID is required' });
+    }
+
+    // Validate order
+    const order = await Order.findOne({ _id: orderId, user: userId });
+    if (!order) {
+      return res.status(404).json({ success: false, message: 'Order not found' });
+    }
+
+    console.log('Found order:', {
+      orderID: order.orderID,
+      paymentMethod: order.paymentMethod,
+      paymentStatus: order.paymentStatus,
+      orderStatus: order.orderStatus,
+      isLocked: order.isLocked
+    });
+
+    // Check if order is eligible for payment retry
+    const isEligibleForRetry = (
+      order.paymentMethod && 
+      (order.paymentMethod.toLowerCase() === 'online' || order.paymentMethod === 'Online') &&
+      (order.paymentStatus === 'pending' || order.paymentStatus === 'failed' || order.orderStatus === 'payment-failed')
+    );
+
+    if (!isEligibleForRetry) {
+      return res.status(400).json({ 
+        success: false, 
+        message: `This order is not eligible for payment retry. Payment Method: ${order.paymentMethod}, Payment Status: ${order.paymentStatus}, Order Status: ${order.orderStatus}` 
+      });
+    }
+
+    // Check environment variables
+    if (!process.env.RAZORPAY_KEY || !process.env.RAZORPAY_SECRET) {
+      console.error('Razorpay credentials missing:', {
+        key_id: !!process.env.RAZORPAY_KEY,
+        key_secret: !!process.env.RAZORPAY_SECRET
+      });
+      return res.status(500).json({ 
+        success: false, 
+        message: 'Payment gateway configuration error' 
+      });
+    }
+
+    // Create new Razorpay order for retry
+    const Razorpay = require('razorpay');
+    const razorpay = new Razorpay({
+      key_id: process.env.RAZORPAY_KEY,
+      key_secret: process.env.RAZORPAY_SECRET,
+    });
+
+    console.log('Creating Razorpay order with amount:', order.finalAmount);
+
+    const razorpayOrder = await razorpay.orders.create({
+      amount: Math.round(order.finalAmount * 100), // Convert to paise
+      currency: 'INR',
+      receipt: `retry_${order.orderID}_${Date.now()}`,
+    });
+
+    console.log('Razorpay order created:', razorpayOrder);
+
+    // Update order with new Razorpay order ID and reset status for retry
+    order.razorpayOrderId = razorpayOrder.id;
+    order.paymentStatus = 'pending';
+    
+    // Reset order status if it was payment-failed to allow retry
+    if (order.orderStatus === 'payment-failed') {
+      order.orderStatus = 'pending';
+    }
+    
+    // Unlock the order for retry attempts
+    order.isLocked = false;
+    
+    // Initialize paymentDetails if it doesn't exist
+    if (!order.paymentDetails) {
+      order.paymentDetails = {};
+    }
+    
+    // Update payment details for retry
+    order.paymentDetails.razorpayOrderId = razorpayOrder.id;
+    order.paymentDetails.amount = razorpayOrder.amount;
+    order.paymentDetails.currency = razorpayOrder.currency;
+    order.paymentDetails.createdAt = new Date();
+    order.paymentDetails.status = 'pending';
+    
+    // Clear previous failure details for fresh retry
+    order.paymentDetails.failureReason = undefined;
+    order.paymentDetails.failureCode = undefined;
+    
+    // Count retry attempts
+    const retryCount = order.statusHistory.filter(h => h.status.includes('retry')).length + 1;
+    
+    // Add status history entry
+    order.statusHistory.push({
+      status: 'payment retry initiated',
+      date: new Date(),
+      description: `Payment retry initiated by user (Attempt #${retryCount})`,
+    });
+
+    await order.save();
+    console.log('Order updated successfully for retry');
+
+    res.json({
+      success: true,
+      key_id: process.env.RAZORPAY_KEY,
+      amount: razorpayOrder.amount,
+      currency: razorpayOrder.currency,
+      razorpayOrderId: razorpayOrder.id,
+      orderId: order._id,
+      user: {
+        name: req.user.name,
+        email: req.user.email,
+        phone: req.user.phone
+      }
+    });
+
+  } catch (error) {
+    console.error('Error creating retry payment:', error);
+    console.error('Error stack:', error.stack);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Error preparing payment retry',
+      error: error.message 
+    });
+  }
+};
+
 module.exports = {
   getOrders,
   getOrderDetail,
@@ -537,5 +670,6 @@ module.exports = {
   cancelOrderItem,
   returnOrder,
   returnOrderItem,
-  downloadInvoice
+  downloadInvoice,
+  retryPayment
 };

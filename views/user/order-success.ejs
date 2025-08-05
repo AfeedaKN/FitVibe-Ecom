@@ -404,11 +404,37 @@
           </div>
           <div class="order-detail-item">
             <span class="order-detail-label">Payment Method</span>
-            <span class="order-detail-value">Cash on Delivery</span>
+            <span class="order-detail-value">
+              <% if (typeof order !== 'undefined' && order.length > 0) { %>
+                <% if (order[0].paymentMethod === 'COD') { %>
+                  Cash on Delivery
+                <% } else if (order[0].paymentMethod === 'Online') { %>
+                  Online Payment
+                <% } else if (order[0].paymentMethod === 'paypal') { %>
+                  PayPal
+                <% } else if (order[0].paymentMethod === 'wallet') { %>
+                  Wallet
+                <% } else { %>
+                  <%= order[0].paymentMethod %>
+                <% } %>
+              <% } else { %>
+                Not Available
+              <% } %>
+            </span>
           </div>
           <div class="order-detail-item">
             <span class="order-detail-label">Order Status</span>
-            <span class="order-detail-value">Processing</span>
+            <span class="order-detail-value">
+              <% if (typeof order !== 'undefined' && order.length > 0) { %>
+                <% 
+                  const status = order[0].orderStatus;
+                  const capitalizedStatus = status.charAt(0).toUpperCase() + status.slice(1);
+                %>
+                <%= capitalizedStatus %>
+              <% } else { %>
+                Processing
+              <% } %>
+            </span>
           </div>
           <div class="order-detail-item">
             <span class="order-detail-label">Support</span>

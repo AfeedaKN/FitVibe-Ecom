@@ -80,25 +80,49 @@ const loadOrders = async (req, res) => {
     });
   }
 };
+
 const updateOrderStatus = async (req, res) => {
   try {
-    
-
     const { orderId, status } = req.body;
 
-    
+    // Validate order ID
     if (!orderId || !mongoose.Types.ObjectId.isValid(orderId)) {
       return res.status(400).json({ success: false, message: 'Invalid or missing order ID' });
     }
 
-    
+    // Find the order
     const order = await Order.findById(orderId);
     if (!order) {
       return res.status(404).json({ success: false, message: 'Order not found' });
-    }  
+    }
     
+    // Check if order is locked (payment failed orders)
+    if (order.isLocked) {
+      return res.status(400).json({
+        success: false,
+        message: 'Cannot update status for locked orders (payment failed). This order is protected from status changes.',
+      });
+    }
 
-    
+    // Check if order has payment-failed status
+    if (order.orderStatus === 'payment-failed') {
+      return res.status(400).json({
+        success: false,
+        message: 'Cannot update status for payment failed orders. These orders are locked for security.',
+      });
+    }
+
+    // Check if online payment is pending or failed
+    if (order.paymentMethod && (order.paymentMethod.toLowerCase() === 'online' || order.paymentMethod === 'Online')) {
+      if (order.paymentStatus === 'pending' || order.paymentStatus === 'failed') {
+        return res.status(400).json({
+          success: false,
+          message: `Cannot update status for orders with ${order.paymentStatus} online payment. Payment must be completed first.`,
+        });
+      }
+    }
+
+    // Check if order is already delivered
     if (order.orderStatus.toLowerCase() === 'delivered') {
       return res.status(400).json({
         success: false,
@@ -106,7 +130,7 @@ const updateOrderStatus = async (req, res) => {
       });
     }
 
-    
+    // Validate status
     const validStatuses = [
       'pending',
       'processing',
@@ -119,33 +143,35 @@ const updateOrderStatus = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Invalid status' });
     }
 
-    
+    // Update order status
     order.orderStatus = status;
     
+    // Update product statuses
     order.products.forEach(product => {
       if (!['cancelled', 'returned'].includes(product.status)) {
         product.status = status;
       }
     });
     
+    // Handle delivered status
     if (status.toLowerCase() === 'delivered') {
       order.paymentStatus = 'completed';
       order.deliveryDate = new Date();
     }
 
-    
-    if (status.toLowerCase() === 'cancelled' && reason) {
-      order.cancellationReason = reason;
+    // Handle cancellation
+    if (status.toLowerCase() === 'cancelled' && req.body.reason) {
+      order.cancellationReason = req.body.reason;
     }
 
-    
+    // Add to status history
     order.statusHistory.push({
       status,
       date: new Date(),
-      description: status.toLowerCase() === 'cancelled' && reason ? reason : undefined,
+      description: status.toLowerCase() === 'cancelled' && req.body.reason ? req.body.reason : undefined,
     });
 
-    
+    // Save the order
     await order.save();
 
     res.json({ success: true, message: 'Status updated successfully' });
@@ -186,6 +212,7 @@ const viewOrderDetails = async (req, res) => {
     res.redirect('/admin/orders');
   }
 };
+
 const approveReturn = async (req, res) => {
   try {
     const orderId = req.params.orderId;
@@ -265,7 +292,6 @@ const approveReturn = async (req, res) => {
     return res.status(500).json({ success: false, message: 'Server error', error: error.message });
   }
 };
-
 
 const rejectReturn = async (req, res) => {
   try {
@@ -385,7 +411,6 @@ const itemReturnApprove = async (req, res) => {
     return res.status(500).json({ success: false, message: "Server error", error: error.message });
   }
 };
-
 
 const itemReturnReject = async (req, res) => {
   try {

@@ -115,7 +115,7 @@ const orderSchema = new mongoose.Schema(
     },
     paymentMethod: {
       type: String,
-      enum: ["COD", "Online", "paypal", "wallet"],
+      enum: ["COD", "Online", "online", "paypal", "wallet"],
       required: true,
     },
     paymentStatus: {
@@ -141,6 +141,8 @@ const orderSchema = new mongoose.Schema(
       status: String,
       createdAt: Date,
       razorpaySignature: String,
+      failureReason: String,
+      failureCode: String,
     },
     orderStatus: {
       type: String,
@@ -153,6 +155,7 @@ const orderSchema = new mongoose.Schema(
         "cancelled",
         "returned",
         "return pending",
+        "payment-failed",
       ],
       default: "pending",
     },
@@ -178,6 +181,10 @@ const orderSchema = new mongoose.Schema(
       ],
     },
     isTemporary: {
+      type: Boolean,
+      default: false,
+    },
+    isLocked: {
       type: Boolean,
       default: false,
     },

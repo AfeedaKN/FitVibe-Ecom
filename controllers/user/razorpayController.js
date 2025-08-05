@@ -120,6 +120,123 @@ const getPaymentDetails = async (req, res) => {
     });
   }
 };
+
+// Handle Payment Failure - Save order with failed status but allow retries
+const handlePaymentFailure = async (req, res) => {
+  try {
+    console.log('=== PAYMENT FAILURE HANDLER START ===');
+    console.log('Request body:', JSON.stringify(req.body, null, 2));
+    
+    const { orderId, error, razorpay_order_id, razorpay_payment_id } = req.body;
+
+    // Validate required fields
+    if (!orderId) {
+      console.log('❌ Missing orderId');
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Order ID is required' 
+      });
+    }
+
+    console.log('Finding order with ID:', orderId);
+    const order = await Order.findById(orderId);
+    
+    if (!order) {
+      console.log('❌ Order not found');
+      return res.status(404).json({ 
+        success: false, 
+        message: 'Order not found' 
+      });
+    }
+
+    console.log('✅ Order found:', {
+      orderID: order.orderID,
+      currentStatus: order.orderStatus,
+      currentPaymentStatus: order.paymentStatus
+    });
+
+    // Check if order is already processed
+    if (order.paymentStatus === 'completed') {
+      console.log('⚠️ Payment already completed');
+      return res.json({ 
+        success: true, 
+        message: 'Payment already completed' 
+      });
+    }
+
+    // Update order with payment failure details
+    console.log('Updating order with payment failure details...');
+    
+    order.paymentStatus = 'failed';
+    order.orderStatus = 'payment-failed';
+    
+    // Lock order from admin changes but allow user retries
+    order.isLocked = true; 
+    order.paymentMethod = 'online'; // Ensure it's marked as online payment
+    
+    // Add failure details to payment details
+    if (!order.paymentDetails) {
+      order.paymentDetails = {};
+    }
+    
+    order.paymentDetails.status = 'failed';
+    order.paymentDetails.failureReason = error?.description || 'Payment failed';
+    order.paymentDetails.failureCode = error?.code || 'PAYMENT_FAILED';
+    order.paymentDetails.createdAt = new Date();
+    
+    if (razorpay_payment_id) {
+      order.paymentDetails.paymentId = razorpay_payment_id;
+    }
+    
+    if (razorpay_order_id) {
+      order.razorpayOrderId = razorpay_order_id;
+    }
+
+    // Add to status history
+    if (!order.statusHistory) {
+      order.statusHistory = [];
+    }
+    
+    // Count retry attempts for better tracking
+    const retryCount = order.statusHistory.filter(h => 
+      h.status.includes('retry') || h.status.includes('payment-failed')
+    ).length + 1;
+    
+    order.statusHistory.push({
+      status: 'payment-failed',
+      date: new Date(),
+      description: `Payment failed (Attempt #${retryCount}): ${error?.description || 'Unknown error'}`
+    });
+
+    await order.save();
+    console.log('✅ Order updated with payment failure status');
+
+    console.log('=== PAYMENT FAILURE HANDLER COMPLETED ===');
+    
+    res.json({ 
+      success: true, 
+      message: 'Payment failure recorded successfully',
+      orderId: order._id,
+      orderNumber: order.orderID,
+      status: 'payment-failed',
+      canRetry: true, // Indicate that retry is possible
+      retryCount: retryCount,
+      redirectUrl: `/order/failure/${order._id}`
+    });
+
+  } catch (error) {
+    console.error('=== PAYMENT FAILURE HANDLER ERROR ===');
+    console.error('Error message:', error.message);
+    console.error('Stack trace:', error.stack);
+    
+    res.status(500).json({ 
+      success: false, 
+      message: 'Failed to record payment failure',
+      error: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error'
+    });
+  }
+};
+
 const verifyRazorpayPayment = async (req, res) => {
   try {
     console.log('=== PAYMENT VERIFICATION START ===');
@@ -226,12 +343,15 @@ const verifyRazorpayPayment = async (req, res) => {
       });
     }
 
-    // Step 7: Update order with payment details
-    console.log('Updating order with payment details...');
+    // Step 7: Update order with successful payment details
+    console.log('Updating order with successful payment details...');
     
     // Use correct enum values from the schema
     order.paymentStatus = 'completed';  // Valid enum: ["pending", "completed", "failed", "refunded", "cancelled"]
     order.orderStatus = 'processing';   // Valid enum: ["pending", "processing", "shipped", "out for delivery", "delivered", "cancelled", "returned", "return pending"]
+    
+    // Unlock the order since payment is successful
+    order.isLocked = false;
     
     // Set payment fields (create them if they don't exist)
     if (!order.paymentId) {
@@ -251,6 +371,23 @@ const verifyRazorpayPayment = async (req, res) => {
     order.paymentDetails.status = 'completed';
     order.paymentDetails.createdAt = new Date();
     order.paymentDetails.razorpaySignature = razorpay_signature;
+    
+    // Clear any previous failure details
+    order.paymentDetails.failureReason = undefined;
+    order.paymentDetails.failureCode = undefined;
+
+    // Add success to status history
+    const retryCount = order.statusHistory.filter(h => 
+      h.status.includes('retry') || h.status.includes('payment-failed')
+    ).length;
+    
+    order.statusHistory.push({
+      status: 'payment completed',
+      date: new Date(),
+      description: retryCount > 0 ? 
+        `Payment completed successfully after ${retryCount} retry attempt(s)` : 
+        'Payment completed successfully'
+    });
 
     await order.save();
     console.log('✅ Order updated successfully');
@@ -321,5 +458,6 @@ module.exports = {
   createOrder,
   verifyPayment,
   getPaymentDetails,
-  verifyRazorpayPayment
+  verifyRazorpayPayment,
+  handlePaymentFailure
 };
