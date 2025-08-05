@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add New Coupon - FitVibe Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f8fafc;
+            color: #1e293b;
+            line-height: 1.6;
+        }
+
+        .main-content {
+            margin-left: 280px;
+            padding: 2rem;
+            min-height: 100vh;
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            background: #ffffff;
+            padding: 2rem;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e2e8f0;
+        }
+
+        .page-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #0f172a;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .page-title i {
+            color: #667eea;
+        }
+
+        .back-btn {
+            padding: 0.75rem 1.5rem;
+            background: #ffffff;
+            color: #64748b;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.875rem;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .back-btn:hover {
+            background: #f8fafc;
+            border-color: #667eea;
+            color: #667eea;
+        }
+
+        .form-container {
+            background: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e2e8f0;
+            overflow: hidden;
+        }
+
+        .form-header {
+            padding: 2rem;
+            border-bottom: 1px solid #e2e8f0;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+        }
+
+        .form-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #0f172a;
+            margin-bottom: 0.5rem;
+        }
+
+        .form-subtitle {
+            color: #64748b;
+            font-size: 0.875rem;
+        }
+
+        .form-content {
+            padding: 2rem;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #374151;
+            font-size: 0.875rem;
+        }
+
+        .form-label.required::after {
+            content: ' *';
+            color: #ef4444;
+        }
+
+        .form-input,
+        .form-select,
+        .form-textarea {
+            width: 100%;
+            padding: 0.875rem 1rem;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            transition: all 0.3s ease;
+            background: #ffffff;
+        }
+
+        .form-input:focus,
+        .form-select:focus,
+        .form-textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .form-help {
+            margin-top: 0.5rem;
+            font-size: 0.75rem;
+            color: #64748b;
+        }
+
+        .discount-type-selector {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-top: 0.5rem;
+        }
+
+        .discount-option {
+            position: relative;
+        }
+
+        .discount-option input[type="radio"] {
+            position: absolute;
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .discount-option label {
+            display: flex;
+            align-items: center;
+            padding: 1rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #ffffff;
+        }
+
+        .discount-option input[type="radio"]:checked + label {
+            border-color: #667eea;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+            color: #667eea;
+        }
+
+        .discount-option label i {
+            margin-right: 0.75rem;
+            font-size: 1.25rem;
+        }
+
+        .discount-option-content h4 {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .discount-option-content p {
+            font-size: 0.75rem;
+            color: #64748b;
+        }
+
+        .conditional-field {
+            display: none;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .conditional-field.show {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+            padding-top: 2rem;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .btn {
+            padding: 0.875rem 2rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.875rem;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #ffffff;
+            box-shadow: 0 4px 6px -1px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .btn-secondary {
+            background: #ffffff;
+            color: #64748b;
+            border: 2px solid #e2e8f0;
+        }
+
+        .btn-secondary:hover {
+            background: #f8fafc;
+            border-color: #667eea;
+            color: #667eea;
+        }
+
+        .error-message {
+            color: #ef4444;
+            font-size: 0.75rem;
+            margin-top: 0.5rem;
+            display: none;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        .form-input.error,
+        .form-select.error,
+        .form-textarea.error {
+            border-color: #ef4444;
+            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                margin-left: 0;
+                padding: 1rem;
+            }
+
+            .page-header {
+                flex-direction: column;
+                gap: 1rem;
+                align-items: stretch;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+
+            .discount-type-selector {
+                grid-template-columns: 1fr;
+            }
+
+            .form-actions {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <%- include('./partials/sidebar', { page: 'coupons' }) %>
+    
+    <div class="main-content">
+        <div class="page-header">
+            <h1 class="page-title">
+                <i class="fas fa-plus-circle"></i>
+                Add New Coupon
+            </h1>
+            <a href="/admin/coupons" class="back-btn">
+                <i class="fas fa-arrow-left"></i>
+                Back to Coupons
+            </a>
+        </div>
+
+        <div class="form-container">
+            <div class="form-header">
+                <h2 class="form-title">Create New Coupon</h2>
+                <p class="form-subtitle">Fill in the details below to create a new coupon for your customers.</p>
+            </div>
+
+            <form id="addCouponForm" class="form-content">
+                <div class="form-grid">
+                    <!-- Coupon Code -->
+                    <div class="form-group">
+                        <label for="name" class="form-label required">Coupon Code</label>
+                        <input type="text" id="name" name="name" class="form-input" placeholder="e.g., SAVE20" maxlength="20" required>
+                        <div class="form-help">Use uppercase letters and numbers only. Max 20 characters.</div>
+                        <div class="error-message" id="nameError"></div>
+                    </div>
+
+                    <!-- Discount Type -->
+                    <div class="form-group">
+                        <label class="form-label required">Discount Type</label>
+                        <div class="discount-type-selector">
+                            <div class="discount-option">
+                                <input type="radio" id="percentage" name="discountType" value="percentage" checked>
+                                <label for="percentage">
+                                    <i class="fas fa-percentage"></i>
+                                    <div class="discount-option-content">
+                                        <h4>Percentage</h4>
+                                        <p>% off total amount</p>
+                                    </div>
+                                </label>
+                            </div>
+                            <div class="discount-option">
+                                <input type="radio" id="fixed" name="discountType" value="fixed">
+                                <label for="fixed">
+                                    <i class="fas fa-rupee-sign"></i>
+                                    <div class="discount-option-content">
+                                        <h4>Fixed Amount</h4>
+                                        <p>₹ off total amount</p>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Description -->
+                    <div class="form-group full-width">
+                        <label for="description" class="form-label required">Description</label>
+                        <textarea id="description" name="description" class="form-textarea" placeholder="Brief description of the coupon offer" required></textarea>
+                        <div class="form-help">Provide a clear description of what this coupon offers.</div>
+                        <div class="error-message" id="descriptionError"></div>
+                    </div>
+
+                    <!-- Discount Value -->
+                    <div class="form-group">
+                        <label for="discountValue" class="form-label required">
+                            <span id="discountValueLabel">Discount Percentage</span>
+                        </label>
+                        <input type="number" id="discountValue" name="discountValue" class="form-input" placeholder="20" min="1" max="100" step="0.01" required>
+                        <div class="form-help" id="discountValueHelp">Enter percentage value (1-100)</div>
+                        <div class="error-message" id="discountValueError"></div>
+                    </div>
+
+                    <!-- Max Discount Amount (for percentage only) -->
+                    <div class="form-group conditional-field show" id="maxDiscountGroup">
+                        <label for="maxDiscountAmount" class="form-label">Maximum Discount Amount</label>
+                        <input type="number" id="maxDiscountAmount" name="maxDiscountAmount" class="form-input" placeholder="1000" min="1" step="0.01">
+                        <div class="form-help">Maximum discount amount for percentage coupons (optional)</div>
+                        <div class="error-message" id="maxDiscountAmountError"></div>
+                    </div>
+
+                    <!-- Minimum Purchase -->
+                    <div class="form-group">
+                        <label for="minimumPrice" class="form-label required">Minimum Purchase Amount</label>
+                        <input type="number" id="minimumPrice" name="minimumPrice" class="form-input" placeholder="500" min="0" step="0.01" required>
+                        <div class="form-help">Minimum cart value required to use this coupon</div>
+                        <div class="error-message" id="minimumPriceError"></div>
+                    </div>
+
+                    <!-- Usage Limit -->
+                    <div class="form-group">
+                        <label for="usageLimit" class="form-label">Usage Limit</label>
+                        <input type="number" id="usageLimit" name="usageLimit" class="form-input" placeholder="100" min="1">
+                        <div class="form-help">Maximum number of times this coupon can be used (leave empty for unlimited)</div>
+                        <div class="error-message" id="usageLimitError"></div>
+                    </div>
+
+                    <!-- Expiry Date -->
+                    <div class="form-group">
+                        <label for="expireOn" class="form-label required">Expiry Date</label>
+                        <input type="datetime-local" id="expireOn" name="expireOn" class="form-input" required>
+                        <div class="form-help">Date and time when this coupon expires</div>
+                        <div class="error-message" id="expireOnError"></div>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <a href="/admin/coupons" class="btn btn-secondary">
+                        <i class="fas fa-times"></i>
+                        Cancel
+                    </a>
+                    <button type="submit" class="btn btn-primary" id="submitBtn">
+                        <i class="fas fa-save"></i>
+                        Create Coupon
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        const Toast = Swal.mixin({
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true,
+            didOpen: (toast) => {
+                toast.addEventListener('mouseenter', Swal.stopTimer);
+                toast.addEventListener('mouseleave', Swal.resumeTimer);
+            }
+        });
+
+        // Set minimum date to tomorrow
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        document.getElementById('expireOn').min = tomorrow.toISOString().slice(0, 16);
+
+        // Handle discount type change
+        document.querySelectorAll('input[name="discountType"]').forEach(radio => {
+            radio.addEventListener('change', function() {
+                const discountValueLabel = document.getElementById('discountValueLabel');
+                const discountValueHelp = document.getElementById('discountValueHelp');
+                const discountValueInput = document.getElementById('discountValue');
+                const maxDiscountGroup = document.getElementById('maxDiscountGroup');
+
+                if (this.value === 'percentage') {
+                    discountValueLabel.textContent = 'Discount Percentage';
+                    discountValueHelp.textContent = 'Enter percentage value (1-100)';
+                    discountValueInput.max = '100';
+                    discountValueInput.placeholder = '20';
+                    maxDiscountGroup.classList.add('show');
+                } else {
+                    discountValueLabel.textContent = 'Discount Amount';
+                    discountValueHelp.textContent = 'Enter fixed discount amount in ₹';
+                    discountValueInput.max = '';
+                    discountValueInput.placeholder = '100';
+                    maxDiscountGroup.classList.remove('show');
+                }
+                
+                // Clear any existing values and errors
+                discountValueInput.value = '';
+                clearError('discountValue');
+            });
+        });
+
+        // Auto-format coupon code
+        document.getElementById('name').addEventListener('input', function() {
+            this.value = this.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+        });
+
+        // Form validation
+        function validateForm() {
+            let isValid = true;
+            
+            // Clear all errors
+            document.querySelectorAll('.error-message').forEach(error => {
+                error.classList.remove('show');
+            });
+            document.querySelectorAll('.form-input, .form-select, .form-textarea').forEach(input => {
+                input.classList.remove('error');
+            });
+
+            // Validate coupon code
+            const name = document.getElementById('name').value.trim();
+            if (!name) {
+                showError('name', 'Coupon code is required');
+                isValid = false;
+            } else if (name.length < 3) {
+                showError('name', 'Coupon code must be at least 3 characters');
+                isValid = false;
+            }
+
+            // Validate description
+            const description = document.getElementById('description').value.trim();
+            if (!description) {
+                showError('description', 'Description is required');
+                isValid = false;
+            }
+
+            // Validate discount value
+            const discountType = document.querySelector('input[name="discountType"]:checked').value;
+            const discountValue = parseFloat(document.getElementById('discountValue').value);
+            
+            if (!discountValue || discountValue <= 0) {
+                showError('discountValue', 'Discount value must be greater than 0');
+                isValid = false;
+            } else if (discountType === 'percentage' && discountValue > 100) {
+                showError('discountValue', 'Percentage cannot exceed 100%');
+                isValid = false;
+            }
+
+            // Validate minimum price
+            const minimumPrice = parseFloat(document.getElementById('minimumPrice').value);
+            if (minimumPrice < 0) {
+                showError('minimumPrice', 'Minimum purchase amount cannot be negative');
+                isValid = false;
+            }
+
+            // Validate max discount amount for percentage
+            if (discountType === 'percentage') {
+                const maxDiscountAmount = document.getElementById('maxDiscountAmount').value;
+                if (maxDiscountAmount && parseFloat(maxDiscountAmount) <= 0) {
+                    showError('maxDiscountAmount', 'Maximum discount amount must be greater than 0');
+                    isValid = false;
+                }
+            }
+
+            // Validate usage limit
+            const usageLimit = document.getElementById('usageLimit').value;
+            if (usageLimit && parseInt(usageLimit) <= 0) {
+                showError('usageLimit', 'Usage limit must be greater than 0');
+                isValid = false;
+            }
+
+            // Validate expiry date
+            const expireOn = new Date(document.getElementById('expireOn').value);
+            const now = new Date();
+            if (expireOn <= now) {
+                showError('expireOn', 'Expiry date must be in the future');
+                isValid = false;
+            }
+
+            return isValid;
+        }
+
+        function showError(fieldId, message) {
+            const field = document.getElementById(fieldId);
+            const errorElement = document.getElementById(fieldId + 'Error');
+            
+            field.classList.add('error');
+            errorElement.textContent = message;
+            errorElement.classList.add('show');
+        }
+
+        function clearError(fieldId) {
+            const field = document.getElementById(fieldId);
+            const errorElement = document.getElementById(fieldId + 'Error');
+            
+            field.classList.remove('error');
+            errorElement.classList.remove('show');
+        }
+
+        // Handle form submission
+        document.getElementById('addCouponForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            if (!validateForm()) {
+                return;
+            }
+
+            const submitBtn = document.getElementById('submitBtn');
+            const originalText = submitBtn.innerHTML;
+            
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="spinner"></span> Creating...';
+
+            try {
+                const formData = new FormData(this);
+                const data = Object.fromEntries(formData);
+
+                const response = await fetch('/admin/coupons/add', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    Toast.fire({
+                        icon: 'success',
+                        title: result.message
+                    });
+                    
+                    setTimeout(() => {
+                        window.location.href = '/admin/coupons';
+                    }, 1000);
+                } else {
+                    Toast.fire({
+                        icon: 'error',
+                        title: result.message
+                    });
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                Toast.fire({
+                    icon: 'error',
+                    title: 'Error creating coupon. Please try again.'
+                });
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
+            }
+        });
+
+        // Real-time validation
+        document.querySelectorAll('.form-input, .form-textarea').forEach(input => {
+            input.addEventListener('blur', function() {
+                if (this.value.trim()) {
+                    clearError(this.id);
+                }
+            });
+        });
+    </script>
+</body>
+</html>

@@ -16,6 +16,7 @@ const razorpayController = require("../controllers/user/razorpayController");
 const passport = require("passport");
 const Wishlist = require("../models/wishlistSchema");
 const walletController = require("../controllers/user/walletController");
+const couponController = require("../controllers/user/couponController");
 
 
 router.get("/pageNotFound",userController.pageNotFound)
@@ -99,6 +100,11 @@ router.post("/order/retry-payment", userAuth, orderController.retryPayment);
 
 router.get("/profile/Wallet", userAuth, walletController.getWalletPage);
 router.post("/wallet/add-funds", userAuth, walletController.addFunds);
+
+// Coupon routes
+router.post("/coupon/apply", userAuth, couponController.applyCoupon);
+router.post("/coupon/remove", userAuth, couponController.removeCoupon);
+router.post("/coupon/validate", userAuth, couponController.validateCoupon);
 
 // API routes for cart and wishlist counts
 router.get("/api/cart/count", userAuth, cartController.getCartCount);

@@ -6,6 +6,7 @@ const customerController = require("../controllers/admin/customerController");
 const categoryController = require("../controllers/admin/categoryController");
 const productController = require("../controllers/admin/productController");
 const orderController = require("../controllers/admin/orderController");
+const couponController = require("../controllers/admin/couponController");
 
 
 
@@ -48,6 +49,16 @@ router.post("/order/return-approve/:orderId", adminAuth, orderController.approve
 router.post("/order/return-reject/:orderId", adminAuth, orderController.rejectReturn);
 router.post("/order/return-item-approve/:orderId", adminAuth, orderController.itemReturnApprove);
 router.post("/order/return-item-reject/:orderId", adminAuth, orderController.itemReturnReject);
+
+// Coupon Management Routes
+router.get("/coupons", adminAuth, couponController.loadCoupons);
+router.get("/coupons/add", adminAuth, couponController.loadAddCoupon);
+router.post("/coupons/add", adminAuth, couponController.addCoupon);
+router.get("/coupons/edit/:id", adminAuth, couponController.loadEditCoupon);
+router.post("/coupons/edit/:id", adminAuth, couponController.updateCoupon);
+router.patch("/coupons/toggle/:id", adminAuth, couponController.toggleCouponStatus);
+router.delete("/coupons/delete/:id", adminAuth, couponController.deleteCoupon);
+router.get("/coupons/stats/:id", adminAuth, couponController.getCouponStats);
 
 
 

@@ -68,7 +68,7 @@ const getCheckout = async (req, res) => {
 
 const placeOrder = async (req, res) => {
   try {
-    const { paymentMethod, addressId } = req.body;
+    const { paymentMethod, addressId, couponCode, couponDiscount } = req.body;
     
     const userId = req.user._id;
     const user = await User.findById(userId);
@@ -116,7 +116,54 @@ const placeOrder = async (req, res) => {
     const discount = subtotal > 5000 ? subtotal * 0.1 : 0;
     const shippingCharge = 100;
     const totalAmount = subtotal + taxAmount;
-    const finalAmount = totalAmount - discount + shippingCharge;
+    
+    // Handle coupon discount
+    let couponDiscountAmount = 0;
+    let appliedCoupon = null;
+    
+    if (couponCode && couponDiscount) {
+      // Validate coupon one more time before applying
+      const Coupon = require('../../models/couponSchema');
+      const coupon = await Coupon.findOne({ 
+        name: couponCode.toUpperCase(),
+        isList: true,
+        isActive: true
+      });
+      
+      if (coupon && coupon.expireOn >= new Date() && subtotal >= coupon.minimumPrice) {
+        // Check if user hasn't used this coupon before
+        const existingOrder = await Order.findOne({
+          user: userId,
+          'coupon.couponId': coupon._id,
+          orderStatus: { $ne: 'payment-failed' }
+        });
+        
+        if (!existingOrder) {
+          // Calculate discount based on coupon type
+          if (coupon.discountType === 'percentage') {
+            couponDiscountAmount = (subtotal * coupon.discountValue) / 100;
+            // Apply maximum discount limit if set
+            if (coupon.maxDiscountAmount && couponDiscountAmount > coupon.maxDiscountAmount) {
+              couponDiscountAmount = coupon.maxDiscountAmount;
+            }
+          } else {
+            // Fixed discount
+            couponDiscountAmount = Math.min(coupon.discountValue, subtotal);
+          }
+          
+          // Ensure discount doesn't exceed subtotal and matches frontend calculation
+          couponDiscountAmount = Math.min(couponDiscountAmount, subtotal, parseFloat(couponDiscount));
+          
+          appliedCoupon = {
+            couponId: coupon._id,
+            code: coupon.name,
+            discountAmount: couponDiscountAmount
+          };
+        }
+      }
+    }
+    
+    const finalAmount = totalAmount - discount - couponDiscountAmount + shippingCharge;
 
     // Generate order ID
     const generateOrderID = () => {
@@ -165,9 +212,11 @@ const placeOrder = async (req, res) => {
       },
       totalAmount,
       discount,
+      couponDiscount: couponDiscountAmount,
       taxAmount,
       shippingCharge,
       finalAmount,
+      coupon: appliedCoupon,
       paymentMethod,
       orderStatus: paymentMethod === 'Online' ? 'pending' : 'pending',
       paymentStatus: paymentMethod === 'Online' ? 'pending' : 'pending',

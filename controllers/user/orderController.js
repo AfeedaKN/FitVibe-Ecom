@@ -1,6 +1,7 @@
 const User = require("../../models/userSchema");
 const Order = require("../../models/orderSchema");
 const Product = require('../../models/productSchema');
+const Wallet = require('../../models/walletShema');
 const PDFDocument = require('pdfkit');
 const fs = require("fs");
 const mongoose = require('mongoose');
@@ -93,28 +94,72 @@ const cancelOrder = async (req, res) => {
       return res.json({ success: false, message: 'Order not found.' });
     }
     
-
+    // Store original payment status for refund check
+    const originalPaymentStatus = order.paymentStatus;
+    
     order.orderStatus = 'cancelled';
-    order.paymentStatus='cancelled'
-     
     order.cancelReason = reason || '';
 
+    // Restore product stock
     for (const item of order.products) { 
       const productId = item.product;
       const variantSize = item.variant.size;
       const quantityToAdd = item.quantity;
-      item.status= "cancelled"
+      item.status = "cancelled";
+      
       const product = await Product.findById(productId);
-
       if (product) {
         const variant = product.variants.find(v => v.size === variantSize);
-
         if (variant) {
           variant.varientquatity += quantityToAdd;
         }
-
         await product.save();
       }
+    }
+
+    // Handle refund for online payments
+    if (order.paymentMethod && 
+        (order.paymentMethod.toLowerCase() === 'online' || order.paymentMethod === 'Online') &&
+        (originalPaymentStatus === 'completed' || originalPaymentStatus === 'success')) {
+      
+      const refundAmount = order.finalAmount;
+      const userId = order.user;
+
+      // Find or create wallet
+      let wallet = await Wallet.findOne({ userId });
+      if (!wallet) {
+        wallet = new Wallet({
+          userId,
+          balance: refundAmount,
+          transactions: [{
+            type: "credit",
+            amount: refundAmount,
+            description: `Refund for cancelled order ${order.orderID}`,
+            createdAt: new Date()
+          }]
+        });
+      } else {
+        wallet.balance += refundAmount;
+        wallet.transactions.unshift({
+          type: "credit",
+          amount: refundAmount,
+          description: `Refund for cancelled order ${order.orderID}`,
+          createdAt: new Date()
+        });
+      }
+
+      await wallet.save();
+      
+      // Update order with refund information
+      order.refundAmount = refundAmount;
+      order.paymentStatus = 'refunded';
+      
+      // Add status history
+      order.statusHistory.push({
+        status: 'refunded',
+        date: new Date(),
+        description: `₹${refundAmount} refunded to wallet for cancelled order`,
+      });
     }
 
     await order.save();
@@ -229,7 +274,6 @@ const cancelOrderItem = async (req, res) => {
       });
     }
 
-    
     const order = await Order.findOne({ _id: orderId, user: userId });
     if (!order) {
       return res.status(404).json({ 
@@ -266,6 +310,7 @@ const cancelOrderItem = async (req, res) => {
     order.finalAmount = Math.max(0, order.finalAmount - cancelledItemSubtotal);
     order.totalAmount = Math.max(0, order.totalAmount - cancelledItemSubtotal);
 
+    // Restore product stock
     const product = await Product.findById(productId);
     if (product) {
       const variant = product.variants.find(v => v.size === variantSize);
@@ -273,6 +318,42 @@ const cancelOrderItem = async (req, res) => {
         variant.varientquatity += item.quantity;
         await product.save();
       }
+    }
+
+    // Handle refund for online payments
+    if (order.paymentMethod && 
+        (order.paymentMethod.toLowerCase() === 'online' || order.paymentMethod === 'Online') &&
+        (order.paymentStatus === 'completed' || order.paymentStatus === 'success')) {
+      
+      const refundAmount = cancelledItemSubtotal;
+
+      // Find or create wallet
+      let wallet = await Wallet.findOne({ userId });
+      if (!wallet) {
+        wallet = new Wallet({
+          userId,
+          balance: refundAmount,
+          transactions: [{
+            type: "credit",
+            amount: refundAmount,
+            description: `Refund for cancelled item ${product?.name || 'Product'} (${variantSize}) in order ${order.orderID}`,
+            createdAt: new Date()
+          }]
+        });
+      } else {
+        wallet.balance += refundAmount;
+        wallet.transactions.unshift({
+          type: "credit",
+          amount: refundAmount,
+          description: `Refund for cancelled item ${product?.name || 'Product'} (${variantSize}) in order ${order.orderID}`,
+          createdAt: new Date()
+        });
+      }
+
+      await wallet.save();
+      
+      // Update order with refund information
+      order.refundAmount = (order.refundAmount || 0) + refundAmount;
     }
 
     const allItemsCancelled = order.products.every(p => p.status === 'cancelled');

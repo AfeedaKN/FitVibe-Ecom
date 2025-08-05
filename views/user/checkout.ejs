@@ -318,6 +318,155 @@
       font-size: 1rem;
     }
 
+    /* Coupon Section Styles */
+    .coupon-section {
+      background: #f8fafc;
+      padding: 1.5rem;
+      border-radius: 16px;
+      border: 1px solid #e2e8f0;
+      margin-bottom: 2rem;
+    }
+
+    .coupon-section h3 {
+      font-size: 1.125rem;
+      font-weight: 600;
+      color: #0f172a;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .coupon-section h3 i {
+      color: #667eea;
+    }
+
+    .coupon-input-group {
+      display: flex;
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+    }
+
+    .coupon-input-group input {
+      flex: 1;
+      padding: 0.875rem 1rem;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      outline: none;
+      background: #ffffff;
+      color: #111827;
+      font-size: 0.875rem;
+      transition: all 0.2s ease;
+      text-transform: uppercase;
+    }
+
+    .coupon-input-group input:focus {
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    .apply-coupon-btn {
+      padding: 0.875rem 1.5rem;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: #ffffff;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.875rem;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      white-space: nowrap;
+    }
+
+    .apply-coupon-btn:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 15px -3px rgba(102, 126, 234, 0.4);
+    }
+
+    .apply-coupon-btn:disabled {
+      background: #9ca3af;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .coupon-message {
+      font-size: 0.875rem;
+      margin-top: 0.5rem;
+      padding: 0.5rem;
+      border-radius: 6px;
+      display: none;
+    }
+
+    .coupon-message.success {
+      background: linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, rgba(21, 128, 61, 0.1) 100%);
+      color: #22c55e;
+      border: 1px solid rgba(34, 197, 94, 0.2);
+      display: block;
+    }
+
+    .coupon-message.error {
+      background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(185, 28, 28, 0.1) 100%);
+      color: #ef4444;
+      border: 1px solid rgba(239, 68, 68, 0.2);
+      display: block;
+    }
+
+    .applied-coupon {
+      background: linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, rgba(21, 128, 61, 0.1) 100%);
+      border: 1px solid rgba(34, 197, 94, 0.2);
+      border-radius: 12px;
+      padding: 1rem;
+      margin-top: 1rem;
+    }
+
+    .coupon-info {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .coupon-details {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .coupon-code-display {
+      font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+      font-weight: 600;
+      color: #22c55e;
+      font-size: 0.875rem;
+    }
+
+    .coupon-discount {
+      font-size: 0.75rem;
+      color: #059669;
+      font-weight: 500;
+    }
+
+    .remove-coupon-btn {
+      padding: 0.5rem 1rem;
+      background: #ffffff;
+      color: #ef4444;
+      border: 1px solid #ef4444;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 500;
+      font-size: 0.75rem;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+
+    .remove-coupon-btn:hover {
+      background: #ef4444;
+      color: #ffffff;
+    }
+
     .order-summary {
       background: #f8fafc;
       padding: 1.5rem;
@@ -345,6 +494,10 @@
 
     .order-summary .discount {
       color: #059669;
+    }
+
+    .coupon-discount-row {
+      color: #059669 !important;
     }
 
     .payment-methods {
@@ -509,6 +662,15 @@
       .address-actions button {
         width: 100%;
       }
+
+      .coupon-input-group {
+        flex-direction: column;
+      }
+
+      .apply-coupon-btn {
+        width: 100%;
+        justify-content: center;
+      }
     }
 
     @media (max-width: 480px) {
@@ -638,16 +800,48 @@
           <% }) %>
         </div>
         
-        <div class="order-summary">
-          <p><span>Subtotal:</span> <span>₹<%= subtotal.toLocaleString('en-IN', { minimumFractionDigits: 2 }) %></span></p>
+        <!-- Coupon Section -->
+        <div class="coupon-section">
+          <h3><i class="fas fa-ticket-alt"></i> Apply Coupon</h3>
+          <div class="coupon-input-container" id="couponInputContainer">
+            <div class="coupon-input-group">
+              <input type="text" id="couponCode" placeholder="Enter coupon code" maxlength="20">
+              <button type="button" id="applyCouponBtn" class="apply-coupon-btn">
+                <i class="fas fa-check"></i>
+                Apply
+              </button>
+            </div>
+            <div class="coupon-message" id="couponMessage"></div>
+          </div>
+          
+          <div class="applied-coupon" id="appliedCoupon" style="display: none;">
+            <div class="coupon-info">
+              <div class="coupon-details">
+                <span class="coupon-code-display" id="appliedCouponCode"></span>
+                <span class="coupon-discount" id="appliedCouponDiscount"></span>
+              </div>
+              <button type="button" id="removeCouponBtn" class="remove-coupon-btn">
+                <i class="fas fa-times"></i>
+                Remove
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="order-summary" id="orderSummary">
+          <p><span>Subtotal:</span> <span id="subtotalAmount">₹<%= subtotal.toLocaleString('en-IN', { minimumFractionDigits: 2 }) %></span></p>
           <% if (tax > 0) { %>
-            <p><span>GST (5%):</span> <span>₹<%= tax.toLocaleString('en-IN', { minimumFractionDigits: 2 }) %></span></p>
+            <p><span>GST (5%):</span> <span id="taxAmount">₹<%= tax.toLocaleString('en-IN', { minimumFractionDigits: 2 }) %></span></p>
           <% } %>
           <% if (discount > 0) { %>
-            <p class="discount"><span>Discount (10%):</span> <span>-₹<%= discount.toLocaleString('en-IN', { minimumFractionDigits: 2 }) %></span></p>
+            <p class="discount"><span>Discount (10%):</span> <span id="discountAmount">-₹<%= discount.toLocaleString('en-IN', { minimumFractionDigits: 2 }) %></span></p>
           <% } %>
-          <p><span>Shipping:</span> <span>₹<%= shipping.toLocaleString('en-IN', { minimumFractionDigits: 2 }) %></span></p>
-          <p class="total"><span>Total:</span> <span><%= total.toLocaleString('en-IN', { minimumFractionDigits: 2 }) %></span></p>
+          <p class="coupon-discount-row" id="couponDiscountRow" style="display: none;">
+            <span>Coupon Discount:</span> 
+            <span id="couponDiscountAmount" class="discount">-₹0.00</span>
+          </p>
+          <p><span>Shipping:</span> <span id="shippingAmount">₹<%= shipping.toLocaleString('en-IN', { minimumFractionDigits: 2 }) %></span></p>
+          <p class="total"><span>Total:</span> <span id="totalAmount">₹<%= total.toLocaleString('en-IN', { minimumFractionDigits: 2 }) %></span></p>
         </div>
 
         <div class="payment-methods">
@@ -703,6 +897,218 @@
       didOpen: (toast) => {
         toast.addEventListener('mouseenter', Swal.stopTimer);
         toast.addEventListener('mouseleave', Swal.resumeTimer);
+      }
+    });
+
+    // Global variables for coupon management
+    let appliedCouponData = null;
+    let originalTotals = {
+      subtotal: <%= subtotal %>,
+      tax: <%= tax %>,
+      discount: <%= discount %>,
+      shipping: <%= shipping %>,
+      total: <%= total %> 
+    };
+
+    // Coupon functionality
+    document.addEventListener('DOMContentLoaded', function() {
+      const couponCodeInput = document.getElementById('couponCode');
+      const applyCouponBtn = document.getElementById('applyCouponBtn');
+      const removeCouponBtn = document.getElementById('removeCouponBtn');
+      const couponMessage = document.getElementById('couponMessage');
+      const appliedCouponDiv = document.getElementById('appliedCoupon');
+      const couponInputContainer = document.getElementById('couponInputContainer');
+
+      // Auto-format coupon code to uppercase
+      couponCodeInput.addEventListener('input', function() {
+        this.value = this.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+      });
+
+      // Apply coupon on Enter key
+      couponCodeInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+          applyCoupon();
+        }
+      });
+
+      // Apply coupon button click
+      applyCouponBtn.addEventListener('click', applyCoupon);
+
+      // Remove coupon button click
+      removeCouponBtn.addEventListener('click', removeCoupon);
+
+      async function applyCoupon() {
+        const couponCode = couponCodeInput.value.trim();
+        
+        if (!couponCode) {
+          showCouponMessage('Please enter a coupon code', 'error');
+          return;
+        }
+
+        // Disable button and show loading
+        applyCouponBtn.disabled = true;
+        applyCouponBtn.innerHTML = '<span class="spinner"></span> Applying...';
+        
+        try {
+          const response = await fetch('/coupon/apply', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ couponCode })
+          });
+
+          const result = await response.json();
+
+          if (result.success) {
+            appliedCouponData = result.coupon;
+            updateOrderSummary(result.totals);
+            showAppliedCoupon(result.coupon);
+            showCouponMessage(`Coupon applied! You saved ₹${result.coupon.discountAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`, 'success');
+            
+            // Hide input container and show applied coupon
+            couponInputContainer.style.display = 'none';
+            appliedCouponDiv.style.display = 'block';
+          } else {
+            showCouponMessage(result.message, 'error');
+          }
+        } catch (error) {
+          console.error('Error applying coupon:', error);
+          
+          // Check if it's a network error or server error
+          if (error.name === 'TypeError' && error.message.includes('fetch')) {
+            showCouponMessage('Network error. Please check your connection and try again.', 'error');
+          } else if (error.message) {
+            showCouponMessage(error.message, 'error');
+          } else {
+            showCouponMessage('Error applying coupon. Please try again.', 'error');
+          }
+        } finally {
+          applyCouponBtn.disabled = false;
+          applyCouponBtn.innerHTML = '<i class="fas fa-check"></i> Apply';
+        }
+      }
+
+      async function removeCoupon() {
+        removeCouponBtn.disabled = true;
+        removeCouponBtn.innerHTML = '<span class="spinner"></span> Removing...';
+
+        try {
+          const response = await fetch('/coupon/remove', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            }
+          });
+
+          const result = await response.json();
+
+          if (result.success) {
+            appliedCouponData = null;
+            updateOrderSummary(result.totals);
+            hideAppliedCoupon();
+            showCouponMessage('Coupon removed successfully', 'success');
+            
+            // Show input container and hide applied coupon
+            couponInputContainer.style.display = 'block';
+            appliedCouponDiv.style.display = 'none';
+            
+            // Clear input
+            couponCodeInput.value = '';
+          } else {
+            showCouponMessage(result.message, 'error');
+          }
+        } catch (error) {
+          console.error('Error removing coupon:', error);
+          showCouponMessage('Error removing coupon. Please try again.', 'error');
+        } finally {
+          removeCouponBtn.disabled = false;
+          removeCouponBtn.innerHTML = '<i class="fas fa-times"></i> Remove';
+        }
+      }
+
+      function showCouponMessage(message, type) {
+        couponMessage.textContent = message;
+        couponMessage.className = `coupon-message ${type}`;
+        couponMessage.style.display = 'block';
+        
+        // Hide message after 5 seconds
+        setTimeout(() => {
+          couponMessage.style.display = 'none';
+        }, 5000);
+      }
+
+      function showAppliedCoupon(coupon) {
+        const codeElement = document.getElementById('appliedCouponCode');
+        const discountElement = document.getElementById('appliedCouponDiscount');
+        
+        if (codeElement) {
+          codeElement.textContent = coupon.code;
+        }
+        
+        if (discountElement) {
+          let discountText = '';
+          if (coupon.discountType === 'percentage') {
+            discountText = `${coupon.discountValue}% off - Saved ₹${coupon.discountAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
+          } else {
+            discountText = `₹${coupon.discountValue} off - Saved ₹${coupon.discountAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
+          }
+          discountElement.textContent = discountText;
+        }
+      }
+
+      function hideAppliedCoupon() {
+        const codeElement = document.getElementById('appliedCouponCode');
+        const discountElement = document.getElementById('appliedCouponDiscount');
+        
+        if (codeElement) {
+          codeElement.textContent = '';
+        }
+        
+        if (discountElement) {
+          discountElement.textContent = '';
+        }
+      }
+
+      function updateOrderSummary(totals) {
+        // Update all amounts with null checks
+        const subtotalElement = document.getElementById('subtotalAmount');
+        if (subtotalElement) {
+          subtotalElement.textContent = `₹${totals.subtotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
+        }
+        
+        const taxElement = document.getElementById('taxAmount');
+        if (taxElement) {
+          taxElement.textContent = `₹${totals.tax.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
+        }
+        
+        const discountElement = document.getElementById('discountAmount');
+        if (discountElement) {
+          discountElement.textContent = `-₹${totals.discount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
+        }
+        
+        const shippingElement = document.getElementById('shippingAmount');
+        if (shippingElement) {
+          shippingElement.textContent = `₹${totals.shipping.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
+        }
+        
+        const totalElement = document.getElementById('totalAmount');
+        if (totalElement) {
+          totalElement.textContent = `₹${totals.total.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
+        }
+        
+        // Show/hide coupon discount row
+        const couponDiscountRow = document.getElementById('couponDiscountRow');
+        const couponDiscountAmount = document.getElementById('couponDiscountAmount');
+        
+        if (couponDiscountRow && couponDiscountAmount) {
+          if (totals.couponDiscount && totals.couponDiscount > 0) {
+            couponDiscountAmount.textContent = `-₹${totals.couponDiscount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
+            couponDiscountRow.style.display = 'flex';
+          } else {
+            couponDiscountRow.style.display = 'none';
+          }
+        }
       }
     });
 
@@ -863,7 +1269,7 @@
       });
     });
 
-    // Place Order - NO BACKGROUND TOAST ON FAILURE
+    // Place Order - Updated to include coupon data
     document.querySelector('.place-order-btn').addEventListener('click', async () => {
       const paymentMethod = document.querySelector('input[name="paymentMethod"]:checked')?.value;
       const addressId = document.querySelector('input[name="address"]:checked')?.value;
@@ -880,13 +1286,25 @@
       placeOrderBtn.disabled = true;
       placeOrderBtn.innerHTML = '<span class="spinner"></span> Placing Order...';
 
+      // Prepare order data with coupon information
+      const orderData = {
+        paymentMethod,
+        addressId
+      };
+
+      // Add coupon data if applied
+      if (appliedCouponData) {
+        orderData.couponCode = appliedCouponData.code;
+        orderData.couponDiscount = appliedCouponData.discountAmount;
+      }
+
       try {
-        console.log('Placing order with:', { paymentMethod, addressId });
+        console.log('Placing order with:', orderData);
         
         const response = await fetch('/order/place', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ paymentMethod, addressId })
+          body: JSON.stringify(orderData)
         });
 
         const result = await response.json();
@@ -979,7 +1397,7 @@
               ondismiss: function() {
                 console.log('Payment modal dismissed');
                 
-                // Record payment cancellation and redirect to failure page - NO BACKGROUND TOAST
+                // Record payment cancellation and redirect to failure page
                 fetch('/order/fail', {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
@@ -1010,7 +1428,7 @@
           
           const rzp = new Razorpay(options);
           
-          // Payment failure handler - direct redirect without background toast
+          // Payment failure handler
           rzp.on('payment.failed', function (response) {
             console.error('Payment failed:', response);
             
