@@ -3,6 +3,41 @@ const mongoose = require('mongoose');
 const Product = require("../../models/productSchema")
 const Wallet = require("../../models/walletShema")
 
+// Helper function to calculate item final amount (matches UI calculation exactly)
+const calculateItemFinalAmount = (item, order) => {
+  // Calculate item subtotal (exactly as in UI)
+  const itemSubtotal = item.variant.salePrice * item.quantity;
+  
+  // Calculate total coupon discount (exactly as in UI)
+  let totalCouponDiscount = 0;
+  if (order.couponDiscount && order.couponDiscount > 0) {
+    totalCouponDiscount = order.couponDiscount;
+  } else if (order.coupon && order.coupon.discountAmount && order.coupon.discountAmount > 0) {
+    totalCouponDiscount = order.coupon.discountAmount;
+  }
+  
+  // Calculate total order subtotal for proportional calculation (exactly as in UI)
+  let orderSubtotal = 0;
+  order.products.forEach(orderItem => {
+    orderSubtotal += (orderItem.variant.salePrice * orderItem.quantity);
+  });
+  
+  // Calculate proportional coupon discount for this item (exactly as in UI)
+  let itemCouponDiscount = 0;
+  if (totalCouponDiscount > 0 && orderSubtotal > 0) {
+    itemCouponDiscount = (itemSubtotal / orderSubtotal) * totalCouponDiscount;
+  }
+  
+  // Calculate final amount for this item after coupon discount (exactly as in UI)
+  const itemFinalAmount = itemSubtotal - itemCouponDiscount;
+  
+  return {
+    itemSubtotal,
+    itemCouponDiscount,
+    itemFinalAmount
+  };
+};
+
 const loadOrders = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
@@ -259,6 +294,13 @@ const approveReturn = async (req, res) => {
     const refundAmount = order.finalAmount;
     order.refundAmount = refundAmount;
 
+    // Create detailed description for full order refund
+    let refundDescription = `Refund for returned order ${order.orderID} - Balance Amount: ₹${refundAmount.toFixed(2)}`;
+    if (order.couponDiscount > 0 || (order.coupon && order.coupon.discountAmount > 0)) {
+      const couponAmount = order.couponDiscount || order.coupon.discountAmount;
+      refundDescription += ` (includes coupon discount of ₹${couponAmount.toFixed(2)})`;
+    }
+
     let wallet = await Wallet.findOne({ userId });
 
     if (!wallet) {
@@ -268,7 +310,7 @@ const approveReturn = async (req, res) => {
         transactions: [{
           type: "credit",
           amount: refundAmount,
-          description: `Refund for returned order ${order.orderID}`,
+          description: refundDescription,
           status: "completed"
         }]
       });
@@ -277,7 +319,7 @@ const approveReturn = async (req, res) => {
       wallet.transactions.unshift({
         type: "credit",
         amount: refundAmount,
-        description: `Refund for returned order ${order.orderID}`,
+        description: refundDescription,
         status: "completed"
       });
     }
@@ -360,7 +402,17 @@ const itemReturnApprove = async (req, res) => {
 
     item.status = "returned";
 
-    const refundAmount = item.variant.salePrice * item.quantity;
+    // Calculate the exact final amount as shown in order details UI (includes proportional coupon discount)
+    const { itemSubtotal, itemCouponDiscount, itemFinalAmount } = calculateItemFinalAmount(item, order);
+    const refundAmount = itemFinalAmount;
+
+    // Create detailed description showing the balance amount calculation
+    let refundDescription = `Refund for returned product ${product.name} (Size: ${variantSize}) in order ${order.orderID}`;
+    if (itemCouponDiscount > 0) {
+      refundDescription += ` - Balance Amount: ₹${itemFinalAmount.toFixed(2)} (Subtotal: ₹${itemSubtotal.toFixed(2)} - Coupon Discount: ₹${itemCouponDiscount.toFixed(2)})`;
+    } else {
+      refundDescription += ` - Balance Amount: ₹${itemFinalAmount.toFixed(2)}`;
+    }
 
     let wallet = await Wallet.findOne({ userId: order.user });
     if (!wallet) {
@@ -370,7 +422,7 @@ const itemReturnApprove = async (req, res) => {
         transactions: [{
           type: "credit",
           amount: refundAmount,
-          description: `Refund for returned product ${product.name} (Size: ${variantSize}) in order ${order.orderID}`,
+          description: refundDescription,
           status: "completed"
         }]
       });
@@ -379,7 +431,7 @@ const itemReturnApprove = async (req, res) => {
       wallet.transactions.unshift({
         type: "credit",
         amount: refundAmount,
-        description: `Refund for returned product ${product.name} (Size: ${variantSize}) in order ${order.orderID}`,
+        description: refundDescription,
         status: "completed"
       });
     }

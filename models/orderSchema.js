@@ -43,6 +43,21 @@ const productSchema = new mongoose.Schema({
   cancellationReason: String,
   returnReason: String,
   returnRequestDate: Date,
+  cancelReason: String,
+  cancelDate: Date,
+  refundStatus: {
+    type: String,
+    enum: ["none", "pending", "approved", "rejected", "processed"],
+    default: "none",
+  },
+  refundAmount: {
+    type: Number,
+    default: 0,
+  },
+  refundRequestDate: Date,
+  refundApprovedDate: Date,
+  refundProcessedDate: Date,
+  adminNotes: String,
   trackingNumber: String,
   trackingUrl: String,
 });
@@ -161,6 +176,19 @@ const orderSchema = new mongoose.Schema(
     },
     cancellationReason: String,
     returnReason: String,
+    refundAmount: {
+      type: Number,
+      default: 0,
+    },
+    refundStatus: {
+      type: String,
+      enum: ["none", "pending", "approved", "rejected", "processed"],
+      default: "none",
+    },
+    refundRequestDate: Date,
+    refundApprovedDate: Date,
+    refundProcessedDate: Date,
+    adminRefundNotes: String,
     orderDate: {
       type: Date,
       default: Date.now,

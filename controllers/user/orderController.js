@@ -6,6 +6,41 @@ const PDFDocument = require('pdfkit');
 const fs = require("fs");
 const mongoose = require('mongoose');
 
+// Helper function to calculate item final amount (matches UI calculation exactly)
+const calculateItemFinalAmount = (item, order) => {
+  // Calculate item subtotal (exactly as in UI)
+  const itemSubtotal = item.variant.salePrice * item.quantity;
+  
+  // Calculate total coupon discount (exactly as in UI)
+  let totalCouponDiscount = 0;
+  if (order.couponDiscount && order.couponDiscount > 0) {
+    totalCouponDiscount = order.couponDiscount;
+  } else if (order.coupon && order.coupon.discountAmount && order.coupon.discountAmount > 0) {
+    totalCouponDiscount = order.coupon.discountAmount;
+  }
+  
+  // Calculate total order subtotal for proportional calculation (exactly as in UI)
+  let orderSubtotal = 0;
+  order.products.forEach(orderItem => {
+    orderSubtotal += (orderItem.variant.salePrice * orderItem.quantity);
+  });
+  
+  // Calculate proportional coupon discount for this item (exactly as in UI)
+  let itemCouponDiscount = 0;
+  if (totalCouponDiscount > 0 && orderSubtotal > 0) {
+    itemCouponDiscount = (itemSubtotal / orderSubtotal) * totalCouponDiscount;
+  }
+  
+  // Calculate final amount for this item after coupon discount (exactly as in UI)
+  const itemFinalAmount = itemSubtotal - itemCouponDiscount;
+  
+  return {
+    itemSubtotal,
+    itemCouponDiscount,
+    itemFinalAmount
+  };
+};
+
 const getOrders = async (req, res) => {
   try {
     const limit = 5;
@@ -306,9 +341,15 @@ const cancelOrderItem = async (req, res) => {
     item.cancelReason = reason || '';
     item.cancelDate = new Date();
 
-    const cancelledItemSubtotal = item.variant.salePrice * item.quantity;
-    order.finalAmount = Math.max(0, order.finalAmount - cancelledItemSubtotal);
+    // Use helper function to calculate exact final amount (matches UI calculation)
+    const { itemSubtotal: cancelledItemSubtotal, itemCouponDiscount, itemFinalAmount: cancelledItemFinalAmount } = calculateItemFinalAmount(item, order);
+    
+    // Update order amounts - subtract the final amount (not just subtotal)
+    order.finalAmount = Math.max(0, order.finalAmount - cancelledItemFinalAmount);
     order.totalAmount = Math.max(0, order.totalAmount - cancelledItemSubtotal);
+    
+    // DO NOT UPDATE COUPON DISCOUNT - Keep original coupon discount amount fixed
+    // The coupon discount should remain as it was during payment to maintain payment integrity
 
     // Restore product stock
     const product = await Product.findById(productId);
@@ -320,59 +361,47 @@ const cancelOrderItem = async (req, res) => {
       }
     }
 
-    // Handle refund for online payments
-    if (order.paymentMethod && 
-        (order.paymentMethod.toLowerCase() === 'online' || order.paymentMethod === 'Online') &&
-        (order.paymentStatus === 'completed' || order.paymentStatus === 'success')) {
-      
-      const refundAmount = cancelledItemSubtotal;
-
-      // Find or create wallet
-      let wallet = await Wallet.findOne({ userId });
-      if (!wallet) {
-        wallet = new Wallet({
-          userId,
-          balance: refundAmount,
-          transactions: [{
-            type: "credit",
-            amount: refundAmount,
-            description: `Refund for cancelled item ${product?.name || 'Product'} (${variantSize}) in order ${order.orderID}`,
-            createdAt: new Date()
-          }]
-        });
-      } else {
-        wallet.balance += refundAmount;
-        wallet.transactions.unshift({
-          type: "credit",
-          amount: refundAmount,
-          description: `Refund for cancelled item ${product?.name || 'Product'} (${variantSize}) in order ${order.orderID}`,
-          createdAt: new Date()
-        });
-      }
-
-      await wallet.save();
-      
-      // Update order with refund information
-      order.refundAmount = (order.refundAmount || 0) + refundAmount;
+    const refundAmount = cancelledItemFinalAmount;
+    
+    // For ALL payment methods: Require admin approval before wallet credit
+    item.refundStatus = 'pending';
+    item.refundAmount = refundAmount;
+    item.refundRequestDate = new Date();
+    
+    // Update order with pending refund information
+    order.refundAmount = (order.refundAmount || 0) + refundAmount;
+    order.refundStatus = 'pending';
+    if (!order.refundRequestDate) {
+      order.refundRequestDate = new Date();
     }
 
     const allItemsCancelled = order.products.every(p => p.status === 'cancelled');
     if (allItemsCancelled) {
       order.orderStatus = 'cancelled';
-      order.paymentStatus = 'cancelled';
+      
+      // Set payment status based on payment method and whether refund was processed
+      if (order.paymentMethod && 
+          (order.paymentMethod.toLowerCase() === 'online' || order.paymentMethod === 'Online') &&
+          (order.paymentStatus === 'completed' || order.paymentStatus === 'success') &&
+          order.refundAmount > 0) {
+        order.paymentStatus = 'refunded';
+      } else {
+        order.paymentStatus = 'cancelled';
+      }
     }
 
+    // All refunds now require admin approval
     order.statusHistory.push({
       status: 'item cancelled',
       date: new Date(),
-      description: `Item cancelled: ${product?.name || 'Product'} (${variantSize})${reason ? ` - Reason: ${reason}` : ''}`
+      description: `Item cancelled: ${product?.name || 'Product'} (${variantSize})${reason ? ` - Reason: ${reason}` : ''}. Refund of ₹${refundAmount.toFixed(2)} is pending admin approval.`
     });
 
     await order.save();
 
     return res.json({ 
       success: true, 
-      message: 'Item cancelled successfully' 
+      message: `Item cancelled successfully. Refund of ₹${refundAmount.toFixed(2)} is pending admin approval and will be credited to your wallet once approved.`
     });
 
   } catch (error) {
@@ -469,6 +498,9 @@ const returnOrderItem = async (req, res) => {
       });
     }
 
+    // Use helper function to calculate exact final amount (matches UI calculation)
+    const { itemSubtotal: returnedItemSubtotal, itemCouponDiscount, itemFinalAmount: returnedItemFinalAmount } = calculateItemFinalAmount(item, order);
+
     item.status = "return pending";
     item.returnReason = reason;
     item.returnRequestDate = new Date();
@@ -482,6 +514,28 @@ const returnOrderItem = async (req, res) => {
       }
     }
 
+    const refundAmount = returnedItemFinalAmount;
+    
+    // For ALL payment methods: Require admin approval before wallet credit
+    item.refundStatus = 'pending';
+    item.refundAmount = refundAmount;
+    item.refundRequestDate = new Date();
+    
+    // Update order with pending refund information
+    order.refundAmount = (order.refundAmount || 0) + refundAmount;
+    order.refundStatus = 'pending';
+    if (!order.refundRequestDate) {
+      order.refundRequestDate = new Date();
+    }
+    
+    // Update order amounts - subtract the final amount
+    order.finalAmount = Math.max(0, order.finalAmount - returnedItemFinalAmount);
+    order.totalAmount = Math.max(0, order.totalAmount - returnedItemSubtotal);
+    
+    // DO NOT UPDATE COUPON DISCOUNT - Keep original coupon discount amount fixed
+    // The coupon discount should remain as it was during payment to maintain payment integrity
+    // The refund amount already accounts for the proportional coupon discount
+
     const allItemsReturnPending = order.products.every((item) =>
       ["return pending", "returned"].includes(item.status)
     );
@@ -489,17 +543,18 @@ const returnOrderItem = async (req, res) => {
       order.orderStatus = "return pending";
     }
 
+    // All refunds now require admin approval
     order.statusHistory.push({
       status: "item return requested",
       date: new Date(),
-      description: `Return requested for: ${product?.name || "Product"} (${variantSize}) - Reason: ${reason}`,
+      description: `Return requested for: ${product?.name || "Product"} (${variantSize}) - Reason: ${reason}. Refund of ₹${refundAmount.toFixed(2)} is pending admin approval.`,
     });
 
     await order.save();
 
     return res.json({
       success: true,
-      message: "Return request submitted successfully",
+      message: `Return request submitted successfully. Refund of ₹${refundAmount.toFixed(2)} is pending admin approval and will be credited to your wallet once approved.`,
     });
   } catch (error) {
     console.error("Error processing return request:", error);
@@ -585,11 +640,7 @@ const downloadInvoice = async (req, res) => {
 
     doc.moveDown(2);
     doc.fontSize(12).font('Helvetica')
-      .text(`Subtotal: ₹${order.totalAmount.toFixed(2)}`, { align: 'right' })
-      .text(`GST (5%): ₹${order.taxAmount.toFixed(2)}`, { align: 'right' });
-    if (order.discount > 0) {
-      doc.text(`Discount: -₹${order.discount.toFixed(2)}`, { align: 'right' });
-    }
+      .text(`Subtotal: ₹${order.totalAmount.toFixed(2)}`, { align: 'right' });
     if (order.couponDiscount > 0) {
       doc.text(`Coupon Discount: -₹${order.couponDiscount.toFixed(2)}`, { align: 'right' });
     }
@@ -744,6 +795,197 @@ const retryPayment = async (req, res) => {
   }
 };
 
+// Admin function to approve refunds and credit wallet
+const approveRefund = async (req, res) => {
+  try {
+    const { orderId, productId, variantSize, adminNotes } = req.body;
+
+    if (!mongoose.Types.ObjectId.isValid(orderId) || !mongoose.Types.ObjectId.isValid(productId)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid Order ID or Product ID'
+      });
+    }
+
+    const order = await Order.findById(orderId).populate('products.product');
+    if (!order) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'Order not found' 
+      });
+    }
+
+    const item = order.products.find(item =>
+      item.product._id.toString() === productId &&
+      item.variant.size === variantSize &&
+      item.refundStatus === 'pending'
+    );
+
+    if (!item) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'Refund request not found or already processed' 
+      });
+    }
+
+    // Calculate the exact final amount as shown in order details UI
+    const { itemFinalAmount } = calculateItemFinalAmount(item, order);
+    
+    // Use the calculated final amount (not the stored refundAmount which might be incorrect)
+    const refundAmount = itemFinalAmount;
+    const userId = order.user;
+
+    // Credit the exact final amount to wallet
+    let wallet = await Wallet.findOne({ userId });
+    if (!wallet) {
+      wallet = new Wallet({
+        userId,
+        balance: refundAmount,
+        transactions: [{
+          type: "credit",
+          amount: refundAmount,
+          description: `Refund approved for ${item.product.name} (${variantSize}) in order ${order.orderID} - Final Amount: ₹${refundAmount.toFixed(2)}`,
+          createdAt: new Date()
+        }]
+      });
+    } else {
+      wallet.balance += refundAmount;
+      wallet.transactions.unshift({
+        type: "credit",
+        amount: refundAmount,
+        description: `Refund approved for ${item.product.name} (${variantSize}) in order ${order.orderID} - Final Amount: ₹${refundAmount.toFixed(2)}`,
+        createdAt: new Date()
+      });
+    }
+
+    await wallet.save();
+
+    // Update item refund status and store the correct refund amount
+    item.refundStatus = 'approved';
+    item.refundAmount = refundAmount; // Update with correct final amount
+    item.refundApprovedDate = new Date();
+    item.refundProcessedDate = new Date();
+    item.adminNotes = adminNotes || '';
+
+    // Update order refund status
+    const allPendingRefundsProcessed = order.products.every(p => 
+      p.refundStatus !== 'pending'
+    );
+    
+    if (allPendingRefundsProcessed) {
+      order.refundStatus = 'processed';
+      order.refundApprovedDate = new Date();
+      order.refundProcessedDate = new Date();
+      order.adminRefundNotes = adminNotes || '';
+    }
+
+    // Add status history
+    order.statusHistory.push({
+      status: 'refund approved',
+      date: new Date(),
+      description: `Refund of ₹${refundAmount.toFixed(2)} (Final Amount) approved and credited to wallet for ${item.product.name} (${variantSize})${adminNotes ? ` - Admin notes: ${adminNotes}` : ''}`,
+    });
+
+    await order.save();
+
+    return res.json({ 
+      success: true, 
+      message: `Refund of ₹${refundAmount.toFixed(2)} (Final Amount from order details) has been approved and credited to user's wallet.`
+    });
+
+  } catch (error) {
+    console.error('Error approving refund:', error);
+    return res.status(500).json({ 
+      success: false, 
+      message: 'Server error while approving refund' 
+    });
+  }
+};
+
+// Admin function to reject refunds
+const rejectRefund = async (req, res) => {
+  try {
+    const { orderId, productId, variantSize, adminNotes } = req.body;
+
+    if (!mongoose.Types.ObjectId.isValid(orderId) || !mongoose.Types.ObjectId.isValid(productId)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid Order ID or Product ID'
+      });
+    }
+
+    const order = await Order.findById(orderId).populate('products.product');
+    if (!order) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'Order not found' 
+      });
+    }
+
+    const item = order.products.find(item =>
+      item.product._id.toString() === productId &&
+      item.variant.size === variantSize &&
+      item.refundStatus === 'pending'
+    );
+
+    if (!item) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'Refund request not found or already processed' 
+      });
+    }
+
+    const refundAmount = item.refundAmount;
+
+    // Update item refund status to rejected
+    item.refundStatus = 'rejected';
+    item.refundApprovedDate = new Date();
+    item.adminNotes = adminNotes || '';
+
+    // Restore the order amounts since refund is rejected
+    order.finalAmount += refundAmount;
+    order.totalAmount += (item.variant.salePrice * item.quantity);
+
+    // Update order refund amount
+    order.refundAmount = Math.max(0, order.refundAmount - refundAmount);
+
+    // Check if all refunds are processed
+    const allPendingRefundsProcessed = order.products.every(p => 
+      p.refundStatus !== 'pending'
+    );
+    
+    if (allPendingRefundsProcessed) {
+      if (order.refundAmount === 0) {
+        order.refundStatus = 'none';
+      } else {
+        order.refundStatus = 'processed';
+      }
+      order.adminRefundNotes = adminNotes || '';
+    }
+
+    // Add status history
+    order.statusHistory.push({
+      status: 'refund rejected',
+      date: new Date(),
+      description: `Refund of ₹${refundAmount.toFixed(2)} rejected for ${item.product.name} (${variantSize})${adminNotes ? ` - Admin notes: ${adminNotes}` : ''}`,
+    });
+
+    await order.save();
+
+    return res.json({ 
+      success: true, 
+      message: `Refund request has been rejected.`
+    });
+
+  } catch (error) {
+    console.error('Error rejecting refund:', error);
+    return res.status(500).json({ 
+      success: false, 
+      message: 'Server error while rejecting refund' 
+    });
+  }
+};
+
 module.exports = {
   getOrders,
   getOrderDetail,
@@ -752,5 +994,7 @@ module.exports = {
   returnOrder,
   returnOrderItem,
   downloadInvoice,
-  retryPayment
+  retryPayment,
+  approveRefund,
+  rejectRefund
 };

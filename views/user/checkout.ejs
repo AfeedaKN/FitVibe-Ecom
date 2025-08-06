@@ -828,14 +828,7 @@
           </div>
         </div>
 
-        <div class="order-summary" id="orderSummary">
-          <p><span>Subtotal:</span> <span id="subtotalAmount">₹<%= subtotal.toLocaleString('en-IN', { minimumFractionDigits: 2 }) %></span></p>
-          <% if (tax > 0) { %>
-            <p><span>GST (5%):</span> <span id="taxAmount">₹<%= tax.toLocaleString('en-IN', { minimumFractionDigits: 2 }) %></span></p>
-          <% } %>
-          <% if (discount > 0) { %>
-            <p class="discount"><span>Discount (10%):</span> <span id="discountAmount">-₹<%= discount.toLocaleString('en-IN', { minimumFractionDigits: 2 }) %></span></p>
-          <% } %>
+        <div class="order-summary" id="orderSummary"<p><span>Subtotal:</span> <span id="subtotalAmount">₹<%= subtotal.toLocaleString('en-IN', { minimumFractionDigits: 2 }) %></span></p>
           <p class="coupon-discount-row" id="couponDiscountRow" style="display: none;">
             <span>Coupon Discount:</span> 
             <span id="couponDiscountAmount" class="discount">-₹0.00</span>
@@ -1075,11 +1068,6 @@
         const subtotalElement = document.getElementById('subtotalAmount');
         if (subtotalElement) {
           subtotalElement.textContent = `₹${totals.subtotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
-        }
-        
-        const taxElement = document.getElementById('taxAmount');
-        if (taxElement) {
-          taxElement.textContent = `₹${totals.tax.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
         }
         
         const discountElement = document.getElementById('discountAmount');

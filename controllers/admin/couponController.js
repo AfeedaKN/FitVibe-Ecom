@@ -1,5 +1,6 @@
 const Coupon = require('../../models/couponSchema');
 const Order = require('../../models/orderSchema');
+const mongoose = require('mongoose');
 
 // Load coupons page
 const loadCoupons = async (req, res) => {
@@ -7,14 +8,14 @@ const loadCoupons = async (req, res) => {
     console.log('=== LOADING COUPONS PAGE ===');
     
     const page = parseInt(req.query.page) || 1;
-    const limit = 10;
+    const limit = 6; // Changed to 6 per page as requested
     const skip = (page - 1) * limit;
 
     console.log('Fetching coupons from database...');
-    const totalCoupons = await Coupon.countDocuments();
+    const totalCoupons = await Coupon.countDocuments({ isDeleted: { $ne: true } });
     console.log('Total coupons count:', totalCoupons);
     
-    const coupons = await Coupon.find()
+    const coupons = await Coupon.find({ isDeleted: { $ne: true } })
       .sort({ createdOn: -1 })
       .skip(skip)
       .limit(limit)
@@ -22,8 +23,19 @@ const loadCoupons = async (req, res) => {
 
     console.log('Found coupons:', coupons.length);
 
-    // Ensure all coupons have required fields for the view
-    const processedCoupons = coupons.map(coupon => {
+    // Process coupons with actual usage count from orders
+    const processedCoupons = await Promise.all(coupons.map(async (coupon) => {
+      // Get actual usage count from orders
+      const actualUsageCount = await Order.countDocuments({
+        'coupon.couponId': coupon._id,
+        orderStatus: { $ne: 'payment-failed' }
+      });
+
+      // Update the coupon's usedCount if it doesn't match actual usage
+      if (coupon.usedCount !== actualUsageCount) {
+        await Coupon.findByIdAndUpdate(coupon._id, { usedCount: actualUsageCount });
+      }
+
       // Set default values for missing fields to prevent view errors
       return {
         _id: coupon._id,
@@ -34,14 +46,14 @@ const loadCoupons = async (req, res) => {
         minimumPrice: coupon.minimumPrice || 0,
         maxDiscountAmount: coupon.maxDiscountAmount || null,
         usageLimit: coupon.usageLimit || null,
-        usedCount: coupon.usedCount || 0,
+        usedCount: actualUsageCount, // Use actual count from orders
         expireOn: coupon.expireOn || new Date(),
         isList: coupon.isList !== undefined ? coupon.isList : true,
         isActive: coupon.isActive !== undefined ? coupon.isActive : true,
         createdOn: coupon.createdOn || new Date(),
         createdBy: coupon.createdBy || null
       };
-    });
+    }));
 
     const totalPages = Math.ceil(totalCoupons / limit);
 
@@ -51,7 +63,8 @@ const loadCoupons = async (req, res) => {
       coupons: processedCoupons,
       currentPage: page,
       totalPages,
-      totalCoupons
+      totalCoupons,
+      limit
     });
   } catch (error) {
     console.error('=== ERROR LOADING COUPONS ===');
@@ -64,7 +77,8 @@ const loadCoupons = async (req, res) => {
         coupons: [],
         currentPage: 1,
         totalPages: 1,
-        totalCoupons: 0
+        totalCoupons: 0,
+        limit: 6
       });
     } catch (renderError) {
       console.error('Error rendering coupons page:', renderError);
@@ -189,7 +203,10 @@ const addCoupon = async (req, res) => {
 const loadEditCoupon = async (req, res) => {
   try {
     const couponId = req.params.id;
-    const coupon = await Coupon.findById(couponId).lean();
+    const coupon = await Coupon.findOne({ 
+      _id: couponId, 
+      isDeleted: { $ne: true } 
+    }).lean();
 
     if (!coupon) {
       return res.status(404).send('Coupon not found');
@@ -390,7 +407,10 @@ const updateCoupon = async (req, res) => {
 const toggleCouponStatus = async (req, res) => {
   try {
     const couponId = req.params.id;
-    const coupon = await Coupon.findById(couponId);
+    const coupon = await Coupon.findOne({ 
+      _id: couponId, 
+      isDeleted: { $ne: true } 
+    });
 
     if (!coupon) {
       return res.status(404).json({
@@ -420,40 +440,118 @@ const toggleCouponStatus = async (req, res) => {
 // Delete coupon
 const deleteCoupon = async (req, res) => {
   try {
+    console.log('=== DELETE COUPON REQUEST ===');
     const couponId = req.params.id;
+    console.log('Coupon ID to delete:', couponId);
 
-    // Check if coupon is being used in any orders
-    const ordersWithCoupon = await Order.countDocuments({
-      'coupon.couponId': couponId,
-      orderStatus: { $ne: 'payment-failed' }
-    });
-
-    if (ordersWithCoupon > 0) {
+    // Validate coupon ID
+    if (!couponId) {
+      console.log('No coupon ID provided');
       return res.status(400).json({
         success: false,
-        message: 'Cannot delete coupon as it has been used in orders. You can unlist it instead.'
+        message: 'Coupon ID is required'
       });
     }
 
-    const coupon = await Coupon.findByIdAndDelete(couponId);
+    // Validate ObjectId format
+    if (!mongoose.Types.ObjectId.isValid(couponId)) {
+      console.log('Invalid ObjectId format:', couponId);
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid coupon ID format'
+      });
+    }
 
-    if (!coupon) {
+    // Check if coupon exists first
+    const existingCoupon = await Coupon.findById(couponId);
+    if (!existingCoupon) {
+      console.log('Coupon not found:', couponId);
       return res.status(404).json({
         success: false,
         message: 'Coupon not found'
       });
     }
 
-    res.json({
+    console.log('Found coupon to delete:', existingCoupon.name);
+
+    // Check if coupon is being used in any orders using both string and ObjectId
+    console.log('Checking for orders using this coupon...');
+    const ordersWithCoupon = await Order.countDocuments({
+      $or: [
+        { 'coupon.couponId': couponId },
+        { 'coupon.couponId': new mongoose.Types.ObjectId(couponId) }
+      ],
+      orderStatus: { $ne: 'payment-failed' }
+    });
+
+    console.log('Orders using this coupon:', ordersWithCoupon);
+
+    if (ordersWithCoupon > 0) {
+      console.log('Coupon has been used in orders - performing soft delete');
+      
+      // Perform soft delete
+      const softDeletedCoupon = await Coupon.findByIdAndUpdate(
+        couponId,
+        {
+          isDeleted: true,
+          deletedAt: new Date(),
+          isList: false, // Also unlist the coupon
+          isActive: false // Deactivate the coupon
+        },
+        { new: true }
+      );
+
+      if (!softDeletedCoupon) {
+        console.log('Failed to soft delete coupon');
+        return res.status(500).json({
+          success: false,
+          message: 'Failed to delete coupon'
+        });
+      }
+
+      console.log('Coupon soft deleted successfully:', softDeletedCoupon.name);
+
+      return res.status(200).json({
+        success: true, // Set to true for successful soft delete
+        message: 'Coupon deleted successfully'
+      });
+    }
+
+    // Hard delete the coupon if it hasn't been used
+    console.log('Coupon has not been used - performing hard delete');
+    const deletedCoupon = await Coupon.findByIdAndDelete(couponId);
+
+    if (!deletedCoupon) {
+      console.log('Failed to delete coupon');
+      return res.status(500).json({
+        success: false,
+        message: 'Failed to delete coupon'
+      });
+    }
+
+    console.log('Coupon hard deleted successfully:', deletedCoupon.name);
+
+    res.status(200).json({
       success: true,
       message: 'Coupon deleted successfully'
     });
 
   } catch (error) {
-    console.error('Error deleting coupon:', error);
+    console.error('=== ERROR DELETING COUPON ===');
+    console.error('Error:', error.message);
+    console.error('Stack:', error.stack);
+    
+    // Handle specific MongoDB errors
+    if (error.name === 'CastError') {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid coupon ID format'
+      });
+    }
+    
     res.status(500).json({
       success: false,
-      message: 'Error deleting coupon'
+      message: 'Error deleting coupon: ' + error.message
     });
   }
 };

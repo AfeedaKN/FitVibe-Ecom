@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -201,6 +201,18 @@
       background: linear-gradient(135deg, rgba(234, 88, 12, 0.15) 0%, rgba(194, 65, 12, 0.15) 100%);
       color: #c2410c;
       border: 2px solid rgba(234, 88, 12, 0.3);
+    }
+
+    .status-failed {
+      background: linear-gradient(135deg, rgba(239, 68, 68, 0.15) 0%, rgba(220, 38, 38, 0.15) 100%);
+      color: #dc2626;
+      border: 2px solid rgba(239, 68, 68, 0.3);
+    }
+
+    .status-refunded {
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(5, 150, 105, 0.15) 100%);
+      color: #059669;
+      border: 2px solid rgba(16, 185, 129, 0.3);
     }
 
     /* Card Styles - Enhanced */
@@ -738,6 +750,19 @@
       text-decoration: none;
     }
 
+    .retry-payment-btn {
+      background: linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(217, 119, 6, 0.1) 100%);
+      color: #d97706;
+      border: 2px solid rgba(245, 158, 11, 0.3);
+    }
+
+    .retry-payment-btn:hover {
+      background: #f59e0b;
+      color: #ffffff;
+      transform: translateY(-3px);
+      box-shadow: 0 10px 15px -3px rgba(245, 158, 11, 0.4);
+    }
+
     .action-btn:disabled {
       background: #f1f5f9;
       color: #94a3b8;
@@ -1034,7 +1059,7 @@
             <%= order.orderStatus %>
           </div>
           <div class="total-amount">
-            ₹<%= order.finalAmount.toFixed(2) %>
+            <%= order.finalAmount.toFixed(2) %>
           </div>
         </div>
       </div>
@@ -1080,8 +1105,32 @@
             Payment Status
           </div>
           <div class="detail-value">
-            <span class="status-badge status-<%= order.paymentStatus.toLowerCase() %>">
-              <%= order.paymentStatus %>
+            <% 
+              let displayPaymentStatus = order.paymentStatus;
+              let statusClass = order.paymentStatus.toLowerCase();
+              
+              // Handle special cases for payment status display
+              if (order.orderStatus === 'payment-failed') {
+                if (order.paymentStatus === 'cancelled') {
+                  displayPaymentStatus = 'Cancelled';
+                  statusClass = 'cancelled';
+                } else {
+                  displayPaymentStatus = 'Failed';
+                  statusClass = 'failed';
+                }
+              } else if (order.paymentStatus === 'completed') {
+                displayPaymentStatus = 'Completed';
+                statusClass = 'completed';
+              } else if (order.paymentStatus === 'pending') {
+                displayPaymentStatus = 'Pending';
+                statusClass = 'pending';
+              } else if (order.paymentStatus === 'refunded') {
+                displayPaymentStatus = 'Refunded';
+                statusClass = 'refunded';
+              }
+            %>
+            <span class="status-badge status-<%= statusClass %>">
+              <%= displayPaymentStatus %>
             </span>
           </div>
         </div>
@@ -1090,14 +1139,14 @@
             <i class="fas fa-calculator"></i>
             Total Amount
           </div>
-          <div class="detail-value amount">₹<%= order.totalAmount.toFixed(2) %></div>
+          <div class="detail-value amount"><%= order.totalAmount.toFixed(2) %></div>
         </div>
         <div class="detail-item">
           <div class="detail-label">
             <i class="fas fa-money-bill-wave"></i>
             Final Amount
           </div>
-          <div class="detail-value amount">₹<%= order.finalAmount.toFixed(2) %></div>
+          <div class="detail-value amount"><%= order.finalAmount.toFixed(2) %></div>
         </div>
       </div>
 
@@ -1149,15 +1198,42 @@
               <th>Details</th>
               <th>Quantity</th>
               <th>Price</th>
-              <th>Total</th>
+              <th>Balance Amount</th>
               <th>Status</th>
-              <% if (order.products.some(item => ['pending', 'processing'].includes(item.status))) { %>
+                <% if (order.products.some(item => ['pending', 'processing', 'delivered'].includes(item.status) && !['cancelled', 'returned', 'return pending'].includes(item.status))) { %>
                 <th>Action</th>
               <% } %>
             </tr>
           </thead>
           <tbody>
-            <% order.products.forEach(item => { %>
+            <% 
+              // Calculate total coupon discount for proportional distribution
+              let totalCouponDiscount = 0;
+              if (order.couponDiscount && order.couponDiscount > 0) {
+                totalCouponDiscount = order.couponDiscount;
+              } else if (order.coupon && order.coupon.discountAmount && order.coupon.discountAmount > 0) {
+                totalCouponDiscount = order.coupon.discountAmount;
+              }
+              
+              // Calculate total order subtotal for proportional calculation
+              let orderSubtotal = 0;
+              order.products.forEach(item => {
+                orderSubtotal += (item.variant.salePrice * item.quantity);
+              });
+            %>
+            <% order.products.forEach(item => { 
+              // Calculate item subtotal
+              const itemSubtotal = item.variant.salePrice * item.quantity;
+              
+              // Calculate proportional coupon discount for this item
+              let itemCouponDiscount = 0;
+              if (totalCouponDiscount > 0 && orderSubtotal > 0) {
+                itemCouponDiscount = (itemSubtotal / orderSubtotal) * totalCouponDiscount;
+              }
+              
+              // Calculate final amount for this item after coupon discount
+              const itemFinalAmount = itemSubtotal - itemCouponDiscount;
+            %>
               <tr>
                 <td>
                   <div class="product-cell">
@@ -1177,8 +1253,19 @@
                   </div>
                 </td>
                 <td><%= item.quantity %></td>
-                <td class="price-cell">₹<%= item.variant.salePrice.toLocaleString('en-IN', { minimumFractionDigits: 2 }) %></td>
-                <td class="total-cell">₹<%= (item.variant.salePrice * item.quantity).toLocaleString('en-IN', { minimumFractionDigits: 2 }) %></td>
+                <td class="price-cell"><%= item.variant.salePrice.toLocaleString('en-IN', { minimumFractionDigits: 2 }) %></td>
+                <td class="total-cell">
+                  <% if (totalCouponDiscount > 0) { %>
+                    <div style="font-size: 0.75rem; color: #64748b; text-decoration: line-through;">
+                      <%= itemSubtotal.toLocaleString('en-IN', { minimumFractionDigits: 2 }) %>
+                    </div>
+                    <div style="font-weight: 700; color: #059669;">
+                      <%= itemFinalAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 }) %>
+                    </div>
+                  <% } else { %>
+                    <%= itemSubtotal.toLocaleString('en-IN', { minimumFractionDigits: 2 }) %>
+                  <% } %>
+                </td>
                 <td>
                   <span class="status-badge status-<%= item.status.toLowerCase().replace(' ', '-') %>">
                     <%= item.status %>
@@ -1196,7 +1283,7 @@
                       Cancel
                     </button>
                   </td>
-                <% } else if (item.status === 'delivered' && !['return pending', 'returned'].includes(item.status)) { %>
+                <% } else if (item.status === 'delivered') { %>
                   <td class="action-cell">
                     <button class="table-action-btn table-return-btn return-item-btn" 
                             data-order-id="<%= order._id %>"
@@ -1227,38 +1314,36 @@
         </h2>
       </div>
       
-      <div class="summary-container">
-        <div class="summary-grid">
+      <div class="summary-container"<div class="summary-grid">
           <div class="summary-item">
             <span class="summary-label">
               <i class="fas fa-shopping-cart"></i>
               Subtotal:
             </span>
-            <span class="summary-value">₹<%= order.totalAmount.toFixed(2) %></span>
+            <span class="summary-value"><%= order.totalAmount.toFixed(2) %></span>
           </div>
-          <div class="summary-item">
-            <span class="summary-label">
-              <i class="fas fa-percentage"></i>
-              GST (5%):
-            </span>
-            <span class="summary-value">₹<%= order.taxAmount.toFixed(2) %></span>
-          </div>
-          <% if (order.discount > 0) { %>
-            <div class="summary-item">
-              <span class="summary-label">
-                <i class="fas fa-tag"></i>
-                Discount:
-              </span>
-              <span class="summary-value discount">-₹<%= order.discount.toFixed(2) %></span>
-            </div>
-          <% } %>
-          <% if (order.couponDiscount > 0) { %>
+          <% 
+            // Check both couponDiscount field and coupon.discountAmount field
+            let couponDiscountAmount = 0;
+            let couponCode = '';
+            
+            if (order.couponDiscount && order.couponDiscount > 0) {
+              couponDiscountAmount = order.couponDiscount;
+            } else if (order.coupon && order.coupon.discountAmount && order.coupon.discountAmount > 0) {
+              couponDiscountAmount = order.coupon.discountAmount;
+            }
+            
+            if (order.coupon && order.coupon.code) {
+              couponCode = order.coupon.code;
+            }
+          %>
+          <% if (couponDiscountAmount > 0) { %>
             <div class="summary-item">
               <span class="summary-label">
                 <i class="fas fa-ticket-alt"></i>
-                Coupon Discount:
+                Coupon Discount<% if (couponCode) { %> (<%= couponCode %>)<% } %>:
               </span>
-              <span class="summary-value discount">-₹<%= order.couponDiscount.toFixed(2) %></span>
+              <span class="summary-value discount">-<%= couponDiscountAmount.toFixed(2) %></span>
             </div>
           <% } %>
           <div class="summary-item">
@@ -1266,14 +1351,27 @@
               <i class="fas fa-shipping-fast"></i>
               Shipping:
             </span>
-            <span class="summary-value">₹<%= order.shippingCharge.toFixed(2) %></span>
+            <span class="summary-value"><%= order.shippingCharge.toFixed(2) %></span>
           </div>
+          <% if (order.refundAmount && order.refundAmount > 0) { %>
+            <div class="summary-item">
+              <span class="summary-label">
+                <i class="fas fa-undo-alt"></i>
+                Refunded Amount:
+              </span>
+              <span class="summary-value" style="color: #059669; font-weight: 700;"><%= order.refundAmount.toFixed(2) %></span>
+            </div>
+          <% } %>
           <div class="summary-item">
             <span class="summary-label">
               <i class="fas fa-money-bill-wave"></i>
-              Total:
+              <% if (order.refundAmount && order.refundAmount > 0) { %>
+                Current Total:
+              <% } else { %>
+                Total:
+              <% } %>
             </span>
-            <span class="summary-value">₹<%= order.finalAmount.toFixed(2) %></span>
+            <span class="summary-value"><%= order.finalAmount.toFixed(2) %></span>
           </div>
         </div>
       </div>
@@ -1328,6 +1426,12 @@
           <button class="action-btn return-btn" data-bs-toggle="modal" data-bs-target="#returnOrderModal">
             <i class="fas fa-undo"></i>
             Return Order
+          </button>
+        <% } %>
+        <% if (order.orderStatus === 'payment-failed' && order.paymentMethod === 'Online') { %>
+          <button class="action-btn retry-payment-btn" id="retryPaymentBtn">
+            <i class="fas fa-credit-card"></i>
+            Retry Payment
           </button>
         <% } %>
         <a href="/order/track/<%= order._id %>" class="action-btn track-btn">
@@ -1569,7 +1673,7 @@
     }
   });
 
-  // ðŸ›‘ Cancel Item Modal Data Populate
+  // 🛑 Cancel Item Modal Data Populate
   document.querySelectorAll('.cancel-item-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       document.getElementById('cancelItemOrderId').value = btn.dataset.orderId;
@@ -1578,7 +1682,7 @@
     });
   });
 
-  // ðŸ” Return Item Modal Data Populate
+  // 🔁 Return Item Modal Data Populate
   document.querySelectorAll('.return-item-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       document.getElementById('returnItemOrderId').value = btn.dataset.orderId;
@@ -1587,7 +1691,7 @@
     });
   });
 
-  // ðŸš€ Handle Cancel/Return Form Submissions
+  // 🚀 Handle Cancel/Return Form Submissions
   ['cancelOrderForm', 'cancelItemForm', 'returnOrderForm', 'returnItemForm'].forEach(formId => {
     const form = document.getElementById(formId);
     if (form) {
@@ -1673,7 +1777,7 @@
     }
   });
 
-  // âœ¨ Fade-in animation on load
+  // ✨ Fade-in animation on load
   document.addEventListener('DOMContentLoaded', () => {
     const elements = document.querySelectorAll('.fade-in');
     elements.forEach((el, index) => {
@@ -1684,7 +1788,7 @@
     });
   });
 
-  // ðŸ”„ Handle Return Reason Dropdown Changes
+  // 🔄 Handle Return Reason Dropdown Changes
   function handleReasonDropdownChange(selectId, customReasonDivId, additionalDetailsDivId) {
     const select = document.getElementById(selectId);
     const customReasonDiv = document.getElementById(customReasonDivId);
@@ -1727,23 +1831,46 @@
   handleReasonDropdownChange('cancelReasonSelect', 'cancelCustomReasonDiv', 'cancelAdditionalDetailsDiv');
   handleReasonDropdownChange('cancelItemReasonSelect', 'cancelItemCustomReasonDiv', null);
 
-  // âŒ Remove invalid on input
+  // ❌ Remove invalid on input
   document.querySelectorAll('.form-control').forEach(input => {
     input.addEventListener('input', () => {
       input.classList.remove('is-invalid');
     });
   });
 
-  // ðŸ“± Responsive table scroll
+  // 📱 Responsive table scroll
   window.addEventListener('resize', () => {
     const tables = document.querySelectorAll('.items-table-container');
     tables.forEach(container => {
       container.style.overflowX = (window.innerWidth < 768) ? 'auto' : 'visible';
     });
   });
+// �'� Retry Payment Handler
+  const retryPaymentBtn = document.getElementById('retryPaymentBtn');
+  if (retryPaymentBtn) {
+    retryPaymentBtn.addEventListener('click', async () => {
+      const originalContent = retryPaymentBtn.innerHTML;
+      retryPaymentBtn.disabled = true;
+      retryPaymentBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Processing...';
+
+      try {
+        // Redirect to checkout with the failed order ID
+        window.location.href = `/checkout/retry/<%= order._id %>`;
+      } catch (error) {
+        console.error('Retry payment error:', error);
+        Toast.fire({
+          icon: 'error',
+          title: 'Failed to retry payment. Please try again.'
+        });
+        retryPaymentBtn.disabled = false;
+        retryPaymentBtn.innerHTML = originalContent;
+      }
+    });
+  }
 </script>
 </body>
 
 </html>
+
 
 

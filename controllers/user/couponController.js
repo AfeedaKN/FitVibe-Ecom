@@ -74,15 +74,16 @@ const applyCoupon = async (req, res) => {
       });
     }
 
-    const taxAmount = subtotal * 0.05;
-    const bulkDiscount = subtotal > 5000 ? subtotal * 0.1 : 0;
+    const taxAmount = 0; // Removed GST calculation
+    const bulkDiscount = 0; // Removed bulk discount
     const shippingCharge = 100;
 
     // Find and validate coupon
     const coupon = await Coupon.findOne({
       name: couponCode.toUpperCase().trim(),
-      isList: true,
-      isActive: true
+      isList: true,        // Must be listed to be usable
+      isActive: true,      // Must be active
+      isDeleted: { $ne: true }  // Must not be deleted
     });
 
     if (!coupon) {
@@ -175,7 +176,7 @@ const applyCoupon = async (req, res) => {
 
     // Calculate final totals
     const totalAfterCoupon = subtotal - couponDiscountAmount;
-    const finalAmount = totalAfterCoupon + taxAmount - bulkDiscount + shippingCharge;
+    const finalAmount = totalAfterCoupon + shippingCharge;
 
     // Store coupon data in session for order placement
     req.session.appliedCoupon = {
@@ -261,10 +262,10 @@ const removeCoupon = async (req, res) => {
       return sum + (item.variant.salePrice * item.quantity);
     }, 0);
 
-    const taxAmount = subtotal * 0.05;
-    const bulkDiscount = subtotal > 5000 ? subtotal * 0.1 : 0;
+    const taxAmount = 0; // Removed GST calculation
+    const bulkDiscount = 0; // Removed bulk discount
     const shippingCharge = 100;
-    const finalAmount = subtotal + taxAmount - bulkDiscount + shippingCharge;
+    const finalAmount = subtotal + shippingCharge;
 
     // Remove coupon from session
     delete req.session.appliedCoupon;
@@ -352,8 +353,9 @@ const validateCoupon = async (req, res) => {
     // Find coupon
     const coupon = await Coupon.findOne({
       name: couponCode.toUpperCase().trim(),
-      isList: true,
-      isActive: true
+      isList: true,        // Must be listed to be usable
+      isActive: true,      // Must be active
+      isDeleted: { $ne: true }  // Must not be deleted
     });
 
     if (!coupon) {

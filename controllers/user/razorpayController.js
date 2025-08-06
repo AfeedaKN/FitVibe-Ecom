@@ -167,12 +167,18 @@ const handlePaymentFailure = async (req, res) => {
     // Update order with payment failure details
     console.log('Updating order with payment failure details...');
     
-    order.paymentStatus = 'failed';
-    order.orderStatus = 'payment-failed';
+    // Set correct status based on failure type
+    if (error?.code === 'PAYMENT_CANCELLED' || error?.description?.includes('cancelled')) {
+      order.paymentStatus = 'cancelled';
+      order.orderStatus = 'payment-failed';
+    } else {
+      order.paymentStatus = 'failed';
+      order.orderStatus = 'payment-failed';
+    }
     
     // Lock order from admin changes but allow user retries
     order.isLocked = true; 
-    order.paymentMethod = 'online'; // Ensure it's marked as online payment
+    order.paymentMethod = 'Online'; // Ensure it's marked as online payment
     
     // Add failure details to payment details
     if (!order.paymentDetails) {

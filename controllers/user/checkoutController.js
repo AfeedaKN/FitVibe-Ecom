@@ -41,10 +41,10 @@ const getCheckout = async (req, res) => {
       return sum + (item.variant?.salePrice || 0) * item.quantity;
     }, 0);
 
-    const tax = subtotal * 0.05;
-    const discount = subtotal > 5000 ? subtotal * 0.1 : 0;
+    const tax = 0; // Removed GST calculation
+    const discount = 0; // Removed bulk discount
     const shipping = 100;
-    const total = subtotal + tax - discount + shipping;
+    const total = subtotal + shipping;
 
     const defaultAddress = addresses.find(addr => addr.isDefault);
     
@@ -112,10 +112,10 @@ const placeOrder = async (req, res) => {
       return sum + (item.variant.salePrice * item.quantity);
     }, 0);
 
-    const taxAmount = subtotal * 0.05;
-    const discount = subtotal > 5000 ? subtotal * 0.1 : 0;
+    const taxAmount = 0; // Removed GST calculation
+    const discount = 0; // Removed bulk discount
     const shippingCharge = 100;
-    const totalAmount = subtotal + taxAmount;
+    const totalAmount = subtotal;
     
     // Handle coupon discount
     let couponDiscountAmount = 0;
@@ -163,7 +163,7 @@ const placeOrder = async (req, res) => {
       }
     }
     
-    const finalAmount = totalAmount - discount - couponDiscountAmount + shippingCharge;
+    const finalAmount = totalAmount - couponDiscountAmount + shippingCharge;
 
     // Generate order ID
     const generateOrderID = () => {
