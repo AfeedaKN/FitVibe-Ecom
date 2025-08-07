@@ -152,13 +152,29 @@ const cancelOrder = async (req, res) => {
       }
     }
 
-    // Handle refund for online payments
+    // Handle refund for online/wallet payments
     if (order.paymentMethod && 
-        (order.paymentMethod.toLowerCase() === 'online' || order.paymentMethod === 'Online') &&
+        (order.paymentMethod.toLowerCase() === 'online' || order.paymentMethod === 'Online' || order.paymentMethod.toLowerCase() === 'wallet') &&
         (originalPaymentStatus === 'completed' || originalPaymentStatus === 'success')) {
       
       const refundAmount = order.finalAmount;
       const userId = order.user;
+
+      // Create detailed description for wallet transaction
+      let refundDescription = `Refund for cancelled order ${order.orderID} - Balance Amount: ₹${refundAmount.toFixed(2)}`;
+      
+      // Check if coupon was applied and add details
+      let couponDiscountAmount = 0;
+      if (order.couponDiscount && order.couponDiscount > 0) {
+        couponDiscountAmount = order.couponDiscount;
+      } else if (order.coupon && order.coupon.discountAmount && order.coupon.discountAmount > 0) {
+        couponDiscountAmount = order.coupon.discountAmount;
+      }
+      
+      if (couponDiscountAmount > 0) {
+        const originalTotal = order.totalAmount + order.shippingCharge;
+        refundDescription += ` (Original Total: ₹${originalTotal.toFixed(2)} - Coupon Discount: ₹${couponDiscountAmount.toFixed(2)})`;
+      }
 
       // Find or create wallet
       let wallet = await Wallet.findOne({ userId });
@@ -169,7 +185,7 @@ const cancelOrder = async (req, res) => {
           transactions: [{
             type: "credit",
             amount: refundAmount,
-            description: `Refund for cancelled order ${order.orderID}`,
+            description: refundDescription,
             createdAt: new Date()
           }]
         });
@@ -178,7 +194,7 @@ const cancelOrder = async (req, res) => {
         wallet.transactions.unshift({
           type: "credit",
           amount: refundAmount,
-          description: `Refund for cancelled order ${order.orderID}`,
+          description: refundDescription,
           createdAt: new Date()
         });
       }
@@ -189,11 +205,11 @@ const cancelOrder = async (req, res) => {
       order.refundAmount = refundAmount;
       order.paymentStatus = 'refunded';
       
-      // Add status history
+      // Add status history with detailed description
       order.statusHistory.push({
         status: 'refunded',
         date: new Date(),
-        description: `₹${refundAmount} refunded to wallet for cancelled order`,
+        description: `₹${refundAmount.toFixed(2)} (Balance Amount) refunded to wallet for cancelled order${couponDiscountAmount > 0 ? ` - includes coupon discount of ₹${couponDiscountAmount.toFixed(2)}` : ''}`,
       });
     }
 
@@ -363,16 +379,73 @@ const cancelOrderItem = async (req, res) => {
 
     const refundAmount = cancelledItemFinalAmount;
     
-    // For ALL payment methods: Require admin approval before wallet credit
-    item.refundStatus = 'pending';
-    item.refundAmount = refundAmount;
-    item.refundRequestDate = new Date();
-    
-    // Update order with pending refund information
-    order.refundAmount = (order.refundAmount || 0) + refundAmount;
-    order.refundStatus = 'pending';
-    if (!order.refundRequestDate) {
-      order.refundRequestDate = new Date();
+    // Handle refund for online/wallet payments immediately (same as full order cancellation)
+    if (order.paymentMethod && 
+        (order.paymentMethod.toLowerCase() === 'online' || order.paymentMethod === 'Online' || order.paymentMethod.toLowerCase() === 'wallet') &&
+        (order.paymentStatus === 'completed' || order.paymentStatus === 'success')) {
+      
+      const userId = order.user;
+
+      // Create detailed description for wallet transaction
+      let refundDescription = `Refund for cancelled item ${product?.name || 'Product'} (${variantSize}) in order ${order.orderID} - Balance Amount: ₹${refundAmount.toFixed(2)}`;
+      
+      // Check if coupon was applied and add details
+      if (itemCouponDiscount > 0) {
+        refundDescription += ` (Subtotal: ₹${cancelledItemSubtotal.toFixed(2)} - Coupon Discount: ₹${itemCouponDiscount.toFixed(2)})`;
+      }
+
+      // Find or create wallet
+      let wallet = await Wallet.findOne({ userId });
+      if (!wallet) {
+        wallet = new Wallet({
+          userId,
+          balance: refundAmount,
+          transactions: [{
+            type: "credit",
+            amount: refundAmount,
+            description: refundDescription,
+            createdAt: new Date()
+          }]
+        });
+      } else {
+        wallet.balance += refundAmount;
+        wallet.transactions.unshift({
+          type: "credit",
+          amount: refundAmount,
+          description: refundDescription,
+          createdAt: new Date()
+        });
+      }
+
+      await wallet.save();
+      
+      // Update item with refund information
+      item.refundStatus = 'approved';
+      item.refundAmount = refundAmount;
+      item.refundApprovedDate = new Date();
+      item.refundProcessedDate = new Date();
+      
+      // Update order with refund information
+      order.refundAmount = (order.refundAmount || 0) + refundAmount;
+      order.refundStatus = 'processed';
+      
+      // Add status history with refund details
+      order.statusHistory.push({
+        status: 'item cancelled',
+        date: new Date(),
+        description: `Item cancelled: ${product?.name || 'Product'} (${variantSize})${reason ? ` - Reason: ${reason}` : ''}. ₹${refundAmount.toFixed(2)} (Balance Amount) refunded to wallet.`
+      });
+      
+    } else {
+      // For COD orders, no refund needed - just mark as cancelled
+      item.refundStatus = 'none';
+      item.refundAmount = 0;
+      
+      order.statusHistory.push({
+        status: 'item cancelled',
+        date: new Date(),
+        description: `Item cancelled: ${product?.name || 'Product'} (${variantSize})${reason ? ` - Reason: ${reason}` : ''}.`
+      });
     }
 
     const allItemsCancelled = order.products.every(p => p.status === 'cancelled');
@@ -381,7 +454,7 @@ const cancelOrderItem = async (req, res) => {
       
       // Set payment status based on payment method and whether refund was processed
       if (order.paymentMethod && 
-          (order.paymentMethod.toLowerCase() === 'online' || order.paymentMethod === 'Online') &&
+          (order.paymentMethod.toLowerCase() === 'online' || order.paymentMethod === 'Online' || order.paymentMethod.toLowerCase() === 'wallet') &&
           (order.paymentStatus === 'completed' || order.paymentStatus === 'success') &&
           order.refundAmount > 0) {
         order.paymentStatus = 'refunded';
@@ -390,18 +463,19 @@ const cancelOrderItem = async (req, res) => {
       }
     }
 
-    // All refunds now require admin approval
-    order.statusHistory.push({
-      status: 'item cancelled',
-      date: new Date(),
-      description: `Item cancelled: ${product?.name || 'Product'} (${variantSize})${reason ? ` - Reason: ${reason}` : ''}. Refund of ₹${refundAmount.toFixed(2)} is pending admin approval.`
-    });
-
     await order.save();
+
+    // Return appropriate message based on payment method
+    let successMessage = 'Item cancelled successfully.';
+    if (order.paymentMethod && 
+        (order.paymentMethod.toLowerCase() === 'online' || order.paymentMethod === 'Online' || order.paymentMethod.toLowerCase() === 'wallet') &&
+        (order.paymentStatus === 'completed' || order.paymentStatus === 'success' || order.paymentStatus === 'refunded')) {
+      successMessage += ` ₹${refundAmount.toFixed(2)} (Balance Amount) has been credited to your wallet.`;
+    }
 
     return res.json({ 
       success: true, 
-      message: `Item cancelled successfully. Refund of ₹${refundAmount.toFixed(2)} is pending admin approval and will be credited to your wallet once approved.`
+      message: successMessage
     });
 
   } catch (error) {

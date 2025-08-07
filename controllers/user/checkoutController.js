@@ -3,6 +3,8 @@ const Product = require('../../models/productSchema');
 const Order = require('../../models/orderSchema');
 const User = require('../../models/userSchema');
 const Address = require('../../models/addressSchema');
+const Wallet = require('../../models/walletShema');
+const { findOrCreateWallet, createTransaction } = require('../../controllers/user/walletController')
 
 const getCheckout = async (req, res) => {
   try {
@@ -15,6 +17,10 @@ const getCheckout = async (req, res) => {
     const cart = await Cart.findOne({ userId }).populate('items.productId');
     const addresses = await Address.find({ user: userId });
 
+    // Get user's wallet balance
+    let wallet = await Wallet.findOne({ userId });
+    const walletBalance = wallet ? wallet.balance : 0;
+
     if (!cart || cart.items.length === 0) {
       return res.render('checkout', { 
         cart: null, 
@@ -25,7 +31,8 @@ const getCheckout = async (req, res) => {
         discount: 0, 
         shipping: 0, 
         total: 0, 
-        defaultAddress: null 
+        defaultAddress: null,
+        walletBalance: walletBalance
       });
     }
 
@@ -57,7 +64,8 @@ const getCheckout = async (req, res) => {
       discount,
       shipping,
       total,
-      defaultAddress: defaultAddress ? defaultAddress._id : null 
+      defaultAddress: defaultAddress ? defaultAddress._id : null,
+      walletBalance: walletBalance
     });
 
   } catch (error) {
@@ -65,6 +73,8 @@ const getCheckout = async (req, res) => {
     res.status(500).send('Server Error');
   }
 };
+
+
 
 const placeOrder = async (req, res) => {
   try {
@@ -112,8 +122,8 @@ const placeOrder = async (req, res) => {
       return sum + (item.variant.salePrice * item.quantity);
     }, 0);
 
-    const taxAmount = 0; // Removed GST calculation
-    const discount = 0; // Removed bulk discount
+    const taxAmount = 0;
+    const discount = 0;
     const shippingCharge = 100;
     const totalAmount = subtotal;
     
@@ -122,7 +132,6 @@ const placeOrder = async (req, res) => {
     let appliedCoupon = null;
     
     if (couponCode && couponDiscount) {
-      // Validate coupon one more time before applying
       const Coupon = require('../../models/couponSchema');
       const coupon = await Coupon.findOne({ 
         name: couponCode.toUpperCase(),
@@ -131,7 +140,6 @@ const placeOrder = async (req, res) => {
       });
       
       if (coupon && coupon.expireOn >= new Date() && subtotal >= coupon.minimumPrice) {
-        // Check if user hasn't used this coupon before
         const existingOrder = await Order.findOne({
           user: userId,
           'coupon.couponId': coupon._id,
@@ -139,19 +147,15 @@ const placeOrder = async (req, res) => {
         });
         
         if (!existingOrder) {
-          // Calculate discount based on coupon type
           if (coupon.discountType === 'percentage') {
             couponDiscountAmount = (subtotal * coupon.discountValue) / 100;
-            // Apply maximum discount limit if set
             if (coupon.maxDiscountAmount && couponDiscountAmount > coupon.maxDiscountAmount) {
               couponDiscountAmount = coupon.maxDiscountAmount;
             }
           } else {
-            // Fixed discount
             couponDiscountAmount = Math.min(coupon.discountValue, subtotal);
           }
           
-          // Ensure discount doesn't exceed subtotal and matches frontend calculation
           couponDiscountAmount = Math.min(couponDiscountAmount, subtotal, parseFloat(couponDiscount));
           
           appliedCoupon = {
@@ -164,6 +168,19 @@ const placeOrder = async (req, res) => {
     }
     
     const finalAmount = totalAmount - couponDiscountAmount + shippingCharge;
+
+    // For wallet payments, check if user has sufficient balance
+    if (paymentMethod === 'Wallet' || paymentMethod === 'wallet') {
+      const wallet = await Wallet.findOne({ userId });
+      const walletBalance = wallet ? wallet.balance : 0;
+      
+      if (walletBalance < finalAmount) {
+        return res.status(400).json({ 
+          success: false, 
+          message: `Insufficient wallet balance. Available: ₹${walletBalance.toFixed(2)}, Required: ₹${finalAmount.toFixed(2)}` 
+        });
+      }
+    }
 
     // Generate order ID
     const generateOrderID = () => {
@@ -191,7 +208,7 @@ const placeOrder = async (req, res) => {
           salePrice: item.variant.salePrice,
         },
         quantity: item.quantity,
-        status: 'pending', 
+        status: 'pending'
       };
     });
 
@@ -208,7 +225,7 @@ const placeOrder = async (req, res) => {
         state: address.state,
         zipCode: address.zipCode,
         country: address.country,
-        phone: address.phone,
+        phone: address.phone
       },
       totalAmount,
       discount,
@@ -218,8 +235,8 @@ const placeOrder = async (req, res) => {
       finalAmount,
       coupon: appliedCoupon,
       paymentMethod,
-      orderStatus: paymentMethod === 'Online' ? 'pending' : 'pending',
-      paymentStatus: paymentMethod === 'Online' ? 'pending' : 'pending',
+      orderStatus: 'pending',
+      paymentStatus: 'pending'
     });
 
     await order.save();
@@ -227,7 +244,6 @@ const placeOrder = async (req, res) => {
 
     // For COD orders, update stock and clear cart immediately
     if (paymentMethod === 'COD') {
-      // Update product stock
       for (const item of cart.items) {
         if (!item.variant) continue;
         
@@ -239,7 +255,6 @@ const placeOrder = async (req, res) => {
         }
       }
 
-      // Clear cart
       cart.items = [];
       await cart.save();
 
@@ -251,18 +266,96 @@ const placeOrder = async (req, res) => {
       });
     }
 
+    // For wallet payments, deduct amount and complete order
+    if (paymentMethod === 'Wallet' || paymentMethod === 'wallet') {
+      try {
+        let wallet = await findOrCreateWallet(userId);
+        
+        if (wallet.balance < finalAmount) {
+          return res.status(400).json({ 
+            success: false, 
+            message: `Insufficient wallet balance. Available: ₹${wallet.balance.toFixed(2)}, Required: ₹${finalAmount.toFixed(2)}` 
+          });
+        }
+
+        const transaction = createTransaction(wallet, {
+          type: "debit",
+          amount: finalAmount,
+          description: `Payment for order ${orderID}`,
+          orderId: order._id,
+          status: "completed",
+          source: "order_payment", // Ensure source is valid
+          metadata: {
+            orderNumber: orderID,
+            paymentMethod: 'Wallet'
+          }
+        });
+
+        // Check for and sanitize existing transactions if needed
+        wallet.transactions = wallet.transactions.map(t => ({
+          ...t,
+          source: t.source === 'legacy' ? 'cashback' : t.source // Fallback for legacy data
+        }));
+
+        wallet.transactions.unshift(transaction);
+        wallet.balance -= finalAmount;
+        await wallet.save({ validateModifiedOnly: true }); // Only validate modified fields
+
+        order.paymentStatus = 'completed';
+        order.orderStatus = 'processing';
+        order.paymentId = transaction.transactionId;
+        order.paymentDetails = {
+          paymentMethod: 'Wallet',
+          status: 'completed',
+          createdAt: new Date(),
+          amount: finalAmount,
+          transactionId: transaction.transactionId
+        };
+
+        await order.save();
+
+        for (const item of cart.items) {
+          if (!item.variant) continue;
+          
+          const product = item.productId;
+          const variantToUpdate = product.variants.find(v => v._id.toString() === item.variantId.toString());
+          if (variantToUpdate) {
+            variantToUpdate.varientquatity -= item.quantity;
+            await product.save();
+          }
+        }
+
+        cart.items = [];
+        await cart.save();
+
+        return res.json({ 
+          success: true, 
+          orderId: order._id,
+          orderNumber: order.orderID,
+          paymentMethod: 'Wallet',
+          transactionId: transaction.transactionId,
+          message: `Payment of ₹${finalAmount.toFixed(2)} deducted from wallet successfully`
+        });
+
+      } catch (error) {
+        console.error('Error processing wallet payment:', error);
+        return res.status(500).json({ 
+          success: false, 
+          message: 'Error processing wallet payment: ' + error.message 
+        });
+      }
+    }
+
     // For online payments, return order details for Razorpay
     if (paymentMethod === 'Online') {
-      // Import Razorpay here to avoid circular dependency
       const Razorpay = require('razorpay');
       const instance = new Razorpay({
         key_id: process.env.RAZORPAY_KEY,
         key_secret: process.env.RAZORPAY_SECRET
       });
 
-      // Create Razorpay order
       const razorpayOptions = {
-        amount: Math.round(finalAmount * 100), // Amount in paise
+        amount: Math.round(finalAmount * 100),
         currency: 'INR',
         receipt: order.orderID,
         payment_capture: 1
@@ -270,7 +363,6 @@ const placeOrder = async (req, res) => {
 
       const razorpayOrder = await instance.orders.create(razorpayOptions);
 
-      // Update order with Razorpay order ID
       order.razorpayOrderId = razorpayOrder.id;
       await order.save();
 
@@ -296,7 +388,6 @@ const placeOrder = async (req, res) => {
     res.status(500).json({ success: false, message: 'Server Error: ' + error.message });
   }
 };
-
 const getOrderSuccess = async (req, res) => {
   try {
     const { orderId } = req.params;

@@ -500,6 +500,49 @@
       color: #059669 !important;
     }
 
+    /* Wallet Balance Section Styles */
+    .wallet-balance-section {
+      background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+      padding: 1.5rem;
+      border-radius: 16px;
+      border: 1px solid rgba(102, 126, 234, 0.2);
+      margin-bottom: 2rem;
+    }
+
+    .wallet-balance-section h3 {
+      font-size: 1.125rem;
+      font-weight: 600;
+      color: #0f172a;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .wallet-balance-section h3 i {
+      color: #667eea;
+    }
+
+    .wallet-balance-display {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+
+    .balance-amount {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #667eea;
+      margin-bottom: 0.25rem;
+    }
+
+    .balance-label {
+      font-size: 0.875rem;
+      color: #64748b;
+      font-weight: 500;
+    }
+
     .payment-methods {
       margin-bottom: 2rem;
     }
@@ -546,6 +589,24 @@
     .payment-methods i {
       margin-left: auto;
       font-size: 1.25rem;
+    }
+
+    .payment-methods label.disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      background: #f1f5f9;
+      border-color: #cbd5e1;
+      color: #94a3b8;
+    }
+
+    .payment-methods label.disabled:hover {
+      border-color: #cbd5e1;
+      background: #f1f5f9;
+      transform: none;
+    }
+
+    .payment-methods label.disabled input[type="radio"] {
+      cursor: not-allowed;
     }
 
     .place-order-btn {
@@ -837,6 +898,15 @@
           <p class="total"><span>Total:</span> <span id="totalAmount">₹<%= total.toLocaleString('en-IN', { minimumFractionDigits: 2 }) %></span></p>
         </div>
 
+        <!-- Wallet Balance Display -->
+        <div class="wallet-balance-section">
+          <h3><i class="fas fa-wallet"></i> Wallet Balance</h3>
+          <div class="wallet-balance-display">
+            <span class="balance-amount">₹<%= walletBalance.toLocaleString('en-IN', { minimumFractionDigits: 2 }) %></span>
+            <span class="balance-label">Available Balance</span>
+          </div>
+        </div>
+
         <div class="payment-methods">
           <h3>Select Payment Method</h3>
           <label>
@@ -849,6 +919,19 @@
             <span>Online Payment</span>
             <i class="fas fa-credit-card"></i>
           </label>
+          <% if (walletBalance >= total) { %>
+          <label id="walletPaymentOption">
+            <input type="radio" name="paymentMethod" value="Wallet">
+            <span>Pay with Wallet</span>
+            <i class="fas fa-wallet"></i>
+          </label>
+          <% } else { %>
+          <label id="walletPaymentOption" class="disabled" title="Insufficient wallet balance">
+            <input type="radio" name="paymentMethod" value="Wallet" disabled>
+            <span>Pay with Wallet (Insufficient Balance)</span>
+            <i class="fas fa-wallet"></i>
+          </label>
+          <% } %>
         </div>
 
         <% const isOutOfStock = cart.items.some(item => 
@@ -1452,6 +1535,15 @@
           placeOrderBtn.innerHTML = '<i class="fas fa-check-circle"></i> Place Order';
           
           rzp.open();
+        } else if (paymentMethod === 'Wallet') {
+          // Wallet payment
+          Toast.fire({
+            icon: 'success',
+            title: result.message || 'Order placed successfully with wallet payment!'
+          });
+          setTimeout(() => {
+            window.location.href = `/order/success/${result.orderId}`;
+          }, 1000);
         } else {
           // COD order
           Toast.fire({
