@@ -187,6 +187,19 @@
                                                   rows="4"></textarea>
                                         <div id="description-error" class="error-message"></div>
                                     </div>
+                                    <div class="mb-4">
+                                        <label for="categoryOffer" class="form-label fw-medium">Offer (%)</label>
+                                        <input type="number" 
+                                               name="categoryOffer" 
+                                               placeholder="Enter offer percentage (0-100)" 
+                                               class="form-control form-control-modern" 
+                                               id="categoryOffer" 
+                                               min="0" 
+                                               max="100" 
+                                               step="1" 
+                                               value="0" />
+                                        <div id="categoryOffer-error" class="error-message"></div>
+                                    </div>
                                     <div class="d-flex gap-2 justify-content-end">
                                         <button type="button" class="btn btn-outline-modern" onclick="hideForm()">
                                             <i class="fas fa-times me-2"></i>Cancel
@@ -223,6 +236,7 @@
                                         <th>Category Details</th>
                                         <th>Description</th>
                                         <th>Created Date</th>
+                                        <th>Offer (%)</th>
                                         <th>Status</th>
                                         <th>Actions</th>
                                     </tr>
@@ -251,18 +265,21 @@
                                             </td>
                                             <td>
                                                 <div class="created-date">
-                                                    <%= (category.createdAt || category.dateCreated || new Date()).toLocaleDateString('en-IN', { 
+                                                    <%= (category.createdAt || new Date()).toLocaleDateString('en-IN', { 
                                                         year: 'numeric', 
                                                         month: 'short', 
                                                         day: 'numeric' 
                                                     }) %>
                                                 </div>
                                                 <div class="created-time">
-                                                    <%= (category.createdAt || category.dateCreated || new Date()).toLocaleTimeString('en-IN', { 
+                                                    <%= (category.createdAt || new Date()).toLocaleTimeString('en-IN', { 
                                                         hour: '2-digit', 
                                                         minute: '2-digit' 
                                                     }) %>
                                                 </div>
+                                            </td>
+                                            <td>
+                                                <span class="offer-value"><%= category.categoryOffer %>%</span>
                                             </td>
                                             <td>
                                                 <span class="status-badge status-<%= category.isListed ? 'listed' : 'unlisted' %>">
@@ -273,11 +290,10 @@
                                             <td>
                                                 <div class="action-buttons">
                                                     <button class="action-btn edit-btn"
-                                                            onclick="openEditModal('<%= encodeURIComponent(category._id) %>', '<%= encodeURIComponent(category.name) %>', '<%= encodeURIComponent(category.description || '') %>')"
+                                                            onclick="openEditModal('<%= encodeURIComponent(category._id) %>', '<%= encodeURIComponent(category.name) %>', '<%= encodeURIComponent(category.description || '') %>', '<%= category.categoryOffer %>')"
                                                             title="Edit Category">
                                                         <i class="fas fa-edit"></i>
                                                     </button>
-                                                    
                                                     <% if (category.isListed) { %>
                                                         <button class="action-btn unlist-btn"
                                                                 onclick="toggleCategory('<%= encodeURIComponent(category._id) %>', 'unlist')"
@@ -291,7 +307,6 @@
                                                             <i class="fas fa-eye"></i>
                                                         </button>
                                                     <% } %>
-                                                    
                                                     <button class="action-btn delete-btn"
                                                             onclick="deleteCategory('<%= category._id %>')"
                                                             title="Delete Category">
@@ -387,6 +402,18 @@
                                   rows="4" 
                                   maxlength="500"></textarea>
                         <div id="edit-description-error" class="error-message"></div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editCategoryOffer" class="form-label fw-medium">Offer (%)</label>
+                        <input type="number" 
+                               id="editCategoryOffer" 
+                               name="categoryOffer" 
+                               class="form-control form-control-modern" 
+                               min="0" 
+                               max="100" 
+                               step="1" 
+                               value="0" />
+                        <div id="edit-categoryOffer-error" class="error-message"></div>
                     </div>
                 </div>
                 <div class="modal-footer modal-footer-modern">
@@ -1135,348 +1162,361 @@
 
 <script>
     function showForm() {
-        document.getElementById('categoryForm').style.display = 'block';
-        // Scroll to form
-        document.getElementById('categoryForm').scrollIntoView({ behavior: 'smooth' });
-    }
+    document.getElementById('categoryForm').style.display = 'block';
+    document.getElementById('categoryForm').scrollIntoView({ behavior: 'smooth' });
+}
 
-    function hideForm() {
-        document.getElementById('categoryForm').style.display = 'none';
-        // Clear form
-        document.querySelector('input[name="name"]').value = '';
-        document.getElementById('descriptionId').value = '';
-        clearErrorMessages();
-    }
+function hideForm() {
+    document.getElementById('categoryForm').style.display = 'none';
+    document.querySelector('input[name="name"]').value = '';
+    document.getElementById('descriptionId').value = '';
+    document.getElementById('categoryOffer').value = '0';
+    clearErrorMessages();
+}
 
-    function handleFormSubmit(event) {
-        event.preventDefault();
-        if (!validateForm()) {
-            return false;
+function handleFormSubmit(event) {
+    event.preventDefault();
+    if (!validateForm()) {
+        return false;
+    }
+    const name = document.getElementsByName("name")[0].value;
+    const description = document.getElementById("descriptionId").value;
+    const categoryOffer = document.getElementById("categoryOffer").value;
+
+    fetch('/admin/addCategory', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ name, description, categoryOffer })
+    })
+    .then(response => {
+        if (!response.ok) {
+            return response.json().then(err => {
+                throw new Error(err.error || err.message);
+            });
         }
-        const name = document.getElementsByName("name")[0].value;
-        const description = document.getElementById("descriptionId").value;
+        return response.json();
+    })
+    .then(data => {
+        Swal.fire({
+            icon: 'success',
+            title: 'Success',
+            text: 'Category added successfully',
+            background: '#ffffff',
+            color: '#171717',
+            confirmButtonColor: '#171717'
+        }).then(() => {
+            location.reload();
+        });
+    })
+    .catch(error => {
+        Swal.fire({
+            icon: 'error',
+            title: "Error",
+            text: error.message || "An error occurred while adding the category",
+            background: '#ffffff',
+            color: '#171717',
+            confirmButtonColor: '#525252'
+        });
+    });
+}
 
-        fetch('/admin/addCategory', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ name, description })
-        })
-        .then(response => {
-            if (!response.ok) {
-                return response.json().then(err => {
-                    throw new Error(err.error || err.message);
-                });
-            }
-            return response.json();
-        })
-        .then(data => {
+function validateForm() {
+    clearErrorMessages();
+    const name = document.querySelector('input[name="name"]').value.trim();
+    const description = document.getElementById("descriptionId").value.trim();
+    const categoryOffer = document.getElementById("categoryOffer").value.trim();
+    let isValid = true;
+
+    if (name === "") {
+        displayErrorMessage("name-error", "Please enter a name");
+        isValid = false;
+    } else if (!/^[a-zA-Z\s]+$/.test(name)) {
+        displayErrorMessage("name-error", "Category name should contain only alphabetic characters");
+        isValid = false;
+    }
+    if (description === "") {
+        displayErrorMessage("description-error", "Please enter a description");
+        isValid = false;
+    }
+    if (categoryOffer === "" || isNaN(categoryOffer) || categoryOffer < 0 || categoryOffer > 100) {
+        displayErrorMessage("categoryOffer-error", "Please enter a valid offer percentage (0-100)");
+        isValid = false;
+    }
+
+    return isValid;
+}
+
+function validateEditForm(event) {
+    event.preventDefault();
+    clearEditErrorMessages();
+    const name = document.getElementById("editName").value.trim();
+    const description = document.getElementById("editDescription").value.trim();
+    const categoryOffer = document.getElementById("editCategoryOffer").value.trim();
+    let isValid = true;
+
+    if (name === "") {
+        displayEditErrorMessage("edit-name-error", "Please enter a name");
+        isValid = false;
+    } else if (!/^[a-zA-Z\s]+$/.test(name)) {
+        displayEditErrorMessage("edit-name-error", "Category name should contain only alphabetic characters");
+        isValid = false;
+    }
+    if (description === "") {
+        displayEditErrorMessage("edit-description-error", "Please enter a description");
+        isValid = false;
+    }
+    if (categoryOffer === "" || isNaN(categoryOffer) || categoryOffer < 0 || categoryOffer > 100) {
+        displayEditErrorMessage("edit-categoryOffer-error", "Please enter a valid offer percentage (0-100)");
+        isValid = false;
+    }
+
+    if (isValid) {
+        submitEditForm();
+    }
+    return false;
+}
+
+function submitEditForm() {
+    const formData = new FormData(document.getElementById('editCategoryForm'));
+    const data = Object.fromEntries(formData);
+
+    fetch('/admin/editCategory', {
+        method: 'PATCH',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        },
+        credentials: 'include',
+        body: JSON.stringify(data)
+    })
+    .then(response => {
+        return response.json();
+    })
+    .then(result => {
+        if (result.success) {
             Swal.fire({
                 icon: 'success',
                 title: 'Success',
-                text: 'Category added successfully',
+                text: result.message,
                 background: '#ffffff',
                 color: '#171717',
                 confirmButtonColor: '#171717'
-            }).then(() => {
-                location.reload();
             });
-        })
-        .catch(error => {
+            closeEditModal();
+            window.location.reload();
+        } else {
             Swal.fire({
                 icon: 'error',
-                title: "Error",
-                text: error.message || "An error occurred while adding the category",
+                title: 'Error',
+                text: result.message || 'Failed to update category',
                 background: '#ffffff',
                 color: '#171717',
                 confirmButtonColor: '#525252'
             });
+        }
+    })
+    .catch(error => {
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: `An error occurred while updating the category: ${error.message}`,
+            background: '#ffffff',
+            color: '#171717',
+            confirmButtonColor: '#525252'
         });
+    });
+}
+
+function displayErrorMessage(elementId, message) {
+    var errorElement = document.getElementById(elementId);
+    errorElement.innerText = message;
+    errorElement.style.display = "block";
+}
+
+function clearErrorMessages() {
+    const errorElements = document.getElementsByClassName("error-message");
+    Array.from(errorElements).forEach((element) => {
+        element.innerText = "";
+        element.style.display = "none";
+    });
+}
+
+function displayEditErrorMessage(elementId, message) {
+    var errorElement = document.getElementById(elementId);
+    errorElement.innerText = message;
+    errorElement.style.display = "block";
+}
+
+function clearEditErrorMessages() {
+    const errorElements = document.getElementsByClassName("error-message");
+    Array.from(errorElements).forEach((element) => {
+        element.innerText = "";
+        element.style.display = "none";
+    });
+}
+
+function openEditModal(id, name, description, categoryOffer) {
+    const editId = document.getElementById('editId');
+    const editName = document.getElementById('editName');
+    const editDescription = document.getElementById('editDescription');
+    const editCategoryOffer = document.getElementById('editCategoryOffer');
+    const editModal = new bootstrap.Modal(document.getElementById('editModal'));
+
+    if (!editId || !editName || !editDescription || !editCategoryOffer) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Modal elements not found',
+            background: '#ffffff',
+            color: '#171717',
+            confirmButtonColor: '#525252'
+        });
+        return;
     }
 
-    function validateForm() {
-        clearErrorMessages();
-        const name = document.querySelector('input[name="name"]').value.trim();
-        const description = document.getElementById("descriptionId").value.trim();
-        let isValid = true;
+    editId.value = decodeURIComponent(id);
+    editName.value = decodeURIComponent(name);
+    editDescription.value = decodeURIComponent(description || '');
+    editCategoryOffer.value = decodeURIComponent(categoryOffer) || 0;
+    editModal.show();
+}
 
-        if (name === "") {
-            displayErrorMessage("name-error", "Please enter a name");
-            isValid = false;
-        } else if (!/^[a-zA-Z\s]+$/.test(name)) {
-            displayErrorMessage("name-error", "Category name should contain only alphabetic characters");
-            isValid = false;
-        }
-        if (description === "") {
-            displayErrorMessage("description-error", "Please enter a description");
-            isValid = false;
-        }
-        return isValid;
+function closeEditModal() {
+    const editModal = bootstrap.Modal.getInstance(document.getElementById('editModal'));
+    if (editModal) {
+        editModal.hide();
+    }
+    document.getElementById('editCategoryForm').reset();
+    clearEditErrorMessages();
+}
+
+async function toggleCategory(categoryId, action) {
+    const confirmMessage = `Are you sure you want to ${action} this category?`;
+    const result = await Swal.fire({
+        title: confirmMessage,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#171717',
+        cancelButtonColor: '#525252',
+        confirmButtonText: 'Yes, proceed!',
+        background: '#ffffff',
+        color: '#171717'
+    });
+
+    if (!result.isConfirmed) {
+        return;
     }
 
-    function validateEditForm(event) {
-        event.preventDefault();
-        clearEditErrorMessages();
-        const name = document.getElementById("editName").value.trim();
-        const description = document.getElementById("editDescription").value.trim();
-        let isValid = true;
-
-        if (name === "") {
-            displayEditErrorMessage("edit-name-error", "Please enter a name");
-            isValid = false;
-        } else if (!/^[a-zA-Z\s]+$/.test(name)) {
-            displayEditErrorMessage("edit-name-error", "Category name should contain only alphabetic characters");
-            isValid = false;
-        }
-        if (description === "") {
-            displayEditErrorMessage("edit-description-error", "Please enter a description");
-            isValid = false;
-        }
-
-        if (isValid) {
-            submitEditForm();
-        }
-        return false;
-    }
-
-    function submitEditForm() {
-        const formData = new FormData(document.getElementById('editCategoryForm'));
-        const data = Object.fromEntries(formData);
-
-        fetch('/admin/editCategory', {
+    try {
+        const endpoint = action === 'unlist' ? '/admin/deleteCategory' : '/admin/restoreCategory';
+        const response = await fetch(`${endpoint}?id=${encodeURIComponent(categoryId)}`, {
             method: 'PATCH',
             headers: {
                 'Content-Type': 'application/json',
                 'Accept': 'application/json'
             },
-            credentials: 'include',
-            body: JSON.stringify(data)
-        })
-        .then(response => {
-            return response.json();
-        })
-        .then(result => {
-            if (result.success) {
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Success',
-                    text: result.message,
-                    background: '#ffffff',
-                    color: '#171717',
-                    confirmButtonColor: '#171717'
-                });
-                closeEditModal();
-                window.location.reload();
-            } else {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: result.message || 'Failed to update category',
-                    background: '#ffffff',
-                    color: '#171717',
-                    confirmButtonColor: '#525252'
-                });
-            }
-        })
-        .catch(error => {
+            credentials: 'include'
+        });
+
+        const result = await response.json();
+        if (result.success) {
             Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: `An error occurred while updating the category: ${error.message}`,
+                icon: 'success',
+                title: 'Success',
+                text: result.message,
                 background: '#ffffff',
                 color: '#171717',
-                confirmButtonColor: '#525252'
+                confirmButtonColor: '#171717'
             });
-        });
-    }
-
-    function displayErrorMessage(elementId, message) {
-        var errorElement = document.getElementById(elementId);
-        errorElement.innerText = message;
-        errorElement.style.display = "block";
-    }
-
-    function clearErrorMessages() {
-        const errorElements = document.getElementsByClassName("error-message");
-        Array.from(errorElements).forEach((element) => {
-            element.innerText = "";
-            element.style.display = "none";
-        });
-    }
-
-    function displayEditErrorMessage(elementId, message) {
-        var errorElement = document.getElementById(elementId);
-        errorElement.innerText = message;
-        errorElement.style.display = "block";
-    }
-
-    function clearEditErrorMessages() {
-        const errorElements = document.getElementsByClassName("error-message");
-        Array.from(errorElements).forEach((element) => {
-            element.innerText = "";
-            element.style.display = "none";
-        });
-    }
-
-    function openEditModal(id, name, description) {
-        const editId = document.getElementById('editId');
-        const editName = document.getElementById('editName');
-        const editDescription = document.getElementById('editDescription');
-        const editModal = new bootstrap.Modal(document.getElementById('editModal'));
-
-        if (!editId || !editName || !editDescription) {
+            window.location.reload();
+        } else {
             Swal.fire({
                 icon: 'error',
                 title: 'Error',
-                text: 'Modal elements not found',
-                background: '#ffffff',
-                color: '#171717',
-                confirmButtonColor: '#525252'
-            });
-            return;
-        }
-
-        editId.value = decodeURIComponent(id);
-        editName.value = decodeURIComponent(name);
-        editDescription.value = decodeURIComponent(description || '');
-        editModal.show();
-    }
-
-    function closeEditModal() {
-        const editModal = bootstrap.Modal.getInstance(document.getElementById('editModal'));
-        if (editModal) {
-            editModal.hide();
-        }
-        document.getElementById('editCategoryForm').reset();
-        clearEditErrorMessages();
-    }
-
-    async function toggleCategory(categoryId, action) {
-        const confirmMessage = `Are you sure you want to ${action} this category?`;
-        const result = await Swal.fire({
-            title: confirmMessage,
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#171717',
-            cancelButtonColor: '#525252',
-            confirmButtonText: 'Yes, proceed!',
-            background: '#ffffff',
-            color: '#171717'
-        });
-
-        if (!result.isConfirmed) {
-            return;
-        }
-
-        try {
-            const endpoint = action === 'unlist' ? '/admin/deleteCategory' : '/admin/restoreCategory';
-            const response = await fetch(`${endpoint}?id=${encodeURIComponent(categoryId)}`, {
-                method: 'PATCH',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json'
-                },
-                credentials: 'include'
-            });
-
-            const result = await response.json();
-            if (result.success) {
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Success',
-                    text: result.message,
-                    background: '#ffffff',
-                    color: '#171717',
-                    confirmButtonColor: '#171717'
-                });
-                window.location.reload();
-            } else {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: result.message || `Failed to ${action} category`,
-                    background: '#ffffff',
-                    color: '#171717',
-                    confirmButtonColor: '#525252'
-                });
-            }
-        } catch (error) {
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: `An error occurred while ${action}ing the category: ${error.message}`,
+                text: result.message || `Failed to ${action} category`,
                 background: '#ffffff',
                 color: '#171717',
                 confirmButtonColor: '#525252'
             });
         }
-    }
-
-    function deleteCategory(categoryId) {
+    } catch (error) {
         Swal.fire({
-            title: 'Are you sure?',
-            text: "You won't be able to revert this!",
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#525252',
-            cancelButtonColor: '#a3a3a3',
-            confirmButtonText: 'Yes, delete it!',
+            icon: 'error',
+            title: 'Error',
+            text: `An error occurred while ${action}ing the category: ${error.message}`,
             background: '#ffffff',
-            color: '#171717'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                fetch(`/admin/categoryDelete?id=${categoryId}`, {
-                    method: 'DELETE',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Deleted!',
-                            text: data.message,
-                            background: '#ffffff',
-                            color: '#171717',
-                            confirmButtonColor: '#171717'
-                        }).then(() => {
-                            window.location.reload();
-                        });
-                    } else {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Error!',
-                            text: data.message || 'Failed to delete category',
-                            background: '#ffffff',
-                            color: '#171717',
-                            confirmButtonColor: '#525252'
-                        });
-                    }
-                })
-                .catch(error => {
+            color: '#171717',
+            confirmButtonColor: '#525252'
+        });
+    }
+}
+
+function deleteCategory(categoryId) {
+    Swal.fire({
+        title: 'Are you sure?',
+        text: "You won't be able to revert this!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#525252',
+        cancelButtonColor: '#a3a3a3',
+        confirmButtonText: 'Yes, delete it!',
+        background: '#ffffff',
+        color: '#171717'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            fetch(`/admin/categoryDelete?id=${categoryId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Deleted!',
+                        text: data.message,
+                        background: '#ffffff',
+                        color: '#171717',
+                        confirmButtonColor: '#171717'
+                    }).then(() => {
+                        window.location.reload();
+                    });
+                } else {
                     Swal.fire({
                         icon: 'error',
                         title: 'Error!',
-                        text: `An error occurred while deleting the category: ${error.message}`,
+                        text: data.message || 'Failed to delete category',
                         background: '#ffffff',
                         color: '#171717',
                         confirmButtonColor: '#525252'
                     });
+                }
+            })
+            .catch(error => {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error!',
+                    text: `An error occurred while deleting the category: ${error.message}`,
+                    background: '#ffffff',
+                    color: '#171717',
+                    confirmButtonColor: '#525252'
                 });
-            }
-        });
-    }
-
-    // Initialize tooltips
-    document.addEventListener('DOMContentLoaded', function() {
-        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-            return new bootstrap.Tooltip(tooltipTriggerEl);
-        });
+            });
+        }
     });
+}
+
+// Initialize tooltips
+document.addEventListener('DOMContentLoaded', function() {
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+});
 </script>
 
 <%- include('./partials/footer') %>

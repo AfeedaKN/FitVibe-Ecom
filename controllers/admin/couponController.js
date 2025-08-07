@@ -8,7 +8,7 @@ const loadCoupons = async (req, res) => {
     console.log('=== LOADING COUPONS PAGE ===');
     
     const page = parseInt(req.query.page) || 1;
-    const limit = 6; // Changed to 6 per page as requested
+    const limit = 6; 
     const skip = (page - 1) * limit;
 
     console.log('Fetching coupons from database...');
@@ -21,7 +21,7 @@ const loadCoupons = async (req, res) => {
       .limit(limit)
       .lean(); // Use lean() for better performance
 
-    console.log('Found coupons:', coupons.length);
+    
 
     // Process coupons with actual usage count from orders
     const processedCoupons = await Promise.all(coupons.map(async (coupon) => {

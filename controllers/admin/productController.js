@@ -154,63 +154,83 @@ const loadAddProducts = async (req, res) => {
   }
 }
 
+
+const calculateProductOffer = async (product) => {
+  const category = await Category.findById(product.categoryId);
+  const productOffer = parseFloat(product.offer) || 0;
+  const categoryOffer = category ? parseFloat(category.categoryOffer) || 0 : 0;
+
+  // Compare and set the higher offer
+  let displayOffer = productOffer;
+  let offerSource = "product";
+  if (categoryOffer > productOffer) {
+    displayOffer = categoryOffer;
+    offerSource = "category";
+  }
+
+  product.displayOffer = displayOffer;
+  product.offerSource = offerSource;
+
+  // Recalculate salePrice for each variant based on the selected offer
+  if (product.variants && product.variants.length > 0) {
+    product.variants = product.variants.map((variant) => {
+      const originalPrice = variant.varientPrice;
+      const discountAmount = (originalPrice * displayOffer) / 100;
+      const salePrice = Math.round(originalPrice - discountAmount);
+      return { ...variant, salePrice };
+    });
+  }
+
+  product.updatedAt = Date.now();
+  return product;
+};
+
 const addProduct = async (req, res) => {
   try {
-    const { name, description, categoryId, brand, color, offer, fabric, sku, tags } = req.body
+    const { name, description, categoryId, brand, color, offer, fabric, sku, tags } = req.body;
 
-    
-const existingProduct = await Product.findOne({
-  $or: [
-    { name: { $regex: new RegExp(`^${name}$`, 'i') } },
-    { sku: sku }
-  ]
-});
+    const existingProduct = await Product.findOne({
+      $or: [{ name: { $regex: new RegExp(`^${name}$`, "i") } }, { sku: sku }],
+    });
 
-if (existingProduct) {
-  req.flash("error_msg", "Product with the same name already exists");
-  return res.redirect("/admin/addproducts");
-}
-    const category = await Category.findById(categoryId)
-    if (!category) {
-      req.flash("error_msg", "Category not found")
-      return res.redirect("/admin/addproducts")
+    if (existingProduct) {
+      req.flash("error_msg", "Product with the same name already exists");
+      return res.redirect("/admin/addproducts");
     }
 
-    
-    const productOffer = Number(offer) || 0
-    const categoryOffer = category.categoryOffer || 0
-    const bestOffer = determineBestOffer(productOffer, categoryOffer)
+    const category = await Category.findById(categoryId);
+    if (!category) {
+      req.flash("error_msg", "Category not found");
+      return res.redirect("/admin/addproducts");
+    }
 
-    
-    const variants = []
-    const sizes = ["S", "M", "L", "XL"]
-    const varientPrices = Array.isArray(req.body.varientPrice) ? req.body.varientPrice : [req.body.varientPrice]
+    const variants = [];
+    const sizes = ["S", "M", "L", "XL"];
+    const varientPrices = Array.isArray(req.body.varientPrice)
+      ? req.body.varientPrice
+      : [req.body.varientPrice];
     const varientQuantities = Array.isArray(req.body.varientquatity)
       ? req.body.varientquatity
-      : [req.body.varientquatity]
+      : [req.body.varientquatity];
 
     for (let i = 0; i < sizes.length; i++) {
-      const price = Number(varientPrices[i])
-      const quantity = Number(varientQuantities[i])
+      const price = Number(varientPrices[i]);
+      const quantity = Number(varientQuantities[i]);
 
       if (!isNaN(price) && !isNaN(quantity) && price > 0 && quantity > 0) {
-        const { salePrice } = calculateBestPrice(price, productOffer, categoryOffer)
-
         variants.push({
           size: sizes[i],
           varientPrice: price,
-          salePrice,
           varientquatity: quantity,
-        })
+        });
       }
     }
 
     if (variants.length === 0) {
-      req.flash("error_msg", "At least one variant is required")
-      return res.redirect("/admin/addproducts")
+      req.flash("error_msg", "At least one variant is required");
+      return res.redirect("/admin/addproducts");
     }
 
-    
     const seen = new Set();
     const filteredFiles = [];
     for (const file of req.files) {
@@ -230,18 +250,14 @@ if (existingProduct) {
       return res.redirect("/admin/addproducts");
     }
 
-    
     for (let index = 0; index < filteredFiles.length; index++) {
       const file = filteredFiles[index];
       try {
-        
         const uploadResult = await cloudinary.uploader.upload(file.path, {
           folder: "products",
-          transformation: [
-            { width: 800, height: 800, crop: "fill" }
-          ]
+          transformation: [{ width: 800, height: 800, crop: "fill" }],
         });
-        
+
         const thumbUrl = cloudinary.url(uploadResult.public_id, {
           width: 200,
           height: 200,
@@ -256,9 +272,8 @@ if (existingProduct) {
           public_id: uploadResult.public_id,
         });
 
-       
         const fs = require("fs").promises;
-        await fs.unlink(file.path).catch(() => { });
+        await fs.unlink(file.path).catch(() => {});
       } catch (err) {
         console.error("PRODUCT CONTROLLER: Error uploading to Cloudinary", file.path, err);
         req.flash("error_msg", "Error uploading image: " + file.originalname);
@@ -266,19 +281,19 @@ if (existingProduct) {
       }
     }
 
-    
-    const tagArray = tags ? (typeof tags === 'string' ? tags.split(',').map(tag => tag.trim()) : tags) : []
+    const tagArray = tags
+      ? typeof tags === "string"
+        ? tags.split(",").map((tag) => tag.trim())
+        : tags
+      : [];
 
-    
     const newProduct = new Product({
       name,
       description,
       categoryId: new mongoose.Types.ObjectId(categoryId),
       brand: brand || "",
       color,
-      offer: productOffer,
-      displayOffer: bestOffer.offerValue,
-      offerSource: bestOffer.offerSource,
+      offer: Number(offer) || 0,
       images,
       variants,
       sku: sku || "",
@@ -289,18 +304,21 @@ if (existingProduct) {
         count: 0,
       },
       isListed: true,
-    })
+    });
 
-    await newProduct.save()
+    // Calculate offer before saving
+    await calculateProductOffer(newProduct);
 
-    req.flash("success_msg", "Product added successfully")
-    res.redirect("/admin/products")
+    await newProduct.save();
+
+    req.flash("success_msg", "Product added successfully");
+    res.redirect("/admin/products");
   } catch (error) {
     console.error("PRODUCT CONTROLLER: Error in addProduct", error);
-    req.flash("error_msg", "Failed to add product: " + error.message)
-    res.redirect("/admin/addproducts")
+    req.flash("error_msg", "Failed to add product: " + error.message);
+    res.redirect("/admin/addproducts");
   }
-}
+};
 
 const loadEditProducts = async (req, res) => {
   try {
@@ -345,17 +363,15 @@ const updateProduct = async (req, res) => {
       sku,
       tags,
       isActive,
-      deletedImages
+      deletedImages,
     } = req.body;
 
-const productObjectId = new mongoose.Types.ObjectId(productId);
-const categoryIdObj = new mongoose.Types.ObjectId(category);
+    const productObjectId = new mongoose.Types.ObjectId(productId);
+    const categoryIdObj = new mongoose.Types.ObjectId(category);
 
-
-    
     const existingProductn = await Product.findOne({
       _id: { $ne: productObjectId },
-      name: { $regex: new RegExp(`^${name}$`, 'i') }
+      name: { $regex: new RegExp(`^${name}$`, "i") },
     });
 
     if (existingProductn) {
@@ -363,21 +379,12 @@ const categoryIdObj = new mongoose.Types.ObjectId(category);
       return res.redirect("/admin/products");
     }
 
-    
     const categoryObj = await Category.findById(categoryIdObj);
     if (!categoryObj) {
       req.flash("error_msg", "Category not found");
       return res.redirect("/admin/products");
     }
 
-    
-    const productOffer = Number.parseFloat(offer) || 0;
-    const categoryOffer = categoryObj.categoryOffer || 0;
-
-    
-    const bestOffer = determineBestOffer(productOffer, categoryOffer); 
-
-    
     const variantPrices = req.body.varientPrice || {};
     const sizes = req.body.sizes || {};
     const variants = [];
@@ -387,38 +394,31 @@ const categoryIdObj = new mongoose.Types.ObjectId(category);
       const quantity = Number(sizes[size]);
 
       if (!isNaN(price) && !isNaN(quantity) && price > 0 && quantity > 0) {
-        const salePrice = calculateBestPrice(price, productOffer, categoryOffer).salePrice;
-
         variants.push({
           size,
           varientPrice: price,
           varientquatity: quantity,
-          salePrice,
         });
       }
     });
 
-    
     const existingProduct = await Product.findById(productObjectId);
     let images = existingProduct.images || [];
 
-    
-    if (deletedImages && deletedImages.trim() !== '') {
+    if (deletedImages && deletedImages.trim() !== "") {
       try {
         const deletedIndices = JSON.parse(deletedImages);
-        
+
         if (Array.isArray(deletedIndices) && deletedIndices.length > 0) {
           console.log("Processing deleted images:", deletedIndices);
-          
-          
+
           const imagesToDelete = [];
-          deletedIndices.forEach(index => {
+          deletedIndices.forEach((index) => {
             if (images[index]) {
               imagesToDelete.push(images[index]);
             }
           });
 
-          
           for (const image of imagesToDelete) {
             if (image.public_id) {
               try {
@@ -430,22 +430,21 @@ const categoryIdObj = new mongoose.Types.ObjectId(category);
             }
           }
 
-          
           images = images.filter((_, index) => !deletedIndices.includes(index));
-          
-          
-          if (images.length > 0 && !images.some(img => img.isMain)) {
+
+          if (images.length > 0 && !images.some((img) => img.isMain)) {
             images[0].isMain = true;
           }
-          
-          console.log(`Successfully processed deletion of ${deletedIndices.length} images. Remaining images: ${images.length}`);
+
+          console.log(
+            `Successfully processed deletion of ${deletedIndices.length} images. Remaining images: ${images.length}`
+          );
         }
       } catch (parseError) {
         console.error("Error parsing deletedImages:", parseError);
       }
     }
 
-    
     const seen = new Set();
     const filteredFiles = [];
     if (req.files && req.files.length > 0) {
@@ -457,7 +456,6 @@ const categoryIdObj = new mongoose.Types.ObjectId(category);
       }
     }
 
-    
     if (filteredFiles.length > 0) {
       const newImages = [];
       const fs = require("fs").promises;
@@ -467,7 +465,7 @@ const categoryIdObj = new mongoose.Types.ObjectId(category);
         try {
           const uploadResult = await cloudinary.uploader.upload(file.path, {
             folder: "products",
-            transformation: [{ width: 800, height: 800, crop: "fill" }]
+            transformation: [{ width: 800, height: 800, crop: "fill" }],
           });
 
           const thumbUrl = cloudinary.url(uploadResult.public_id, {
@@ -484,9 +482,13 @@ const categoryIdObj = new mongoose.Types.ObjectId(category);
             public_id: uploadResult.public_id,
           });
 
-          await fs.unlink(file.path).catch(() => { });
+          await fs.unlink(file.path).catch(() => {});
         } catch (err) {
-          console.error("PRODUCT CONTROLLER: Error uploading to Cloudinary (update)", file.path, err);
+          console.error(
+            "PRODUCT CONTROLLER: Error uploading to Cloudinary (update)",
+            file.path,
+            err
+          );
           req.flash("error_msg", "Error uploading image: " + file.originalname);
           return res.redirect("/admin/products");
         }
@@ -494,31 +496,33 @@ const categoryIdObj = new mongoose.Types.ObjectId(category);
       images = [...images, ...newImages];
     }
 
-    
-    const tagArray = tags ? (typeof tags === 'string' ? tags.split(',').map(tag => tag.trim()) : tags) : [];
+    const tagArray = tags
+      ? typeof tags === "string"
+        ? tags.split(",").map((tag) => tag.trim())
+        : tags
+      : [];
 
-    
-    await Product.findByIdAndUpdate(productObjectId, {
-      name,
-      description,
-      categoryId: categoryIdObj,
-      brand: brand || "",
-      color,
-      offer: productOffer,
-      displayOffer: bestOffer.offerValue,
-      offerSource: bestOffer.offerSource,
-      fabric: fabric || "",
-      sku: sku || "",
-      tags: tagArray,
-      variants,
-      images,
-      isListed: isActive === 'on',
-      updatedAt: Date.now(),
-    });
+    const updatedProduct = await Product.findById(productObjectId);
+    updatedProduct.name = name;
+    updatedProduct.description = description;
+    updatedProduct.categoryId = categoryIdObj;
+    updatedProduct.brand = brand || "";
+    updatedProduct.color = color;
+    updatedProduct.offer = Number(offer) || 0;
+    updatedProduct.images = images;
+    updatedProduct.variants = variants;
+    updatedProduct.sku = sku || "";
+    updatedProduct.tags = tagArray;
+    updatedProduct.fabric = fabric || "";
+    updatedProduct.isListed = isActive === "on";
+
+    // Calculate offer before saving
+    await calculateProductOffer(updatedProduct);
+
+    await updatedProduct.save();
 
     req.flash("success_msg", "Product updated successfully");
     res.redirect("/admin/products");
-
   } catch (error) {
     console.error("PRODUCT CONTROLLER: Error in updateProduct", error);
     req.flash("error_msg", "Failed to update product");
@@ -529,40 +533,29 @@ const categoryIdObj = new mongoose.Types.ObjectId(category);
 
 const updateProductOffer = async (req, res) => {
   try {
-    const { productId, offer } = req.body
-    const productOffer = Number.parseFloat(offer) || 0
+    const { productId, offer } = req.body;
+    const productOffer = Number.parseFloat(offer) || 0;
 
-    const product = await Product.findById(productId).populate("categoryId")
+    const product = await Product.findById(productId).populate("categoryId");
 
     if (!product) {
-      req.flash("error_msg", "Product not found")
-      return res.redirect("/admin/products")
+      req.flash("error_msg", "Product not found");
+      return res.redirect("/admin/products");
     }
 
-    const categoryOffer = product.categoryId ? product.categoryId.categoryOffer || 0 : 0
-    const bestOffer = determineBestOffer(productOffer, categoryOffer)
+    // Calculate offer before saving
+    await calculateProductOffer(product);
 
-    product.offer = productOffer
-    product.displayOffer = bestOffer.offerValue
-    product.offerSource = bestOffer.offerSource
+    await product.save();
 
-    if (product.variants && product.variants.length > 0) {
-      product.variants.forEach((variant) => {
-        const { salePrice } = calculateBestPrice(variant.varientPrice, productOffer, categoryOffer)
-        variant.salePrice = salePrice
-      })
-    }
-
-    await product.save()
-
-    req.flash("success_msg", `Product offer updated to ${productOffer}% successfully`)
-    res.redirect("/admin/products")
+    req.flash("success_msg", `Product offer updated to ${productOffer}% successfully`);
+    res.redirect("/admin/products");
   } catch (error) {
-    console.error("Update product offer error:", error)
-    req.flash("error_msg", "Failed to update product offer")
-    res.redirect("/admin/products")
+    console.error("Update product offer error:", error);
+    req.flash("error_msg", "Failed to update product offer");
+    res.redirect("/admin/products");
   }
-}
+};
 
 const deleteProduct = async (req, res) => {
   try {
@@ -649,5 +642,6 @@ module.exports = {
   updateProductOffer,
   deleteProduct,
   toggleProductListing,
-  viewProduct
+  viewProduct,
+  calculateProductOffer
 }

@@ -121,10 +121,19 @@ const productSchema = new Schema({
   },
 })
 
-productSchema.pre("save", function (next) {
-  this.updatedAt = Date.now()
-  next()
-})
+// productSchema.pre("save", async function (next) {
+//   this.updatedAt = Date.now();
+//   const Category = require("./categorySchema"); // Adjust path as needed
+//   const category = await Category.findById(this.categoryId);
+//   if (category && category.offer > 0) {
+//     this.displayOffer = category.offer; // Use category offer if set
+//     this.offerSource = "category";
+//   } else {
+//     this.displayOffer = this.offer; // Use product offer otherwise
+//     this.offerSource = "product";
+//   }
+//   next();
+// });
 
 const Product = mongoose.model("Product", productSchema)
 module.exports = Product
