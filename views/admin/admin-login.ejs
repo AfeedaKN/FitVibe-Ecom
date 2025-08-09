@@ -646,13 +646,17 @@
             // Handle Enter key navigation
             emailInput.addEventListener('keypress', function(e) {
                 if (e.key === 'Enter') {
+               e.preventDefault(); // Prevent form from submitting early
+
                     passwordInput.focus();
                 }
             });
 
             passwordInput.addEventListener('keypress', function(e) {
                 if (e.key === 'Enter') {
-                    loginForm.dispatchEvent(new Event('submit'));
+                e.preventDefault(); // Prevent default submit
+
+        loginForm.requestSubmit(); // Properly trigger form submit
                 }
             });
 

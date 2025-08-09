@@ -323,10 +323,7 @@
                         <span class="summary-label">Shipping Charge</span>
                         <span class="summary-value">₹<%= order.shippingCharge.toFixed(2) %></span>
                     </div>
-                    <div class="summary-row">
-                        <span class="summary-label">Tax (GST)</span>
-                        <span class="summary-value">₹<%= order.taxAmount.toFixed(2) %></span>
-                    </div>
+                    
                     <div class="summary-row total">
                         <span class="summary-label">Final Amount</span>
                         <span class="summary-value">₹<%= order.finalAmount.toFixed(2) %></span>
@@ -1260,81 +1257,94 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 <script>
-  // ✅ Show/hide cancel reason if status is "cancelled"
+  // Show/hide cancel reason if status is "cancelled"
   document.getElementById('orderStatus')?.addEventListener('change', (e) => {
     const cancelReasonDiv = document.getElementById('cancelReasonDiv');
     cancelReasonDiv.style.display = e.target.value === 'cancelled' ? 'block' : 'none';
   });
 
-  // ✅ Setup modal data when Approve/Reject button is clicked
-document.querySelectorAll('.approve-btn, .reject-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    const modal = document.querySelector('#verifyReturnModal');
+  // Setup modal data when Approve/Reject button is clicked
+  document.querySelectorAll('.approve-btn, .reject-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const modal = document.querySelector('#verifyReturnModal');
 
-    // Get values from button attributes
-    const orderId = btn.getAttribute('data-order-id');
-    const productId = btn.getAttribute('data-product-id');
-    const variantSize = btn.getAttribute('data-variant-size');
-    const action = btn.getAttribute('data-action');
+      // Get values from button attributes
+      const orderId = btn.getAttribute('data-order-id');
+      const productId = btn.getAttribute('data-product-id');
+      const variantSize = btn.getAttribute('data-variant-size');
+      const action = btn.getAttribute('data-action');
 
-    // Set form input values
-    modal.querySelector('#verifyOrderId').value = orderId;
-    modal.querySelector('#verifyProductId').value = productId;
-    modal.querySelector('#verifyVariantSize').value = variantSize;
-    modal.querySelector('#verifyAction').value = action;
+      // Set form input values
+      modal.querySelector('#verifyOrderId').value = orderId;
+      modal.querySelector('#verifyProductId').value = productId;
+      modal.querySelector('#verifyVariantSize').value = variantSize;
+      modal.querySelector('#verifyAction').value = action;
 
-    // Set the form action using the string orderId
-    modal.querySelector('#verifyReturnForm').action = `/admin/order/return-item-${action}/${orderId}`;
+      // Set the form action URL
+      modal.querySelector('#verifyReturnForm').action = `/admin/order/return-item-${action}/${orderId}`;
 
-    // Update modal content based on action
-    const isReject = action === 'reject';
-    modal.querySelector('#verifyMessage').textContent = isReject
-      ? 'Are you sure you want to reject this return request?'
-      : 'Are you sure you want to approve this return request and refund the customer?';
-    modal.querySelector('#rejectReasonDiv').style.display = isReject ? 'block' : 'none';
-    modal.querySelector('#reason').required = isReject;
-    modal.querySelector('#verifySubmitBtn').textContent = isReject ? 'Reject' : 'Approve';
-  });
-});
-
-// Handle form submissions for both order status and return item
-['updateStatusForm', 'verifyReturnForm'].forEach(formId => {
-  const form = document.getElementById(formId);
-  if (form) {
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const formData = new FormData(form);
-      const jsonData = Object.fromEntries(formData.entries());
-
-      // Ensure the action URL is correct
-      let actionUrl = form.action;
-      if (formId === 'verifyReturnForm') {
-        // Double-check the orderId is a string
-        const orderId = form.querySelector('#verifyOrderId').value;
-        const action = form.querySelector('#verifyAction').value;
-        actionUrl = `/admin/order/return-item-${action}/${orderId}`;
-      }
-
-      try {
-        const response = await fetch(actionUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(jsonData)
-        });
-
-        const result = await response.json();
-        if (result.success) {
-          window.location.reload();
-        } else {
-          alert(result.message || `Failed to ${formId.includes('Status') ? 'update status' : 'verify return'}.`);
-        }
-      } catch (error) {
-        console.error('JS Fetch Error:', error);
-        alert(`Error ${formId.includes('Status') ? 'updating status' : 'verifying return'}.`);
-      }
+      // Update modal content based on action
+      const isReject = action === 'reject';
+      modal.querySelector('#verifyMessage').textContent = isReject
+        ? 'Are you sure you want to reject this return request?'
+        : 'Are you sure you want to approve this return request and refund the customer?';
+      modal.querySelector('#rejectReasonDiv').style.display = isReject ? 'block' : 'none';
+      modal.querySelector('#reason').required = isReject;
+      modal.querySelector('#verifySubmitBtn').textContent = isReject ? 'Reject' : 'Approve';
     });
-  }
-});</script>
+  });
+
+  // Handle form submissions for order status and return item verification
+  ['updateStatusForm', 'verifyReturnForm'].forEach(formId => {
+    const form = document.getElementById(formId);
+    if (form) {
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const formData = new FormData(form);
+        const jsonData = Object.fromEntries(formData.entries());
+
+        let actionUrl = form.action;
+        if (formId === 'verifyReturnForm') {
+          const orderId = form.querySelector('#verifyOrderId').value;
+          const action = form.querySelector('#verifyAction').value;
+          actionUrl = `/admin/order/return-item-${action}/${orderId}`;
+        }
+
+        try {
+          const response = await fetch(actionUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(jsonData)
+          });
+
+          const result = await response.json();
+
+          if (result.success) {
+            Swal.fire({
+              icon: 'success',
+              title: 'Success',
+              text: result.message || 'Operation successful!',
+            }).then(() => {
+              window.location.reload();
+            });
+          } else {
+            Swal.fire({
+              icon: 'error',
+              title: 'Error',
+              text: result.message || 'Something went wrong',
+            });
+          }
+        } catch (error) {
+          console.error('JS Fetch Error:', error);
+          Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: error.message || 'Server error occurred',
+          });
+        }
+      });
+    }
+  });</script>
 
 
 

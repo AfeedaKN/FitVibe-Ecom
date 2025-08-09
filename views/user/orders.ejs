@@ -894,38 +894,39 @@
 
     // Form submission handlers
     ['cancelOrderForm', 'returnOrderForm'].forEach(formId => {
-      const form = document.getElementById(formId);
-      if (form) {
+    const form = document.getElementById(formId);
+    if (form) {
         form.addEventListener('submit', async (e) => {
-          e.preventDefault();
-          const formData = new FormData(form);
-          const action = formId === 'cancelOrderForm' ? 'cancel' : 'return';
-          
-          if (action === 'return' && !form.querySelector('#returnReasonSelect').value.trim()) {
-            form.querySelector('#returnReasonSelect').classList.add('is-invalid');
-            return;
-          }
+            e.preventDefault();
+            const formData = new FormData(form);
+            const action = formId === 'cancelOrderForm' ? 'cancel' : 'return';
 
-          try {
-            const response = await fetch(`/order/${action}/${formData.get('orderId')}`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(Object.fromEntries(formData))
-            });
-            
-            const result = await response.json();
-            
-            if (result.success) {
-              window.location.reload();
-            } else {
-              alert(`Failed to ${action} order: ${result.message} ${result.error || ''}`);
+            // Validate reason for cancel
+            if (action === 'cancel' && !form.querySelector('#cancelReasonSelect').value.trim()) {
+                alert("Please select a reason for cancellation.");
+                return;
             }
-          } catch (error) {
-            alert(`Error ${action}ing order.`);
-          }
+
+            try {
+                const response = await fetch(`/order/${action}/${formData.get('orderId')}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(Object.fromEntries(formData))
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    window.location.reload();
+                } else {
+                    alert(`Failed to ${action} order: ${result.message}`);
+                }
+            } catch (error) {
+                alert(`Error ${action}ing order.`);
+            }
         });
-      }
-    });
+    }
+});
 
     // Handle reason selection for cancel/return forms
     function handleCancelReason(select) {

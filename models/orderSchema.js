@@ -86,7 +86,7 @@ const orderSchema = new Schema({
   },
   paymentStatus: {
     type: String,
-    enum: ["pending", "completed", "failed", "refunded", "cancelled"],
+    enum: ["pending", "completed", "failed", "refunded", "cancelled" ,"partially refunded"],
     default: "pending"
   },
   paymentId: { type: String },
@@ -135,7 +135,7 @@ const orderSchema = new Schema({
 }, { timestamps: true });
 
 // Indexes for performance
-orderSchema.index({ orderID: 1 });
+// Removed duplicate index on orderID because unique:true already creates it
 orderSchema.index({ user: 1 });
 orderSchema.index({ orderStatus: 1 });
 orderSchema.index({ paymentStatus: 1 });

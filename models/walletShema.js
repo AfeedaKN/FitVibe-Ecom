@@ -66,6 +66,7 @@ const walletSchema = new Schema({
     required: true,
     unique: true
   },
+  
   balance: {
     type: Number,
     default: 0,

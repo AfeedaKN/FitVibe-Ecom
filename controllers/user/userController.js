@@ -114,6 +114,7 @@ const securePassword = async (password) => {
 const verifyOTP = async (req, res) => {
     try {
         const { otp } = req.body;
+        console.log("your otp",req.body)
 
         if (!otp) {
             return res.status(400).json({

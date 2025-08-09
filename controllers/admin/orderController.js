@@ -302,27 +302,30 @@ const approveReturn = async (req, res) => {
     }
 
     let wallet = await Wallet.findOne({ userId });
-
-    if (!wallet) {
-      wallet = new Wallet({
-        userId,
-        balance: refundAmount,
-        transactions: [{
-          type: "credit",
-          amount: refundAmount,
-          description: refundDescription,
-          status: "completed"
-        }]
-      });
-    } else {
-      wallet.balance += refundAmount;
-      wallet.transactions.unshift({
-        type: "credit",
-        amount: refundAmount,
-        description: refundDescription,
-        status: "completed"
-      });
-    }
+if (!wallet) {
+  wallet = new Wallet({
+    userId,
+    balance: refundAmount,
+    transactions: [{
+      type: "credit",
+      amount: refundAmount,
+      description: refundDescription,
+      status: "completed",
+      source: "return_refund",            // Add this
+      balanceAfter: refundAmount          // Add this
+    }]
+  });
+} else {
+  wallet.balance += refundAmount;
+  wallet.transactions.unshift({
+    type: "credit",
+    amount: refundAmount,
+    description: refundDescription,
+    status: "completed",
+    source: "return_refund",            // Add this
+    balanceAfter: wallet.balance         // Add this
+  });
+}
 
     await wallet.save();
     await order.save();
@@ -367,10 +370,11 @@ const rejectReturn = async (req, res) => {
 };
 
 const itemReturnApprove = async (req, res) => {
+  console.log("afiiii")
+
   try {
     const { orderId } = req.params;
     const { productId, variantSize } = req.body;
-
     if (!mongoose.Types.ObjectId.isValid(orderId) || !mongoose.Types.ObjectId.isValid(productId)) {
       return res.status(400).json({ success: false, message: "Invalid order or product ID" });
     }
@@ -404,7 +408,10 @@ const itemReturnApprove = async (req, res) => {
 
     // Calculate the exact final amount as shown in order details UI (includes proportional coupon discount)
     const { itemSubtotal, itemCouponDiscount, itemFinalAmount } = calculateItemFinalAmount(item, order);
+    console.log({ itemSubtotal, itemCouponDiscount, itemFinalAmount });
+
     const refundAmount = itemFinalAmount;
+
 
     // Create detailed description showing the balance amount calculation
     let refundDescription = `Refund for returned product ${product.name} (Size: ${variantSize}) in order ${order.orderID}`;
@@ -423,7 +430,9 @@ const itemReturnApprove = async (req, res) => {
           type: "credit",
           amount: refundAmount,
           description: refundDescription,
-          status: "completed"
+          status: "completed",
+          source: "return_refund",           // Added source here
+          balanceAfter: refundAmount         // Added balanceAfter here
         }]
       });
     } else {
@@ -432,7 +441,9 @@ const itemReturnApprove = async (req, res) => {
         type: "credit",
         amount: refundAmount,
         description: refundDescription,
-        status: "completed"
+        status: "completed",
+        source: "return_refund",           // Added source here
+        balanceAfter: wallet.balance        // Added balanceAfter here
       });
     }
 
@@ -458,11 +469,12 @@ const itemReturnApprove = async (req, res) => {
 
     return res.status(200).json({ success: true, message: "Product return approved" });
 
-  } catch (error) {
+  } catch (error) { 
     console.log("Item return approve error:", error);
     return res.status(500).json({ success: false, message: "Server error", error: error.message });
   }
 };
+
 
 const itemReturnReject = async (req, res) => {
   try {

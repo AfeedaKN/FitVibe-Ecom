@@ -610,12 +610,21 @@
       // Add Google Sign-In logic here
     }
 
-    // Enter key support
-    document.addEventListener('keypress', function(e) {
-      if (e.key === 'Enter') {
-        signform.dispatchEvent(new Event('submit'));
+    // Fixed Enter key support
+signform.querySelectorAll('input').forEach((input, index, inputs) => {
+  input.addEventListener('keypress', function (e) {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      if (index < inputs.length - 1) {
+        // Move focus to next input
+        inputs[index + 1].focus();
+      } else {
+        // Last field — submit form
+        signform.requestSubmit();
       }
-    });
+    }
+  });
+});
   </script>
 </body>
 </html>

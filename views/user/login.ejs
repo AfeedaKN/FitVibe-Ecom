@@ -452,6 +452,8 @@
 
       // Form submission
       loginForm.addEventListener('submit', function(e) {
+          e.preventDefault(); // Prevent default so Enter key doesn't bypass validation
+
         const email = emailInput.value.trim();
         const password = passwordInput.value;
         let hasErrors = false;
@@ -486,6 +488,8 @@
         // Show loading state
         loginBtn.disabled = true;
         loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Signing In...';
+          // Submit the form manually after validation
+  loginForm.submit();
       });
 
       // Clear errors on input
@@ -497,12 +501,7 @@
         hideError(passwordError);
       });
 
-      // Enter key support
-      document.addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-          loginForm.dispatchEvent(new Event('submit'));
-        }
-      });
+
     });
 
     // Google Sign-In Handler
