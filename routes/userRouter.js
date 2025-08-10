@@ -110,4 +110,7 @@ router.post("/coupon/validate", userAuth, couponController.validateCoupon);
 router.get("/api/cart/count", userAuth, cartController.getCartCount);
 router.get("/api/wishlist/count", userAuth, wishlistController.getWishlistCount);
 
+router.get("/profile/coupons",userAuth,userProfileController.loadcoupon)
+router.get("/profile/referrals",userAuth,userProfileController.loadrefferalcode)
+
 module.exports=router 

@@ -1,6 +1,7 @@
 const User = require("../../models/userSchema")
 const Order = require("../../models/orderSchema");
 const { sendVerificationEmail } = require("../../controllers/user/userController");
+const Coupon=require("../../models/couponSchema")
 
 
 function generateOtp() {
@@ -342,6 +343,97 @@ const postChangePassword = async (req, res) => {
   }
 };
 
+
+const loadcoupon = async (req, res) => {
+  try {
+    const searchQuery = (req.query.search || "").trim();
+    const filterStatus = req.query.status || "";
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = 6;
+
+    // Base filter - don't show deleted coupons
+    let filter = { isDeleted: false };
+
+    // Apply search only if query exists
+    if (searchQuery) {
+      filter.$or = [
+        { name: { $regex: searchQuery, $options: "i" } },
+        { description: { $regex: searchQuery, $options: "i" } }
+      ];
+    }
+
+// Apply status filter (active/inactive)
+    if (filterStatus) {
+      filter.isActive = filterStatus === "active" ? true : false;
+    }
+
+    // Count total coupons matching filter
+    const totalCoupons = await Coupon.countDocuments(filter);
+    const totalPages = Math.max(Math.ceil(totalCoupons / limit), 1);
+
+    // Fetch paginated coupons
+    const coupons = await Coupon.find(filter)
+      .sort({ createdOn: -1 })
+      .skip((page - 1) * limit)
+      .limit(limit);
+
+    res.render("couponlisting", {
+      coupons,
+      query: searchQuery,
+      filterStatus,
+      totalPages,
+      currentPage: page,
+      messages: req.flash ? req.flash() : {}
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Server Error");
+  }
+};
+
+const loadrefferalcode = async (req, res) => {
+  try {
+    if (!req.session.user) {
+      return res.redirect("/login");
+    }
+
+    const user = await User.findById(req.session.user._id);
+    if (!user) {
+      return res.redirect("/login");
+    }
+
+    // Total referrals count
+    const totalReferrals = await User.countDocuments({ referredBy: user.referralCode });
+
+    // Successful referrals count (example: users who made purchase)
+    const successfulReferrals = await User.countDocuments({
+      referredBy: user.referralCode,
+      hasMadePurchase: true // Adjust based on your schema
+    });
+
+    // Calculate earned rewards (example: Rs. 100 per successful referral)
+    const rewardPerReferral = 100;
+    const earnedRewards = successfulReferrals * rewardPerReferral;
+
+    res.render("refferalcode", {
+      referralCode: user.referralCode || "Not generated yet",
+      totalReferrals,
+      successfulReferrals,
+      earnedRewards
+    });
+
+  } catch (error) {
+    console.error("Error loading referral code:", error);
+    res.redirect("/error");
+  }
+};
+
+
+
+
+
+
+
 module.exports = {
   loadUserProfile,
   getOrders,
@@ -354,4 +446,6 @@ module.exports = {
   resendProfileOtp,
   getChangePasswordPage,
   postChangePassword,
+  loadcoupon,
+  loadrefferalcode
 };

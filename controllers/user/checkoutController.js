@@ -4,6 +4,7 @@ const Order = require('../../models/orderSchema');
 const User = require('../../models/userSchema');
 const Address = require('../../models/addressSchema');
 const Wallet = require('../../models/walletShema');
+const Coupon = require('../../models/couponSchema');
 const { findOrCreateWallet, createTransaction } = require('../../controllers/user/walletController')
 
 const getCheckout = async (req, res) => {
@@ -17,7 +18,7 @@ const getCheckout = async (req, res) => {
     const cart = await Cart.findOne({ userId }).populate('items.productId');
     const addresses = await Address.find({ user: userId });
 
-    // Get user's wallet balance
+    
     let wallet = await Wallet.findOne({ userId });
     const walletBalance = wallet ? wallet.balance : 0;
 
@@ -132,7 +133,7 @@ const placeOrder = async (req, res) => {
     let appliedCoupon = null;
     
     if (couponCode && couponDiscount) {
-      const Coupon = require('../../models/couponSchema');
+      
       const coupon = await Coupon.findOne({ 
         name: couponCode.toUpperCase(),
         isList: true,

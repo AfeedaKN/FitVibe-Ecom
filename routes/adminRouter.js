@@ -7,11 +7,8 @@ const categoryController = require("../controllers/admin/categoryController");
 const productController = require("../controllers/admin/productController");
 const orderController = require("../controllers/admin/orderController");
 const couponController = require("../controllers/admin/couponController");
-
-
-
-
 const upload = require("../middlewares/uploadMiddleware"); // This will now be the multer instance
+const salesreportController=require("../controllers/admin/salesreportController")
 
 router.post('/addproducts', adminAuth, upload.array('productImages', 10), productController.addProduct);
 
@@ -60,6 +57,7 @@ router.patch("/coupons/toggle/:id", adminAuth, couponController.toggleCouponStat
 router.delete("/coupons/delete/:id", adminAuth, couponController.deleteCoupon);
 router.get("/coupons/stats/:id", adminAuth, couponController.getCouponStats);
 
+router.get("/sales",adminAuth,salesreportController.salesreport)
 
 
 

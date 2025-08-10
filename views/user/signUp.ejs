@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -123,7 +124,7 @@
       transition: color 0.3s ease;
     }
 
-    .form-input:focus + .input-icon {
+    .form-input:focus+.input-icon {
       color: #667eea;
     }
 
@@ -299,6 +300,7 @@
         opacity: 0;
         transform: translateY(30px);
       }
+
       to {
         opacity: 1;
         transform: translateY(0);
@@ -327,11 +329,20 @@
       font-size: 0.75rem;
     }
 
-    .strength-weak { color: #ef4444; }
-    .strength-medium { color: #f59e0b; }
-    .strength-strong { color: #10b981; }
+    .strength-weak {
+      color: #ef4444;
+    }
+
+    .strength-medium {
+      color: #f59e0b;
+    }
+
+    .strength-strong {
+      color: #10b981;
+    }
   </style>
 </head>
+
 <body>
   <div class="signup-container">
     <!-- Header -->
@@ -346,70 +357,47 @@
       <!-- Signup Form -->
       <form id="signform" class="signup-form" action="/signup" method="POST">
         <div class="form-group">
-          <input 
-            id="name" 
-            type="text" 
-            name="name" 
-            placeholder="Enter your full name" 
-            class="form-input"
-            required
-          />
+          <input id="name" type="text" name="name" placeholder="Enter your full name" class="form-input" required />
           <i class="fas fa-user input-icon"></i>
           <div id="error1" class="error-message"></div>
         </div>
 
         <div class="form-group">
-          <input 
-            id="email" 
-            type="email" 
-            name="email" 
-            placeholder="Enter your email" 
-            class="form-input"
-            required
-          />
+          <input id="email" type="email" name="email" placeholder="Enter your email" class="form-input" required />
           <i class="fas fa-envelope input-icon"></i>
           <div id="error2" class="error-message"></div>
         </div>
 
         <div class="form-group">
-          <input 
-            id="phone" 
-            type="tel" 
-            name="phone" 
-            placeholder="Enter your phone number" 
-            class="form-input"
-            required
-          />
+          <input id="phone" type="tel" name="phone" placeholder="Enter your phone number" class="form-input" required />
           <i class="fas fa-phone input-icon"></i>
           <div id="error3" class="error-message"></div>
         </div>
 
         <div class="form-group">
-          <input 
-            id="password" 
-            type="password" 
-            name="password" 
-            placeholder="Create a password" 
-            class="form-input"
-            required
-          />
+          <input id="password" type="password" name="password" placeholder="Create a password" class="form-input"
+            required />
           <i class="fas fa-lock input-icon"></i>
           <div id="error4" class="error-message"></div>
           <div id="passwordStrength" class="password-strength"></div>
         </div>
 
         <div class="form-group">
-          <input 
-            id="confirmPassword" 
-            type="password" 
-            name="confirmPassword" 
-            placeholder="Confirm your password" 
-            class="form-input"
-            required
-          />
+          <input id="confirmPassword" type="password" name="confirmPassword" placeholder="Confirm your password"
+            class="form-input" required />
           <i class="fas fa-lock input-icon"></i>
           <div id="error5" class="error-message"></div>
         </div>
+
+        <!-- Add this inside your <form> just before the submit button -->
+
+        <div class="form-group">
+          <input id="referralCode" type="text" name="referralCode" placeholder="Referral Code (Optional)"
+            class="form-input" />
+          <i class="fas fa-tag input-icon"></i>
+          <div id="error6" class="error-message"></div>
+        </div>
+
 
         <button type="submit" class="signup-btn" id="signupBtn">
           <i class="fas fa-user-plus"></i>
@@ -580,7 +568,7 @@
     phoneid.addEventListener('blur', phoneValidateChecking);
     phoneid.addEventListener('input', () => hideError(error3));
 
-    passid.addEventListener('input', function() {
+    passid.addEventListener('input', function () {
       checkPasswordStrength(this.value);
       passValidateChecking();
     });
@@ -611,20 +599,21 @@
     }
 
     // Fixed Enter key support
-signform.querySelectorAll('input').forEach((input, index, inputs) => {
-  input.addEventListener('keypress', function (e) {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      if (index < inputs.length - 1) {
-        // Move focus to next input
-        inputs[index + 1].focus();
-      } else {
-        // Last field — submit form
-        signform.requestSubmit();
-      }
-    }
-  });
-});
+    signform.querySelectorAll('input').forEach((input, index, inputs) => {
+      input.addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          if (index < inputs.length - 1) {
+            // Move focus to next input
+            inputs[index + 1].focus();
+          } else {
+            // Last field — submit form
+            signform.requestSubmit();
+          }
+        }
+      });
+    });
   </script>
 </body>
+
 </html>

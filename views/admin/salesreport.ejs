@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <%- include('./partials/header', { pageTitle: 'Sales Report - FitVibe Admin' }) %>
+
+<%- include('./partials/sidebar', { page: 'sales' }) %>
+
+<div class="main-content">
+  <!-- Page Header -->
+  <div class="page-header">
+    <h1 class="page-title">
+      <i class="fas fa-chart-line"></i>
+      Sales Report
+    </h1>
+    <div class="header-actions">
+      <a href="/admin/sales/export" class="btn btn-primary">
+        <i class="fas fa-download"></i>
+        Export Report
+      </a>
+    </div>
+  </div>
+
+  <!-- Filter Section -->
+  <div class="filter-section">
+    <form action="/admin/sales" method="GET" class="filter-form">
+      <div class="filter-group">
+         <select name="status" class="filter-select" onchange="this.form.submit()">
+          <option value="" <%= !filterStatus ? 'selected' : '' %>>All Status</option>
+          <option value="completed" <%= filterStatus === 'completed' ? 'selected' : '' %>>Completed</option>
+          <option value="cancelled" <%= filterStatus === 'cancelled' ? 'selected' : '' %>>Cancelled</option>
+          <option value="refunded" <%= filterStatus === 'refunded' ? 'selected' : '' %>>Refunded</option>
+        </select>
+        <button type="submit" class="filter-btn" aria-label="Apply Filters">
+          <i class="fas fa-filter"></i>
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Alerts -->
+  <% if (messages.error) { %>
+    <div class="alert alert-danger" role="alert">
+      <i class="fas fa-exclamation-circle"></i> <%= messages.error %>
+    </div>
+  <% } %>
+  <% if (messages.success) { %>
+    <div class="alert alert-success" role="alert">
+      <i class="fas fa-check-circle"></i> <%= messages.success %>
+    </div>
+  <% } %>
+
+  <!-- Statistics Cards -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-header">
+        <span class="stat-title">Total Sales</span>
+        <div class="stat-icon total">
+          <i class="fas fa-rupee-sign"></i>
+        </div>
+      </div>
+      <div class="stat-value">₹<%= totalSales.toLocaleString('en-IN') %></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-header">
+        <span class="stat-title">Orders Completed</span>
+        <div class="stat-icon completed">
+          <i class="fas fa-check-circle"></i>
+        </div>
+      </div>
+      <div class="stat-value"><%= completedOrders %></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-header">
+        <span class="stat-title">Orders Cancelled</span>
+        <div class="stat-icon cancelled">
+          <i class="fas fa-times-circle"></i>
+        </div>
+      </div>
+      <div class="stat-value"><%= cancelledOrders %></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-header">
+        <span class="stat-title">Refunds Issued</span>
+        <div class="stat-icon refunded">
+          <i class="fas fa-undo"></i>
+        </div>
+      </div>
+      <div class="stat-value">₹<%= totalRefunds.toLocaleString('en-IN') %></div>
+    </div>
+  </div>
+
+  <!-- Sales Table -->
+  <div class="sales-table-container">
+    <div class="table-header">
+      <h2 class="table-title">Sales Details</h2>
+    </div>
+    
+    <% if (salesData && salesData.length > 0) { %>
+      <div class="table-wrapper">
+        <table class="sales-table">
+          <thead>
+            <tr>
+              <th>Order ID</th>
+              <th>Date</th>
+              <th>Customer</th>
+              <th>Total Amount</th>
+              <th>Payment Method</th>
+              <th>Status</th>
+              
+            </tr>
+          </thead>
+          <tbody>
+            <% salesData.forEach(sale => { %>
+              <% 
+                const statusClass = {
+                  completed: 'completed',
+                  cancelled: 'cancelled',
+                  refunded: 'refunded'
+                }[sale.paymentStatus.toLowerCase()] || 'pending';
+              %>
+              <tr>
+                <td><span class="order-id"><%= sale.orderID %></span></td>
+                <td><%= new Date(sale.orderDate).toLocaleDateString('en-IN') %></td>
+                <td><%= sale.user?.name || 'Unknown' %></td>
+                <td>₹<%= sale.finalAmount.toLocaleString('en-IN') %></td>
+                <td><%= sale.paymentMethod %></td>
+                <td>
+                  <span class="status-badge status-<%= statusClass %>">
+                    <%= sale.orderStatus %>
+                  </span>
+                </td>
+                
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    <% } else { %>
+      <div class="empty-state">
+        <i class="fas fa-chart-line"></i>
+        <h3>No Sales Data</h3>
+        <p>No sales records found for the selected period. Adjust filters or wait for new orders.</p>
+      </div>
+    <% } %>
+  </div>
+
+  <!-- Pagination -->
+  <% if (totalPages > 1) { %>
+    <div class="pagination">
+      <% if (currentPage > 1) { %>
+        <a href="/admin/sales?page=<%= currentPage - 1 %><%= startDate ? '&startDate=' + startDate : '' %><%= endDate ? '&endDate=' + endDate : '' %><%= filterStatus ? '&status=' + filterStatus : '' %>" class="pagination-btn">
+          <i class="fas fa-chevron-left"></i>
+        </a>
+      <% } %>
+      
+      <% for (let i = 1; i <= totalPages; i++) { %>
+        <a href="/admin/sales?page=<%= i %><%= startDate ? '&startDate=' + startDate : '' %><%= endDate ? '&endDate=' + endDate : '' %><%= filterStatus ? '&status=' + filterStatus : '' %>" class="pagination-btn <%= currentPage === i ? 'active' : '' %>">
+          <%= i %>
+        </a>
+      <% } %>
+      
+      <% if (currentPage < totalPages) { %>
+        <a href="/admin/sales?page=<%= currentPage + 1 %><%= startDate ? '&startDate=' + startDate : '' %><%= endDate ? '&endDate=' + endDate : '' %><%= filterStatus ? '&status=' + filterStatus : '' %>" class="pagination-btn">
+          <i class="fas fa-chevron-right"></i>
+        </a>
+      <% } %>
+    </div>
+  <% } %>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+  // Placeholder for future interactivity (e.g., export confirmation)
+  document.addEventListener('DOMContentLoaded', () => {
+    const exportButtons = document.querySelectorAll('.btn-export');
+    exportButtons.forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        Swal.fire({
+          title: 'Export Order?',
+          text: 'Are you sure you want to export this order details?',
+          icon: 'question',
+          showCancelButton: true,
+          confirmButtonColor: '#667eea',
+          cancelButtonColor: '#64748b',
+          confirmButtonText: 'Yes, Export',
+          cancelButtonText: 'Cancel'
+        }).then((result) => {
+          if (!result.isConfirmed) e.preventDefault();
+        });
+      });
+    });
+  });
+</script>
+
+<style>
+  /* Main Content */
+  .main-content {
+    margin-left: 280px;
+    padding: 2rem 1.5rem;
+    min-height: 100vh;
+    transition: padding 0.3s ease;
+  }
+
+  /* Page Header */
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    background: #ffffff;
+    padding: 2rem;
+    border-radius: 16px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e2e8f0;
+  }
+
+  .page-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #0f172a;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .page-title i {
+    color: #667eea;
+  }
+
+  .header-actions {
+    display: flex;
+    gap: 1rem;
+  }
+
+  .btn {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.875rem;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #ffffff;
+    box-shadow: 0 4px 6px -1px rgba(102, 126, 234, 0.3);
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 15px -3px rgba(102, 126, 234, 0.4);
+    color: #ffffff;
+  }
+
+  /* Filter Section */
+  .filter-section {
+    margin-bottom: 2rem;
+  }
+
+  .filter-form {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .filter-group {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+  }
+
+  .filter-input {
+    padding: 0.75rem 1rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    background: #f8fafc;
+    transition: all 0.3s ease;
+  }
+
+  .filter-input:focus {
+    outline: none;
+    border-color: #6366f1;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+  }
+
+  .filter-select {
+    padding: 0.75rem 1rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    background: #f8fafc;
+    transition: all 0.3s ease;
+  }
+
+  .filter-select:focus {
+    outline: none;
+    border-color: #6366f1;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+  }
+
+  .filter-btn {
+    padding: 0.75rem 1.5rem;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+  }
+
+  .filter-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 15px -3px rgba(102, 126, 234, 0.4);
+  }
+
+  /* Statistics Grid */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+  }
+
+  .stat-card {
+    background: #ffffff;
+    padding: 1.5rem;
+    border-radius: 16px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e2e8f0;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  }
+
+  .stat-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+  }
+
+  .stat-title {
+    font-size: 0.875rem;
+    color: #64748b;
+    font-weight: 500;
+  }
+
+  .stat-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+  }
+
+  .stat-icon.total {
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+    color: #667eea;
+  }
+
+  .stat-icon.completed {
+    background: linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, rgba(21, 128, 61, 0.1) 100%);
+    color: #22c55e;
+  }
+
+  .stat-icon.cancelled {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(185, 28, 28, 0.1) 100%);
+    color: #ef4444;
+  }
+
+  .stat-icon.refunded {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(180, 83, 9, 0.1) 100%);
+    color: #f59e0b;
+  }
+
+  .stat-value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #0f172a;
+  }
+
+  /* Sales Table */
+  .sales-table-container {
+    background: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e2e8f0;
+    margin-bottom: 2rem;
+  }
+
+  .table-header {
+    padding: 1.5rem 2rem;
+    border-bottom: 1px solid #e2e8f0;
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+  }
+
+  .table-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #0f172a;
+  }
+
+  .table-wrapper {
+    overflow-x: auto;
+    max-width: 100%;
+  }
+
+  .sales-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 900px;
+  }
+
+  .sales-table th,
+  .sales-table td {
+    padding: 0.75rem 1rem;
+    text-align: left;
+    border-bottom: 1px solid #e2e8f0;
+    vertical-align: middle;
+    white-space: nowrap;
+  }
+
+  .sales-table th:first-child,
+  .sales-table td:first-child {
+    padding-left: 1.5rem;
+  }
+
+  .sales-table th:last-child,
+  .sales-table td:last-child {
+    padding-right: 1.5rem;
+    width: 120px;
+    min-width: 120px;
+  }
+
+  .sales-table th {
+    background: #f8fafc;
+    font-weight: 600;
+    color: #374151;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .sales-table tbody tr {
+    transition: all 0.3s ease;
+  }
+
+  .sales-table tbody tr:hover {
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+  }
+
+  .order-id {
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+    color: #667eea;
+    padding: 0.25rem 0.5rem;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 0.875rem;
+  }
+
+  .status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.25rem 0.75rem;
+    border-radius: 50px;
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+
+  .status-badge.completed {
+    background: linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, rgba(21, 128, 61, 0.1) 100%);
+    color: #22c55e;
+  }
+
+  .status-badge.cancelled {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(185, 28, 28, 0.1) 100%);
+    color: #ef4444;
+  }
+
+  .status-badge.refunded {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(180, 83, 9, 0.1) 100%);
+    color: #f59e0b;
+  }
+
+  .status-badge.pending {
+    background: linear-gradient(135deg, rgba(202, 138, 4, 0.1) 0%, rgba(133, 77, 0, 0.1) 100%);
+    color: #ca8a04;
+  }
+
+  .action-buttons {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    justify-content: flex-start;
+  }
+
+  .btn-sm {
+    padding: 0.5rem;
+    font-size: 0.75rem;
+    border-radius: 6px;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+  }
+
+  .btn-view {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(37, 99, 235, 0.1) 100%);
+    color: #3b82f6;
+    border: 1px solid rgba(59, 130, 246, 0.2);
+  }
+
+  .btn-view:hover {
+    background: #3b82f6;
+    color: #ffffff;
+    transform: translateY(-2px);
+  }
+
+  .btn-export {
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+    color: #667eea;
+    border: 1px solid rgba(102, 126, 234, 0.2);
+  }
+
+  .btn-export:hover {
+    background: #667eea;
+    color: #ffffff;
+    transform: translateY(-2px);
+  }
+
+  /* Empty State */
+  .empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: #64748b;
+  }
+
+  .empty-state i {
+    font-size: 4rem;
+    color: #d1d5db;
+    margin-bottom: 1rem;
+  }
+
+  .empty-state h3 {
+    font-size: 1.5rem;
+    color: #374151;
+    margin-bottom: 0.5rem;
+  }
+
+  .empty-state p {
+    margin-bottom: 2rem;
+  }
+
+  /* Pagination */
+  .pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 2rem;
+  }
+
+  .pagination-btn {
+    padding: 0.5rem 1rem;
+    border: 1px solid #e2e8f0;
+    background: #ffffff;
+    color: #64748b;
+    text-decoration: none;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+  }
+
+  .pagination-btn:hover {
+    background: #667eea;
+    color: #ffffff;
+    border-color: #667eea;
+  }
+
+  .pagination-btn.active {
+    background: #667eea;
+    color: #ffffff;
+    border-color: #667eea;
+  }
+
+  .pagination-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  /* Alerts */
+  .alert {
+    border-radius: 12px;
+    padding: 1rem 1.5rem;
+    margin-bottom: 1.5rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .alert-success {
+    background: #d1fae5;
+    color: #065f46;
+  }
+
+  .alert-danger {
+    background: #fee2e2;
+    color: #991b1b;
+  }
+
+  /* Responsive Design */
+  @media (max-width: 1024px) {
+    .main-content {
+      padding: 1.5rem 1rem;
+    }
+
+    .filter-form {
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .filter-group {
+      width: 100%;
+    }
+
+    .stats-grid {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .main-content {
+      margin-left: 0;
+      padding: 1rem;
+    }
+
+    .page-header {
+      flex-direction: column;
+      gap: 1rem;
+      align-items: stretch;
+    }
+
+    .header-actions {
+      margin-left: 0;
+    }
+
+    .stats-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .sales-table-container {
+      overflow-x: auto;
+    }
+
+    .sales-table {
+      min-width: 800px;
+    }
+  }
+</style>
+</body>
+</html>

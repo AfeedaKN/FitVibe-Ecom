@@ -43,7 +43,20 @@ const userSchema=new Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: "Address",
   }],
-}, {
+    referralCode: {
+    type: String,
+    unique: true,
+    required: true
+  },
+
+  referredBy: {
+    type: String, // store referralCode of the user who referred
+    default: null,
+  },
+
+},
+
+{
   timestamps: true,
 });const User=mongoose.model("User",userSchema)
 module.exports=User
