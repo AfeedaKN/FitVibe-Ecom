@@ -3,12 +3,9 @@ const mongoose = require('mongoose');
 const Product = require("../../models/productSchema")
 const Wallet = require("../../models/walletShema")
 
-// Helper function to calculate item final amount (matches UI calculation exactly)
 const calculateItemFinalAmount = (item, order) => {
-  // Calculate item subtotal (exactly as in UI)
   const itemSubtotal = item.variant.salePrice * item.quantity;
   
-  // Calculate total coupon discount (exactly as in UI)
   let totalCouponDiscount = 0;
   if (order.couponDiscount && order.couponDiscount > 0) {
     totalCouponDiscount = order.couponDiscount;
@@ -16,19 +13,16 @@ const calculateItemFinalAmount = (item, order) => {
     totalCouponDiscount = order.coupon.discountAmount;
   }
   
-  // Calculate total order subtotal for proportional calculation (exactly as in UI)
   let orderSubtotal = 0;
   order.products.forEach(orderItem => {
     orderSubtotal += (orderItem.variant.salePrice * orderItem.quantity);
   });
   
-  // Calculate proportional coupon discount for this item (exactly as in UI)
   let itemCouponDiscount = 0;
   if (totalCouponDiscount > 0 && orderSubtotal > 0) {
     itemCouponDiscount = (itemSubtotal / orderSubtotal) * totalCouponDiscount;
   }
   
-  // Calculate final amount for this item after coupon discount (exactly as in UI)
   const itemFinalAmount = itemSubtotal - itemCouponDiscount;
   
   return {
@@ -120,18 +114,15 @@ const updateOrderStatus = async (req, res) => {
   try {
     const { orderId, status } = req.body;
 
-    // Validate order ID
     if (!orderId || !mongoose.Types.ObjectId.isValid(orderId)) {
       return res.status(400).json({ success: false, message: 'Invalid or missing order ID' });
     }
 
-    // Find the order
     const order = await Order.findById(orderId);
     if (!order) {
       return res.status(404).json({ success: false, message: 'Order not found' });
     }
     
-    // Check if order is locked (payment failed orders)
     if (order.isLocked) {
       return res.status(400).json({
         success: false,
@@ -139,7 +130,6 @@ const updateOrderStatus = async (req, res) => {
       });
     }
 
-    // Check if order has payment-failed status
     if (order.orderStatus === 'payment-failed') {
       return res.status(400).json({
         success: false,
@@ -147,7 +137,6 @@ const updateOrderStatus = async (req, res) => {
       });
     }
 
-    // Check if online payment is pending or failed
     if (order.paymentMethod && (order.paymentMethod.toLowerCase() === 'online' || order.paymentMethod === 'Online')) {
       if (order.paymentStatus === 'pending' || order.paymentStatus === 'failed') {
         return res.status(400).json({
@@ -157,7 +146,6 @@ const updateOrderStatus = async (req, res) => {
       }
     }
 
-    // Check if order is already delivered
     if (order.orderStatus.toLowerCase() === 'delivered') {
       return res.status(400).json({
         success: false,
@@ -165,7 +153,6 @@ const updateOrderStatus = async (req, res) => {
       });
     }
 
-    // Validate status
     const validStatuses = [
       'pending',
       'processing',
@@ -178,35 +165,29 @@ const updateOrderStatus = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Invalid status' });
     }
 
-    // Update order status
     order.orderStatus = status;
     
-    // Update product statuses
     order.products.forEach(product => {
       if (!['cancelled', 'returned'].includes(product.status)) {
         product.status = status;
       }
     });
     
-    // Handle delivered status
     if (status.toLowerCase() === 'delivered') {
       order.paymentStatus = 'completed';
       order.deliveryDate = new Date();
     }
 
-    // Handle cancellation
     if (status.toLowerCase() === 'cancelled' && req.body.reason) {
       order.cancellationReason = req.body.reason;
     }
 
-    // Add to status history
     order.statusHistory.push({
       status,
       date: new Date(),
       description: status.toLowerCase() === 'cancelled' && req.body.reason ? req.body.reason : undefined,
     });
 
-    // Save the order
     await order.save();
 
     res.json({ success: true, message: 'Status updated successfully' });
@@ -294,7 +275,6 @@ const approveReturn = async (req, res) => {
     const refundAmount = order.finalAmount;
     order.refundAmount = refundAmount;
 
-    // Create detailed description for full order refund
     let refundDescription = `Refund for returned order ${order.orderID} - Balance Amount: ₹${refundAmount.toFixed(2)}`;
     if (order.couponDiscount > 0 || (order.coupon && order.coupon.discountAmount > 0)) {
       const couponAmount = order.couponDiscount || order.coupon.discountAmount;
@@ -311,8 +291,8 @@ if (!wallet) {
       amount: refundAmount,
       description: refundDescription,
       status: "completed",
-      source: "return_refund",            // Add this
-      balanceAfter: refundAmount          // Add this
+      source: "return_refund",           
+      balanceAfter: refundAmount          
     }]
   });
 } else {
@@ -322,8 +302,8 @@ if (!wallet) {
     amount: refundAmount,
     description: refundDescription,
     status: "completed",
-    source: "return_refund",            // Add this
-    balanceAfter: wallet.balance         // Add this
+    source: "return_refund",            
+    balanceAfter: wallet.balance         
   });
 }
 
@@ -406,14 +386,12 @@ const itemReturnApprove = async (req, res) => {
 
     item.status = "returned";
 
-    // Calculate the exact final amount as shown in order details UI (includes proportional coupon discount)
     const { itemSubtotal, itemCouponDiscount, itemFinalAmount } = calculateItemFinalAmount(item, order);
     console.log({ itemSubtotal, itemCouponDiscount, itemFinalAmount });
 
     const refundAmount = itemFinalAmount;
 
 
-    // Create detailed description showing the balance amount calculation
     let refundDescription = `Refund for returned product ${product.name} (Size: ${variantSize}) in order ${order.orderID}`;
     if (itemCouponDiscount > 0) {
       refundDescription += ` - Balance Amount: ₹${itemFinalAmount.toFixed(2)} (Subtotal: ₹${itemSubtotal.toFixed(2)} - Coupon Discount: ₹${itemCouponDiscount.toFixed(2)})`;
@@ -431,8 +409,8 @@ const itemReturnApprove = async (req, res) => {
           amount: refundAmount,
           description: refundDescription,
           status: "completed",
-          source: "return_refund",           // Added source here
-          balanceAfter: refundAmount         // Added balanceAfter here
+          source: "return_refund",           
+          balanceAfter: refundAmount         
         }]
       });
     } else {
@@ -442,8 +420,8 @@ const itemReturnApprove = async (req, res) => {
         amount: refundAmount,
         description: refundDescription,
         status: "completed",
-        source: "return_refund",           // Added source here
-        balanceAfter: wallet.balance        // Added balanceAfter here
+        source: "return_refund",           
+        balanceAfter: wallet.balance        
       });
     }
 

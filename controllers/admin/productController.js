@@ -76,7 +76,6 @@ const loadProducts = async (req, res) => {
       .skip(skip)
       .limit(limit)
 
-    // Get all products for stats calculation (not filtered or paginated)
     const allProducts = await Product.find({ isDeleted: false }).populate("categoryId")
 
     const categories = await Category.find({ isListed: true })
@@ -89,7 +88,6 @@ const loadProducts = async (req, res) => {
       }
       : {}
 
-    // Calculate total count of all products (not filtered)
     const totalAllProducts = await Product.countDocuments({ isDeleted: false })
 
     res.render("adminProducts", {
@@ -160,7 +158,6 @@ const calculateProductOffer = async (product) => {
   const productOffer = parseFloat(product.offer) || 0;
   const categoryOffer = category ? parseFloat(category.categoryOffer) || 0 : 0;
 
-  // Compare and set the higher offer
   let displayOffer = productOffer;
   let offerSource = "product";
   if (categoryOffer > productOffer) {
@@ -171,7 +168,6 @@ const calculateProductOffer = async (product) => {
   product.displayOffer = displayOffer;
   product.offerSource = offerSource;
 
-  // Recalculate salePrice for each variant based on the selected offer
   if (product.variants && product.variants.length > 0) {
     product.variants = product.variants.map((variant) => {
       const originalPrice = variant.varientPrice;
@@ -306,7 +302,6 @@ const addProduct = async (req, res) => {
       isListed: true,
     });
 
-    // Calculate offer before saving
     await calculateProductOffer(newProduct);
 
     await newProduct.save();
@@ -516,7 +511,7 @@ const updateProduct = async (req, res) => {
     updatedProduct.fabric = fabric || "";
     updatedProduct.isListed = isActive === "on";
 
-    // Calculate offer before saving
+    
     await calculateProductOffer(updatedProduct);
 
     await updatedProduct.save();
@@ -543,7 +538,7 @@ const updateProductOffer = async (req, res) => {
       return res.redirect("/admin/products");
     }
 
-    // Calculate offer before saving
+    
     await calculateProductOffer(product);
 
     await product.save();

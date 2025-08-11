@@ -24,7 +24,6 @@ const createTransaction = (wallet, transactionData) => {
   return transaction;
 };
 
-// Helper function to find or create wallet
 const findOrCreateWallet = async (userId) => {
   let wallet = await Wallet.findOne({ userId });
   if (!wallet) {
@@ -34,7 +33,6 @@ const findOrCreateWallet = async (userId) => {
   return wallet;
 };
 
-// Get wallet page
 const getWalletPage = async (req, res) => {
   try {
     const userId = req.session.user?._id;
@@ -49,7 +47,6 @@ const getWalletPage = async (req, res) => {
 
     const wallet = await findOrCreateWallet(userId);
 
-    // Compute statistics for EJS
     const stats = {
       totalCredits: wallet.transactions
         .filter(t => t.type === "credit" && t.status === "completed")
@@ -74,7 +71,6 @@ const getWalletPage = async (req, res) => {
   }
 };
 
-// Add funds to wallet
 const addFunds = async (req, res) => {
   try {
     const userId = req.session.user?._id;
@@ -117,7 +113,6 @@ const addFunds = async (req, res) => {
   }
 };
 
-// Withdraw funds from wallet
 const withdrawFunds = async (req, res) => {
   try {
     const userId = req.session.user?._id;
@@ -164,7 +159,6 @@ const withdrawFunds = async (req, res) => {
   }
 };
 
-// Get transaction history with pagination
 const getTransactionHistory = async (req, res) => {
   try {
     const { userId, limit = 10, skip = 0, type, status } = req.query;
@@ -198,7 +192,6 @@ const getTransactionHistory = async (req, res) => {
   }
 };
 
-// Admin: Add credit to user wallet
 const adminAddCredit = async (req, res) => {
   try {
     const { userId, amount, description, source = "admin_credit", metadata = {} } = req.body;

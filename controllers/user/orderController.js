@@ -630,7 +630,6 @@ const returnOrderItem = async (req, res) => {
       });
     }
 
-    // Use helper function to calculate exact final amount (matches UI calculation)
     const { itemSubtotal: returnedItemSubtotal, itemCouponDiscount, itemFinalAmount: returnedItemFinalAmount } = calculateItemFinalAmount(item, order);
 
     item.status = "return pending";
@@ -648,25 +647,19 @@ const returnOrderItem = async (req, res) => {
 
     const refundAmount = returnedItemFinalAmount;
     
-    // For ALL payment methods: Require admin approval before wallet credit
     item.refundStatus = 'pending';
     item.refundAmount = refundAmount;
     item.refundRequestDate = new Date();
     
-    // Update order with pending refund information
     order.refundAmount = (order.refundAmount || 0) + refundAmount;
     order.refundStatus = 'pending';
     if (!order.refundRequestDate) {
       order.refundRequestDate = new Date();
     }
     
-    // Update order amounts - subtract the final amount
     order.finalAmount = Math.max(0, order.finalAmount - returnedItemFinalAmount);
     order.totalAmount = Math.max(0, order.totalAmount - returnedItemSubtotal);
     
-    // DO NOT UPDATE COUPON DISCOUNT - Keep original coupon discount amount fixed
-    // The coupon discount should remain as it was during payment to maintain payment integrity
-    // The refund amount already accounts for the proportional coupon discount
 
     const allItemsReturnPending = order.products.every((item) =>
       ["return pending", "returned"].includes(item.status)
@@ -675,7 +668,6 @@ const returnOrderItem = async (req, res) => {
       order.orderStatus = "return pending";
     }
 
-    // All refunds now require admin approval
     order.statusHistory.push({
       status: "item return requested",
       date: new Date(),
@@ -799,12 +791,10 @@ const retryPayment = async (req, res) => {
     const { orderId, amount } = req.body;
     const userId = req.user._id;
 
-    // Validate input
     if (!orderId) {
       return res.status(400).json({ success: false, message: 'Order ID is required' });
     }
 
-    // Validate order
     const order = await Order.findOne({ _id: orderId, user: userId });
     if (!order) {
       return res.status(404).json({ success: false, message: 'Order not found' });
@@ -818,7 +808,6 @@ const retryPayment = async (req, res) => {
       isLocked: order.isLocked
     });
 
-    // Check if order is eligible for payment retry
     const isEligibleForRetry = (
       order.paymentMethod && 
       (order.paymentMethod.toLowerCase() === 'online' || order.paymentMethod === 'Online') &&
@@ -832,7 +821,6 @@ const retryPayment = async (req, res) => {
       });
     }
 
-    // Check environment variables
     if (!process.env.RAZORPAY_KEY || !process.env.RAZORPAY_SECRET) {
       console.error('Razorpay credentials missing:', {
         key_id: !!process.env.RAZORPAY_KEY,
@@ -844,7 +832,6 @@ const retryPayment = async (req, res) => {
       });
     }
 
-    // Create new Razorpay order for retry
     const Razorpay = require('razorpay');
     const razorpay = new Razorpay({
       key_id: process.env.RAZORPAY_KEY,
@@ -854,45 +841,37 @@ const retryPayment = async (req, res) => {
     console.log('Creating Razorpay order with amount:', order.finalAmount);
 
     const razorpayOrder = await razorpay.orders.create({
-      amount: Math.round(order.finalAmount * 100), // Convert to paise
+      amount: Math.round(order.finalAmount * 100), 
       currency: 'INR',
       receipt: `retry_${order.orderID}_${Date.now()}`,
     });
 
     console.log('Razorpay order created:', razorpayOrder);
 
-    // Update order with new Razorpay order ID and reset status for retry
     order.razorpayOrderId = razorpayOrder.id;
     order.paymentStatus = 'pending';
     
-    // Reset order status if it was payment-failed to allow retry
     if (order.orderStatus === 'payment-failed') {
       order.orderStatus = 'pending';
     }
     
-    // Unlock the order for retry attempts
     order.isLocked = false;
     
-    // Initialize paymentDetails if it doesn't exist
     if (!order.paymentDetails) {
       order.paymentDetails = {};
     }
     
-    // Update payment details for retry
     order.paymentDetails.razorpayOrderId = razorpayOrder.id;
     order.paymentDetails.amount = razorpayOrder.amount;
     order.paymentDetails.currency = razorpayOrder.currency;
     order.paymentDetails.createdAt = new Date();
     order.paymentDetails.status = 'pending';
     
-    // Clear previous failure details for fresh retry
     order.paymentDetails.failureReason = undefined;
     order.paymentDetails.failureCode = undefined;
     
-    // Count retry attempts
     const retryCount = order.statusHistory.filter(h => h.status.includes('retry')).length + 1;
     
-    // Add status history entry
     order.statusHistory.push({
       status: 'payment retry initiated',
       date: new Date(),
@@ -927,7 +906,6 @@ const retryPayment = async (req, res) => {
   }
 };
 
-// Admin function to approve refunds and credit wallet
 const approveRefund = async (req, res) => {
   try {
     const { orderId, productId, variantSize, adminNotes } = req.body;
@@ -960,14 +938,11 @@ const approveRefund = async (req, res) => {
       });
     }
 
-    // Calculate the exact final amount as shown in order details UI
     const { itemFinalAmount } = calculateItemFinalAmount(item, order);
     
-    // Use the calculated final amount (not the stored refundAmount which might be incorrect)
     const refundAmount = itemFinalAmount;
     const userId = order.user;
 
-    // Credit the exact final amount to wallet
     let wallet = await Wallet.findOne({ userId });
     if (!wallet) {
       wallet = new Wallet({
@@ -992,14 +967,12 @@ const approveRefund = async (req, res) => {
 
     await wallet.save();
 
-    // Update item refund status and store the correct refund amount
     item.refundStatus = 'approved';
-    item.refundAmount = refundAmount; // Update with correct final amount
+    item.refundAmount = refundAmount; 
     item.refundApprovedDate = new Date();
     item.refundProcessedDate = new Date();
     item.adminNotes = adminNotes || '';
 
-    // Update order refund status
     const allPendingRefundsProcessed = order.products.every(p => 
       p.refundStatus !== 'pending'
     );
@@ -1011,7 +984,6 @@ const approveRefund = async (req, res) => {
       order.adminRefundNotes = adminNotes || '';
     }
 
-    // Add status history
     order.statusHistory.push({
       status: 'refund approved',
       date: new Date(),
@@ -1034,7 +1006,6 @@ const approveRefund = async (req, res) => {
   }
 };
 
-// Admin function to reject refunds
 const rejectRefund = async (req, res) => {
   try {
     const { orderId, productId, variantSize, adminNotes } = req.body;
@@ -1069,19 +1040,15 @@ const rejectRefund = async (req, res) => {
 
     const refundAmount = item.refundAmount;
 
-    // Update item refund status to rejected
     item.refundStatus = 'rejected';
     item.refundApprovedDate = new Date();
     item.adminNotes = adminNotes || '';
 
-    // Restore the order amounts since refund is rejected
     order.finalAmount += refundAmount;
     order.totalAmount += (item.variant.salePrice * item.quantity);
 
-    // Update order refund amount
     order.refundAmount = Math.max(0, order.refundAmount - refundAmount);
 
-    // Check if all refunds are processed
     const allPendingRefundsProcessed = order.products.every(p => 
       p.refundStatus !== 'pending'
     );
@@ -1095,7 +1062,6 @@ const rejectRefund = async (req, res) => {
       order.adminRefundNotes = adminNotes || '';
     }
 
-    // Add status history
     order.statusHistory.push({
       status: 'refund rejected',
       date: new Date(),

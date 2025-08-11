@@ -49,8 +49,8 @@ const getCheckout = async (req, res) => {
       return sum + (item.variant?.salePrice || 0) * item.quantity;
     }, 0);
 
-    const tax = 0; // Removed GST calculation
-    const discount = 0; // Removed bulk discount
+    const tax = 0; 
+    const discount = 0; 
     const shipping = 100;
     const total = subtotal + shipping;
 
@@ -89,7 +89,6 @@ const placeOrder = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Cart is empty' });
     }
 
-    // Match variants for each cart item
     cart.items.forEach(item => {
       const product = item.productId;
       const matchedVariant = product.variants.find(variant => 
@@ -98,7 +97,6 @@ const placeOrder = async (req, res) => {
       item.variant = matchedVariant;
     });
 
-    // Check stock availability
     const outOfStock = cart.items.some(item => {
       if (!item.variant) {
         console.error(`Variant not found for item: ${item.productId._id}, variantId: ${item.variantId}`);
@@ -111,13 +109,11 @@ const placeOrder = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Some items are out of stock' });
     }
 
-    // Validate address
     const address = await Address.findOne({ _id: addressId, user: userId });
     if (!address) {
       return res.status(400).json({ success: false, message: 'Invalid or missing address' });
     }
 
-    // Calculate order totals
     const subtotal = cart.items.reduce((sum, item) => {
       if (!item.variant) return sum;
       return sum + (item.variant.salePrice * item.quantity);
@@ -128,7 +124,6 @@ const placeOrder = async (req, res) => {
     const shippingCharge = 100;
     const totalAmount = subtotal;
     
-    // Handle coupon discount
     let couponDiscountAmount = 0;
     let appliedCoupon = null;
     
@@ -170,7 +165,6 @@ const placeOrder = async (req, res) => {
     
     const finalAmount = totalAmount - couponDiscountAmount + shippingCharge;
 
-    // For wallet payments, check if user has sufficient balance
     if (paymentMethod === 'Wallet' || paymentMethod === 'wallet') {
       const wallet = await Wallet.findOne({ userId });
       const walletBalance = wallet ? wallet.balance : 0;
@@ -183,7 +177,6 @@ const placeOrder = async (req, res) => {
       }
     }
 
-    // Generate order ID
     const generateOrderID = () => {
       const date = new Date();
       const year = date.getFullYear().toString().slice(-2);
@@ -195,7 +188,6 @@ const placeOrder = async (req, res) => {
 
     const orderID = generateOrderID();
 
-    // Prepare products for order
     const products = cart.items.map(item => {
       if (!item.variant) {
         throw new Error(`Variant not found for product: ${item.productId._id}, variantId: ${item.variantId}`);
@@ -213,7 +205,6 @@ const placeOrder = async (req, res) => {
       };
     });
 
-    // Create order
     const order = new Order({
       user: userId,
       orderID: orderID,
@@ -243,7 +234,6 @@ const placeOrder = async (req, res) => {
     await order.save();
     console.log("Order saved successfully with ID:", order.orderID);
 
-    // For COD orders, update stock and clear cart immediately
     if (paymentMethod === 'COD') {
       for (const item of cart.items) {
         if (!item.variant) continue;
@@ -267,7 +257,6 @@ const placeOrder = async (req, res) => {
       });
     }
 
-    // For wallet payments, deduct amount and complete order
     if (paymentMethod === 'Wallet' || paymentMethod === 'wallet') {
       try {
         let wallet = await findOrCreateWallet(userId);
@@ -285,22 +274,21 @@ const placeOrder = async (req, res) => {
           description: `Payment for order ${orderID}`,
           orderId: order._id,
           status: "completed",
-          source: "order_payment", // Ensure source is valid
+          source: "order_payment", 
           metadata: {
             orderNumber: orderID,
             paymentMethod: 'Wallet'
           }
         });
 
-        // Check for and sanitize existing transactions if needed
         wallet.transactions = wallet.transactions.map(t => ({
           ...t,
-          source: t.source === 'legacy' ? 'cashback' : t.source // Fallback for legacy data
+          source: t.source === 'legacy' ? 'cashback' : t.source 
         }));
 
         wallet.transactions.unshift(transaction);
         wallet.balance -= finalAmount;
-        await wallet.save({ validateModifiedOnly: true }); // Only validate modified fields
+        await wallet.save({ validateModifiedOnly: true }); 
 
         order.paymentStatus = 'completed';
         order.orderStatus = 'processing';
@@ -347,7 +335,6 @@ const placeOrder = async (req, res) => {
       }
     }
 
-    // For online payments, return order details for Razorpay
     if (paymentMethod === 'Online') {
       const Razorpay = require('razorpay');
       const instance = new Razorpay({
@@ -393,7 +380,6 @@ const getOrderSuccess = async (req, res) => {
   try {
     const { orderId } = req.params;
     
-    // Find the specific order by ID
     const order = await Order.findById(orderId)
       .populate('products.product')
       .populate('address');
@@ -402,10 +388,9 @@ const getOrderSuccess = async (req, res) => {
       return res.status(404).render('pageNotFound', { message: 'Order not found' });
     }
     
-    // Pass the specific order and its orderID
     res.render('order-success', { 
       orderId: order.orderID, 
-      order: [order] // Keep as array for template compatibility
+      order: [order] 
     });
   } catch (error) {
     console.error('Error in getOrderSuccess:', error);
@@ -417,7 +402,6 @@ const getOrderFailure = async (req, res) => {
   try {
     const { orderId } = req.params;
     
-    // Find the specific order by ID
     const order = await Order.findById(orderId)
       .populate('products.product')
       .populate('address');
@@ -426,12 +410,10 @@ const getOrderFailure = async (req, res) => {
       return res.status(404).render('pageNotFound', { message: 'Order not found' });
     }
     
-    // Verify this is actually a failed order
     if (order.orderStatus !== 'payment-failed') {
       return res.redirect(`/order/success/${orderId}`);
     }
     
-    // Render the failure page with order details
     res.render('order-failure', { 
       order: order
     });
@@ -443,12 +425,10 @@ const getOrderFailure = async (req, res) => {
 
 const verifyPayment = async (req, res) => {
   try {
-    console.log('=== PAYMENT VERIFICATION START ===');
-    console.log('Request body:', req.body);
+    
     
     const { orderId, razorpay_payment_id, razorpay_order_id, razorpay_signature } = req.body;
 
-    // Validate required fields
     if (!orderId || !razorpay_payment_id || !razorpay_order_id || !razorpay_signature) {
       console.log('Missing payment details:', {
         orderId: !!orderId,
@@ -459,7 +439,6 @@ const verifyPayment = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Missing payment details' });
     }
 
-    // Verify signature
     const crypto = require('crypto');
     const sign = `${razorpay_order_id}|${razorpay_payment_id}`;
     const expectedSign = crypto
@@ -475,23 +454,21 @@ const verifyPayment = async (req, res) => {
     });
 
     if (razorpay_signature !== expectedSign) {
-      console.log('❌ Signature verification failed');
+      console.log(' Signature verification failed');
       return res.status(400).json({ success: false, message: 'Invalid payment signature' });
     }
 
-    console.log('✅ Signature verification successful');
+    console.log(' Signature verification successful');
 
-    // Find and update order
     console.log('Finding order with ID:', orderId);
     const order = await Order.findById(orderId);
     if (!order) {
-      console.log('❌ Order not found');
+      console.log(' Order not found');
       return res.status(404).json({ success: false, message: 'Order not found' });
     }
 
-    console.log('✅ Order found:', order.orderID);
+    console.log(' Order found:', order.orderID);
 
-    // Update order status
     console.log('Updating order status...');
     order.paymentStatus = 'Paid';
     order.orderStatus = 'Confirmed';
@@ -504,9 +481,8 @@ const verifyPayment = async (req, res) => {
     };
 
     await order.save();
-    console.log('✅ Order updated successfully');
+    console.log(' Order updated successfully');
 
-    // Update product stock and clear cart
     const userId = req.user._id;
     console.log('Finding cart for user:', userId);
     const cart = await Cart.findOne({ userId }).populate('items.productId');
@@ -514,7 +490,6 @@ const verifyPayment = async (req, res) => {
     if (cart && cart.items.length > 0) {
       console.log('Updating product stock for', cart.items.length, 'items');
       
-      // Update product stock
       for (const item of cart.items) {
         const product = item.productId;
         const variantToUpdate = product.variants.find(v => v._id.toString() === item.variantId.toString());
@@ -526,10 +501,9 @@ const verifyPayment = async (req, res) => {
         }
       }
 
-      // Clear cart
       cart.items = [];
       await cart.save();
-      console.log('✅ Cart cleared');
+      console.log(' Cart cleared');
     } else {
       console.log('No cart found or cart is empty');
     }

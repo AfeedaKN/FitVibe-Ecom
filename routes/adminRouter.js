@@ -7,7 +7,7 @@ const categoryController = require("../controllers/admin/categoryController");
 const productController = require("../controllers/admin/productController");
 const orderController = require("../controllers/admin/orderController");
 const couponController = require("../controllers/admin/couponController");
-const upload = require("../middlewares/uploadMiddleware"); // This will now be the multer instance
+const upload = require("../middlewares/uploadMiddleware"); 
 const salesreportController=require("../controllers/admin/salesreportController")
 
 router.post('/addproducts', adminAuth, upload.array('productImages', 10), productController.addProduct);
@@ -47,7 +47,6 @@ router.post("/order/return-reject/:orderId", adminAuth, orderController.rejectRe
 router.post("/order/return-item-approve/:orderId", adminAuth, orderController.itemReturnApprove);
 router.post("/order/return-item-reject/:orderId", adminAuth, orderController.itemReturnReject);
 
-// Coupon Management Routes
 router.get("/coupons", adminAuth, couponController.loadCoupons);
 router.get("/coupons/add", adminAuth, couponController.loadAddCoupon);
 router.post("/coupons/add", adminAuth, couponController.addCoupon);
@@ -58,6 +57,7 @@ router.delete("/coupons/delete/:id", adminAuth, couponController.deleteCoupon);
 router.get("/coupons/stats/:id", adminAuth, couponController.getCouponStats);
 
 router.get("/sales",adminAuth,salesreportController.salesreport)
+router.get('/sales/export',adminAuth, salesreportController.exportSalesReport)
 
 
 

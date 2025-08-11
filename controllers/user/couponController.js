@@ -2,12 +2,10 @@ const Coupon = require('../../models/couponSchema');
 const Cart = require('../../models/cartSchema');
 const Order = require('../../models/orderSchema');
 
-// Apply coupon to cart
 const applyCoupon = async (req, res) => {
   try {
     const { couponCode } = req.body;
     
-    // Check if user is authenticated
     if (!req.user || !req.user._id) {
       return res.status(401).json({
         success: false,
@@ -19,7 +17,6 @@ const applyCoupon = async (req, res) => {
 
     console.log('Applying coupon:', couponCode, 'for user:', userId);
 
-    // Validate input
     if (!couponCode || !couponCode.trim()) {
       return res.status(400).json({
         success: false,
@@ -27,7 +24,6 @@ const applyCoupon = async (req, res) => {
       });
     }
 
-    // Get user's cart
     const cart = await Cart.findOne({ userId }).populate('items.productId');
     if (!cart || cart.items.length === 0) {
       return res.status(400).json({
@@ -36,7 +32,6 @@ const applyCoupon = async (req, res) => {
       });
     }
 
-    // Match variants for each cart item
     cart.items.forEach(item => {
       const product = item.productId;
       if (!product || !product.variants) {
@@ -52,7 +47,6 @@ const applyCoupon = async (req, res) => {
       item.variant = matchedVariant;
     });
 
-    // Calculate cart totals
     const subtotal = cart.items.reduce((sum, item) => {
       if (!item.variant) {
         console.error('No variant found for cart item:', item);
@@ -74,16 +68,15 @@ const applyCoupon = async (req, res) => {
       });
     }
 
-    const taxAmount = 0; // Removed GST calculation
-    const bulkDiscount = 0; // Removed bulk discount
+    const taxAmount = 0; 
+    const bulkDiscount = 0; 
     const shippingCharge = 100;
 
-    // Find and validate coupon
     const coupon = await Coupon.findOne({
       name: couponCode.toUpperCase().trim(),
-      isList: true,        // Must be listed to be usable
-      isActive: true,      // Must be active
-      isDeleted: { $ne: true }  // Must not be deleted
+      isList: true,        
+      isActive: true,      
+      isDeleted: { $ne: true }  
     });
 
     if (!coupon) {
@@ -93,7 +86,6 @@ const applyCoupon = async (req, res) => {
       });
     }
 
-    // Check if coupon is expired
     if (coupon.expireOn < new Date()) {
       return res.status(400).json({
         success: false,
@@ -101,7 +93,6 @@ const applyCoupon = async (req, res) => {
       });
     }
 
-    // Check minimum purchase requirement
     if (subtotal < coupon.minimumPrice) {
       return res.status(400).json({
         success: false,
@@ -109,7 +100,6 @@ const applyCoupon = async (req, res) => {
       });
     }
 
-    // Check if user has already used this coupon
     const existingOrder = await Order.findOne({
       user: userId,
       'coupon.couponId': coupon._id,
@@ -123,7 +113,6 @@ const applyCoupon = async (req, res) => {
       });
     }
 
-    // Check usage limit
     if (coupon.usageLimit) {
       const currentUsage = await Order.countDocuments({
         'coupon.couponId': coupon._id,
@@ -138,24 +127,18 @@ const applyCoupon = async (req, res) => {
       }
     }
 
-    // Calculate coupon discount
     let couponDiscountAmount = 0;
     if (coupon.discountType === 'percentage') {
       couponDiscountAmount = (subtotal * coupon.discountValue) / 100;
-      // Apply maximum discount limit if set
       if (coupon.maxDiscountAmount && couponDiscountAmount > coupon.maxDiscountAmount) {
         couponDiscountAmount = coupon.maxDiscountAmount;
       }
     } else {
-      // Fixed discount
       couponDiscountAmount = Math.min(coupon.discountValue, subtotal);
     }
 
-    // Ensure discount doesn't exceed subtotal
     couponDiscountAmount = Math.min(couponDiscountAmount, subtotal);
 
-    // **PROPORTIONAL DISTRIBUTION LOGIC**
-    // Calculate proportional discount for each cart item
     const itemsWithDiscount = cart.items.map(item => {
       if (!item.variant) return item;
 
@@ -174,11 +157,9 @@ const applyCoupon = async (req, res) => {
       };
     });
 
-    // Calculate final totals
     const totalAfterCoupon = subtotal - couponDiscountAmount;
     const finalAmount = totalAfterCoupon + shippingCharge;
 
-    // Store coupon data in session for order placement
     req.session.appliedCoupon = {
       couponId: coupon._id,
       code: coupon.name,
@@ -223,10 +204,8 @@ const applyCoupon = async (req, res) => {
   }
 };
 
-// Remove coupon from cart
 const removeCoupon = async (req, res) => {
   try {
-    // Check if user is authenticated
     if (!req.user || !req.user._id) {
       return res.status(401).json({
         success: false,
@@ -238,7 +217,6 @@ const removeCoupon = async (req, res) => {
 
     console.log('Removing coupon for user:', userId);
 
-    // Get user's cart
     const cart = await Cart.findOne({ userId }).populate('items.productId');
     if (!cart || cart.items.length === 0) {
       return res.status(400).json({
@@ -247,7 +225,6 @@ const removeCoupon = async (req, res) => {
       });
     }
 
-    // Match variants for each cart item
     cart.items.forEach(item => {
       const product = item.productId;
       const matchedVariant = product.variants.find(variant => 
@@ -256,21 +233,18 @@ const removeCoupon = async (req, res) => {
       item.variant = matchedVariant;
     });
 
-    // Calculate original totals (without coupon)
     const subtotal = cart.items.reduce((sum, item) => {
       if (!item.variant) return sum;
       return sum + (item.variant.salePrice * item.quantity);
     }, 0);
 
-    const taxAmount = 0; // Removed GST calculation
-    const bulkDiscount = 0; // Removed bulk discount
+    const taxAmount = 0; 
+    const bulkDiscount = 0; 
     const shippingCharge = 100;
     const finalAmount = subtotal + shippingCharge;
 
-    // Remove coupon from session
     delete req.session.appliedCoupon;
 
-    // Return original cart items without discount
     const originalItems = cart.items.map(item => {
       if (!item.variant) return item;
 
@@ -309,12 +283,10 @@ const removeCoupon = async (req, res) => {
   }
 };
 
-// Validate coupon (for real-time validation)
 const validateCoupon = async (req, res) => {
   try {
     const { couponCode } = req.body;
     
-    // Check if user is authenticated
     if (!req.user || !req.user._id) {
       return res.status(401).json({
         success: false,
@@ -331,7 +303,6 @@ const validateCoupon = async (req, res) => {
       });
     }
 
-    // Get user's cart
     const cart = await Cart.findOne({ userId }).populate('items.productId');
     if (!cart || cart.items.length === 0) {
       return res.status(400).json({
@@ -340,7 +311,6 @@ const validateCoupon = async (req, res) => {
       });
     }
 
-    // Calculate cart subtotal
     const subtotal = cart.items.reduce((sum, item) => {
       const product = item.productId;
       const matchedVariant = product.variants.find(variant => 
@@ -350,12 +320,11 @@ const validateCoupon = async (req, res) => {
       return sum + (matchedVariant.salePrice * item.quantity);
     }, 0);
 
-    // Find coupon
     const coupon = await Coupon.findOne({
       name: couponCode.toUpperCase().trim(),
-      isList: true,        // Must be listed to be usable
-      isActive: true,      // Must be active
-      isDeleted: { $ne: true }  // Must not be deleted
+      isList: true,        
+      isActive: true,      
+      isDeleted: { $ne: true }  
     });
 
     if (!coupon) {
@@ -365,7 +334,6 @@ const validateCoupon = async (req, res) => {
       });
     }
 
-    // Validate coupon conditions
     if (coupon.expireOn < new Date()) {
       return res.status(400).json({
         success: false,
@@ -380,7 +348,6 @@ const validateCoupon = async (req, res) => {
       });
     }
 
-    // Check if user has already used this coupon
     const existingOrder = await Order.findOne({
       user: userId,
       'coupon.couponId': coupon._id,
@@ -394,7 +361,6 @@ const validateCoupon = async (req, res) => {
       });
     }
 
-    // Calculate potential discount
     let discountAmount = 0;
     if (coupon.discountType === 'percentage') {
       discountAmount = (subtotal * coupon.discountValue) / 100;

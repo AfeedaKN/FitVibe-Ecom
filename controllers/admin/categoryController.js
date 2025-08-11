@@ -1,6 +1,6 @@
 const Category = require("../../models/categorySchema");
 const Product = require("../../models/productSchema");
-const {calculateProductOffer} = require("../../controllers/admin/productController")
+const { calculateProductOffer } = require("../../controllers/admin/productController")
 
 const categoryInfo = async (req, res) => {
   try {
@@ -92,8 +92,7 @@ const editCategory = async (req, res) => {
       return res.status(404).json({ success: false, message: "Category not found" });
     }
 
-    // Update all products in this category to reflect the new category offer
-const products = await Product.find({ categoryId: id });
+    const products = await Product.find({ categoryId: id });
     for (const product of products) {
       await calculateProductOffer(product);
       await product.save();

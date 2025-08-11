@@ -830,83 +830,90 @@
       window.location.href = '/products';
     });
 
-    document.querySelectorAll('.wishlist-btn').forEach(btn => {
-      btn.addEventListener('click', async (e) => {
-        e.preventDefault();
-        const productId = btn.getAttribute('data-product-id');
-        const variantId = btn.getAttribute('data-variant-id');
-        const originalIcon = btn.innerHTML;
-        const isActive = btn.classList.contains('active');
+document.querySelectorAll('.wishlist-btn').forEach(btn => {
+  btn.addEventListener('click', async (e) => {
+    e.preventDefault();
+    const productId = btn.getAttribute('data-product-id');
+    const variantId = btn.getAttribute('data-variant-id');
+    const originalIcon = btn.innerHTML;
+    const isActive = btn.classList.contains('active');
 
-        try {
-          btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-          btn.disabled = true;
+    try {
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+      btn.disabled = true;
 
-          const endpoint = isActive ? '/wishlist/remove' : '/wishlist/add';
-          const response = await fetch(endpoint, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ productId, variantId }),
-          });
-          window.location.reload()
+      const endpoint = isActive ? '/wishlist/remove' : '/wishlist/add';
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ productId, variantId }),
+      });
 
-          const result = await response.json();
+      const result = await response.json();
 
-          if (result.success) {
-            if (isActive) {
-              btn.classList.remove('active');
-              btn.innerHTML = '<i class="far fa-heart"></i>';
-              btn.title = 'Add to Wishlist';
-              Toastify({
-                text: 'Removed from wishlist!',
-                duration: 3000,
-                gravity: 'top',
-                position: 'right',
-                backgroundColor: '#6366f1',
-                stopOnFocus: true,
-              }).showToast();
-            } else {
-              btn.classList.add('active');
-              btn.innerHTML = '<i class="fas fa-heart"></i>';
-              btn.title = 'Remove from Wishlist';
-              Toastify({
-                text: 'Added to wishlist!',
-                duration: 3000,
-                gravity: 'top',
-                position: 'right',
-                backgroundColor: '#28a745',
-                stopOnFocus: true,
-              }).showToast();
-            }
-          } else {
-            Toastify({
-              text: result.message || 'Failed to update wishlist',
-              duration: 3000,
-              gravity: 'top',
-              position: 'right',
-              backgroundColor: '#dc3545',
-              stopOnFocus: true,
-            }).showToast();
-            btn.innerHTML = originalIcon;
-          }
-        } catch (error) {
-          console.error('Error updating wishlist:', error);
+      if (result.success) {
+        // Update wishlist count badge dynamically
+        const countElem = document.querySelector('.wishlist-badge');
+        let currentCount = countElem ? parseInt(countElem.textContent) || 0 : 0;
+        let newCount = isActive ? currentCount - 1 : currentCount + 1;
+
+        updateWishlistCount(newCount); // your existing function
+
+        if (isActive) {
+          btn.classList.remove('active');
+          btn.innerHTML = '<i class="far fa-heart"></i>';
+          btn.title = 'Add to Wishlist';
           Toastify({
-            text: 'Error updating wishlist. Please try again.',
+            text: 'Removed from wishlist!',
             duration: 3000,
             gravity: 'top',
             position: 'right',
-            backgroundColor: '#ffc107',
+            backgroundColor: '#6366f1',
             stopOnFocus: true,
           }).showToast();
-          btn.innerHTML = originalIcon;
-        } finally {
-          btn.disabled = false;
+        } else {
+          btn.classList.add('active');
+          btn.innerHTML = '<i class="fas fa-heart"></i>';
+          btn.title = 'Remove from Wishlist';
+          Toastify({
+            text: 'Added to wishlist!',
+            duration: 3000,
+            gravity: 'top',
+            position: 'right',
+            backgroundColor: '#28a745',
+            stopOnFocus: true,
+          }).showToast();
         }
-      });
-    });
+      } else {
+        Toastify({
+          text: result.message || 'Failed to update wishlist',
+          duration: 3000,
+          gravity: 'top',
+          position: 'right',
+          backgroundColor: '#dc3545',
+          stopOnFocus: true,
+        }).showToast();
+        btn.innerHTML = originalIcon;
+      }
+    } catch (error) {
+      console.error('Error updating wishlist:', error);
+      Toastify({
+        text: 'Error updating wishlist. Please try again.',
+        duration: 3000,
+        gravity: 'top',
+        position: 'right',
+        backgroundColor: '#ffc107',
+        stopOnFocus: true,
+      }).showToast();
+      btn.innerHTML = originalIcon;
+    } finally {
+      btn.disabled = false;
+    }
+  });
+});
+
      
     const mobileFilterToggle = document.getElementById('mobileFilterToggle');
     const filterSidebar = document.getElementById('filterSidebar');

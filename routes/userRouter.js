@@ -101,12 +101,10 @@ router.post("/order/retry-payment", userAuth, orderController.retryPayment);
 router.get("/profile/Wallet", userAuth, walletController.getWalletPage);
 router.post("/wallet/add-funds", userAuth, walletController.addFunds);
 
-// Coupon routes
 router.post("/coupon/apply", userAuth, couponController.applyCoupon);
 router.post("/coupon/remove", userAuth, couponController.removeCoupon);
 router.post("/coupon/validate", userAuth, couponController.validateCoupon);
 
-// API routes for cart and wishlist counts
 router.get("/api/cart/count", userAuth, cartController.getCartCount);
 router.get("/api/wishlist/count", userAuth, wishlistController.getWishlistCount);
 

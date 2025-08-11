@@ -289,7 +289,7 @@ const updateProfile = async (req, res) => {
 
     return res.json({ success: true, message: "Profile updated successfully" });
   } catch (error) {
-    console.error("🔥 Error updating profile:", error);
+    console.error(" Error updating profile:", error);
     return res.json({ success: false, message: "Profile update failed" });
   }
 };
@@ -351,10 +351,8 @@ const loadcoupon = async (req, res) => {
     const page = parseInt(req.query.page, 10) || 1;
     const limit = 6;
 
-    // Base filter - don't show deleted coupons
     let filter = { isDeleted: false };
 
-    // Apply search only if query exists
     if (searchQuery) {
       filter.$or = [
         { name: { $regex: searchQuery, $options: "i" } },
@@ -362,16 +360,13 @@ const loadcoupon = async (req, res) => {
       ];
     }
 
-// Apply status filter (active/inactive)
     if (filterStatus) {
       filter.isActive = filterStatus === "active" ? true : false;
     }
 
-    // Count total coupons matching filter
     const totalCoupons = await Coupon.countDocuments(filter);
     const totalPages = Math.max(Math.ceil(totalCoupons / limit), 1);
 
-    // Fetch paginated coupons
     const coupons = await Coupon.find(filter)
       .sort({ createdOn: -1 })
       .skip((page - 1) * limit)
@@ -402,16 +397,14 @@ const loadrefferalcode = async (req, res) => {
       return res.redirect("/login");
     }
 
-    // Total referrals count
+    
     const totalReferrals = await User.countDocuments({ referredBy: user.referralCode });
 
-    // Successful referrals count (example: users who made purchase)
     const successfulReferrals = await User.countDocuments({
       referredBy: user.referralCode,
-      hasMadePurchase: true // Adjust based on your schema
+      hasMadePurchase: true
     });
 
-    // Calculate earned rewards (example: Rs. 100 per successful referral)
     const rewardPerReferral = 100;
     const earnedRewards = successfulReferrals * rewardPerReferral;
 
