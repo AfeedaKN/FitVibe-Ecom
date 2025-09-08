@@ -29,6 +29,7 @@ const loadHomepage = async (req, res) => {
         ];
 
         const listedCategories = await Category.find({ isDeleted: false, isListed: true });
+        
         const listedCategoryIds = listedCategories.map(cat => cat._id);
 
         const query = {

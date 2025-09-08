@@ -4,7 +4,7 @@ const mongoose = require("mongoose");
 
 
 
-// Helper function to create a transaction
+
 const createTransaction = (wallet, transactionData) => {
   const transaction = {
     transactionId: 'TXN' + Date.now() + Math.random().toString(36).substr(2, 5).toUpperCase(),
@@ -28,7 +28,7 @@ const findOrCreateWallet = async (userId) => {
   let wallet = await Wallet.findOne({ userId });
   if (!wallet) {
     wallet = await Wallet.create({ userId, balance: 0, transactions: [] });
-    console.log("Created new wallet for user:", userId);
+    
   }
   return wallet;
 };

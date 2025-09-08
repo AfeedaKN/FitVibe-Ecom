@@ -1,5 +1,3 @@
-
-
 const User = require("../../models/userSchema");
 const Product = require('../../models/productSchema');
 const env = require("dotenv").config();
@@ -146,8 +144,7 @@ const verifyOTP = async (req, res) => {
 
             const passwordHash = await securePassword(user.password);
 
-            // Check and initialize wallet for the new user
-            let newUserWallet = await Wallet.findOne({ userId: null }); // Temporary check
+            let newUserWallet = await Wallet.findOne({ userId: null }); 
             if (!newUserWallet) {
                 newUserWallet = new Wallet({ userId: null, balance: 0, transactions: [] });
             }
@@ -162,7 +159,6 @@ const verifyOTP = async (req, res) => {
                 walletBalance: 0,
             });
 
-            // Handle referral rewards
             if (user.referralCode) {
                 const referrer = await User.findOne({ referralCode: user.referralCode });
                 if (referrer) {
@@ -186,7 +182,6 @@ const verifyOTP = async (req, res) => {
                 }
             }
 
-            // Initialize wallet for new user
             newUserWallet.userId = newUser._id;
             newUserWallet.balance = user.referralCode ? 50 : 0;
             newUserWallet.transactions.push({

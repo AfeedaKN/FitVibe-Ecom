@@ -15,7 +15,7 @@ const applyCoupon = async (req, res) => {
     
     const userId = req.user._id;
 
-    console.log('Applying coupon:', couponCode, 'for user:', userId);
+    
 
     if (!couponCode || !couponCode.trim()) {
       return res.status(400).json({

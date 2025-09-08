@@ -199,6 +199,7 @@ const addProduct = async (req, res) => {
       req.flash("error_msg", "Category not found");
       return res.redirect("/admin/addproducts");
     }
+   
 
     const variants = [];
     const sizes = ["S", "M", "L", "XL"];

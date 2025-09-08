@@ -11,7 +11,7 @@ function generateOtp() {
 const loadUserProfile = async (req, res) => {
   try {  
     const userId = req.session.user._id;
-    console.log("Loading user profile for ID:", userId);
+    
 
     const user = await User.findById(userId).populate("addresses");
     if (!user) {
@@ -26,7 +26,7 @@ const loadUserProfile = async (req, res) => {
       .populate("address")
       .sort({ createdAt: -1 });
 
-    console.log("User orders:", orders.length);
+  
 
     res.render("profile", {
       user,
@@ -111,12 +111,12 @@ const getOrderDetail = async (req, res) => {
       .populate("address")           
       .populate("user");
 
-    console.log("Order Details:", order);
+    
 
     if (!order) {
       return res.status(404).render("pageNotFound", { message: "Order not found" });
     }
-    console.log("Populated Address:", order.address);
+    
 
     res.render("order-details", { order });
   } catch (error) {
@@ -420,7 +420,6 @@ const loadrefferalcode = async (req, res) => {
     res.redirect("/error");
   }
 };
-
 
 
 

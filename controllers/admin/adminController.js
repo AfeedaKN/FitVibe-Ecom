@@ -18,8 +18,7 @@ const loadAdminLogin = async (req, res) => {
 const adminLogin = async (req, res) => {
     try {
         const { email, password } = req.body;
-        console.log(req.body);
-        
+         
         const Admin = await User.findOne({ email,isAdmin:true});
         
         if (!Admin) {

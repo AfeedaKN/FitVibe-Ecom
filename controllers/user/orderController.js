@@ -6,12 +6,9 @@ const PDFDocument = require('pdfkit');
 const fs = require("fs");
 const mongoose = require('mongoose');
 
-// Helper function to calculate item final amount (matches UI calculation exactly)
 const calculateItemFinalAmount = (item, order) => {
-  // Calculate item subtotal (exactly as in UI)
   const itemSubtotal = item.variant.salePrice * item.quantity;
   
-  // Calculate total coupon discount (exactly as in UI)
   let totalCouponDiscount = 0;
   if (order.couponDiscount && order.couponDiscount > 0) {
     totalCouponDiscount = order.couponDiscount;
@@ -19,19 +16,16 @@ const calculateItemFinalAmount = (item, order) => {
     totalCouponDiscount = order.coupon.discountAmount;
   }
   
-  // Calculate total order subtotal for proportional calculation (exactly as in UI)
   let orderSubtotal = 0;
   order.products.forEach(orderItem => {
     orderSubtotal += (orderItem.variant.salePrice * orderItem.quantity);
   });
   
-  // Calculate proportional coupon discount for this item (exactly as in UI)
   let itemCouponDiscount = 0;
   if (totalCouponDiscount > 0 && orderSubtotal > 0) {
     itemCouponDiscount = (itemSubtotal / orderSubtotal) * totalCouponDiscount;
   }
   
-  // Calculate final amount for this item after coupon discount (exactly as in UI)
   const itemFinalAmount = itemSubtotal - itemCouponDiscount;
   
   return {
@@ -131,16 +125,13 @@ const cancelOrder = async (req, res) => {
     const originalPaymentStatus = order.paymentStatus;
     const paymentMethod = (order.paymentMethod || '').toLowerCase();
 
-    // Mark order cancelled
     order.orderStatus = 'cancelled';
     order.cancelReason = reason;
 
-    // Restore stock + mark each product cancelled
     for (const item of order.products) {
       item.status = 'cancelled';
       item.cancelReason = reason;
 
-      // restore product variant quantity
       const product = await Product.findById(item.product);
       if (product) {
         const variant = product.variants.find(v => v.size === item.variant.size);
@@ -153,21 +144,18 @@ const cancelOrder = async (req, res) => {
 
     let refundProcessed = false;
 
-    // Process refund for online/wallet payments only if originally completed/success
     if ((paymentMethod === 'online' || paymentMethod === 'wallet') &&
         (originalPaymentStatus === 'completed' || originalPaymentStatus === 'success')) {
 
       const refundAmount = order.finalAmount || 0;
       const userId = order.user;
 
-      // find or create wallet
       let wallet = await Wallet.findOne({ userId });
       if (!wallet) {
         wallet = new Wallet({ userId, balance: 0, transactions: [] });
       }
       console.log(wallet);
       
-      // update wallet balance and push transaction (balanceAfter required in schema)
       wallet.balance = (wallet.balance || 0) + refundAmount;
       wallet.transactions.unshift({
         type: "credit",
@@ -185,7 +173,6 @@ const cancelOrder = async (req, res) => {
 
       await wallet.save();
 
-      // update order refund fields
       order.refundAmount = refundAmount;
       order.paymentStatus = 'refunded';
       order.statusHistory.push({
@@ -194,7 +181,6 @@ const cancelOrder = async (req, res) => {
         description: `₹${refundAmount.toFixed(2)} refunded to wallet`
       });
 
-      // mark each item refund info (optional: proportionally or by item price)
       for (const item of order.products) {
         item.refundStatus = 'processed';
         const unitPrice = (item.variant && (item.variant.salePrice || item.variant.varientPrice)) || 0;
@@ -204,7 +190,6 @@ const cancelOrder = async (req, res) => {
       refundProcessed = true;
     }
 
-    // If no refund processed, make sure paymentStatus shows cancelled
     if (!refundProcessed) {
       order.paymentStatus = 'cancelled';
       order.statusHistory.push({
@@ -228,7 +213,7 @@ const returnOrder = async (req, res) => {
   try {
     const { orderId, reason, productIds } = req.body;
 
-    console.log('Return request body:', req.body); 
+     
 
     if (!mongoose.Types.ObjectId.isValid(orderId)) {
       return res.status(400).json({ success: false, message: 'Invalid order ID' });
@@ -299,7 +284,7 @@ const returnOrder = async (req, res) => {
     });
 
     await order.save();
-    console.log('Order saved with return pending status:', order.orderStatus);
+    
 
     return res.json({ success: true, message: 'Return request submitted successfully' });
   } catch (error) {
@@ -309,13 +294,12 @@ const returnOrder = async (req, res) => {
 };
 
 const cancelOrderItem = async (req, res) => {
-  console.log('reach 1');
+  
   try {
     const { orderId, productId, variantSize, reason } = req.body;
-    console.log('reach 2', 'req.user:', req.user, 'req.session:', req.session);
-    const userId = req.user?._id; // Use optional chaining to avoid undefined error
+    
+    const userId = req.user?._id; 
 
-    // Validate IDs and inputs
     if (!mongoose.Types.ObjectId.isValid(orderId) || !mongoose.Types.ObjectId.isValid(productId)) {
       return res.status(400).json({
         success: false,
@@ -328,15 +312,13 @@ const cancelOrderItem = async (req, res) => {
         message: 'Missing required fields: orderId, productId, or variantSize'
       });
     }
-    console.log('reach 3');
+    
 
-    // Check if user is authenticated
     if (!userId) {
       console.log(`User not authenticated for orderId: ${orderId}, session: ${JSON.stringify(req.session)}`);
       return res.status(401).json({ success: false, message: 'User not authenticated. Please log in.' });
     }
 
-    // Find the order owned by the user
     const order = await Order.findOne({ _id: orderId, user: userId })
     if (!order) {
       return res.status(404).json({
@@ -352,7 +334,6 @@ const cancelOrderItem = async (req, res) => {
       paymentStatus: order.paymentStatus
     });
 
-    // Check if order is cancellable
     if (!['pending', 'processing'].includes(order.orderStatus)) {
       return res.status(400).json({
         success: false,
@@ -360,7 +341,6 @@ const cancelOrderItem = async (req, res) => {
       });
     }
 
-    // Find the item to cancel
     const item = order.products.find(item =>
       item.product.toString() === productId &&
       item.variant.size === variantSize &&
@@ -378,11 +358,8 @@ const cancelOrderItem = async (req, res) => {
     item.cancelReason = reason || '';
     item.cancelDate = new Date();
 
-    // Debug logs before amount calculation
-    console.log('Item before amount calculation:', item);
-    console.log('Order before amount calculation:', order);
+  
 
-    // Calculate amounts - wrapped in try-catch
     let cancelledItemSubtotal, itemCouponDiscount, cancelledItemFinalAmount;
     try {
       const amounts = calculateItemFinalAmount(item, order);
@@ -399,7 +376,6 @@ const cancelOrderItem = async (req, res) => {
     order.finalAmount = Math.max(0, order.finalAmount - cancelledItemFinalAmount);
     order.totalAmount = Math.max(0, order.totalAmount - cancelledItemSubtotal);
 
-    // Restore product stock
     const product = await Product.findById(productId);
     if (product) {
       const variant = product.variants.find(v => v.size === variantSize);
@@ -411,7 +387,6 @@ const cancelOrderItem = async (req, res) => {
 
     const refundAmount = cancelledItemFinalAmount;
 
-    // Refund logic for online payments, independent of current paymentStatus
     let refundProcessed = false;
     if (
       order.paymentMethod &&
@@ -425,8 +400,8 @@ const cancelOrderItem = async (req, res) => {
       }
 
       let wallet = await Wallet.findOne({ userId });
-      console.log('Before finding wallet for user:', userId, 'Wallet found:', wallet);
-      console.log('reach 4');
+      
+      
       if (!wallet) {
         wallet = new Wallet({
           userId,
@@ -500,13 +475,11 @@ const cancelOrderItem = async (req, res) => {
         description: `Item cancelled: ${product?.name || 'Product'} (${variantSize})${reason ? ` - Reason: ${reason}` : ''}.`
       });
 
-      // For online payments with no refund (e.g., payment failed), set paymentStatus to cancelled
       if (order.paymentMethod && ['online', 'wallet'].includes(order.paymentMethod.toLowerCase()) && !['completed', 'success'].includes(order.paymentStatus)) {
         order.paymentStatus = 'cancelled';
       }
     }
 
-    // All items cancelled check
     const allItemsCancelled = order.products.every(p => p.status === 'cancelled');
     if (allItemsCancelled) {
       order.orderStatus = 'cancelled';
@@ -521,7 +494,6 @@ const cancelOrderItem = async (req, res) => {
       }
     }
 
-    // Save the updated order
     await Order.updateOne({ _id: orderId }, order);
 
     let successMessage = 'Item cancelled successfully.';

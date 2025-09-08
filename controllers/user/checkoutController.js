@@ -142,6 +142,7 @@ const placeOrder = async (req, res) => {
           orderStatus: { $ne: 'payment-failed' }
         });
         
+        
         if (!existingOrder) {
           if (coupon.discountType === 'percentage') {
             couponDiscountAmount = (subtotal * coupon.discountValue) / 100;

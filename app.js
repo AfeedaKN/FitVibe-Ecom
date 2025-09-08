@@ -4,6 +4,7 @@ const flash = require('connect-flash')
 const path = require("path")
 const env = require("dotenv").config()
 const session = require("express-session")
+const nocache = require('nocache')
 const passport = require("./config/passport")
 const db = require("./config/db")
 const userRouter = require("./routes/userRouter")
@@ -30,6 +31,7 @@ app.use(session({
 
 
 app.use(flash());
+app.use(nocache())
 
 
 app.use((req, res, next) => {

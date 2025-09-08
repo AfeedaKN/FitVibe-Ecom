@@ -10,9 +10,8 @@ const loadCoupons = async (req, res) => {
     const limit = 6; 
     const skip = (page - 1) * limit;
 
-    console.log('Fetching coupons from database...');
+    
     const totalCoupons = await Coupon.countDocuments({ isDeleted: { $ne: true } });
-    console.log('Total coupons count:', totalCoupons);
     
     const coupons = await Coupon.find({ isDeleted: { $ne: true } })
       .sort({ createdOn: -1 })
@@ -52,7 +51,6 @@ const loadCoupons = async (req, res) => {
 
     const totalPages = Math.ceil(totalCoupons / limit);
 
-    console.log('Rendering coupons page with', processedCoupons.length, 'coupons');
     
     res.render('coupons', {
       coupons: processedCoupons,
@@ -103,8 +101,7 @@ const addCoupon = async (req, res) => {
       expireOn
     } = req.body;
 
-    console.log('Adding new coupon:', { name, discountType, discountValue });
-
+ 
     if (!name || !description || !discountType || !discountValue || !minimumPrice || !expireOn) {
       return res.status(400).json({
         success: false,
