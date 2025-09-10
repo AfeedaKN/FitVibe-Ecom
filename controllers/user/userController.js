@@ -76,6 +76,7 @@ async function sendVerificationEmail(email, subject, text) {
     }
 }
 
+
 const signup = async (req, res) => {
     try {
         const { name, phone, email, password, confirmPassword, referralCode } = req.body;
@@ -87,6 +88,8 @@ const signup = async (req, res) => {
         if (findUser) {
             return res.render("signup", { message: "User with this email already exists" });
         }
+
+        
 
         const otp = generateOtp();
         const emailSent = await sendVerificationEmail(email, "Verify Your Account", `Your OTP is ${otp}`);
