@@ -564,7 +564,7 @@
                     <!-- Coupon Code -->
                     <div class="form-group">
                         <label for="name" class="form-label required">Coupon Code</label>
-                        <input type="text" id="name" name="name" class="form-input" value="<%= coupon.name %>" maxlength="20" required>
+                        <input type="text" id="name" name="name" class="form-input" value="<%= coupon.name %>" maxlength="20" >
                         <div class="form-help">Use uppercase letters and numbers only. Max 20 characters.</div>
                         <div class="error-message" id="nameError"></div>
                     </div>
@@ -599,7 +599,7 @@
                     <!-- Description -->
                     <div class="form-group full-width">
                         <label for="description" class="form-label required">Description</label>
-                        <textarea id="description" name="description" class="form-textarea" required><%= coupon.description %></textarea>
+                        <textarea id="description" name="description" class="form-textarea"  ><%= coupon.description %></textarea>
                         <div class="form-help">Provide a clear description of what this coupon offers.</div>
                         <div class="error-message" id="descriptionError"></div>
                     </div>
@@ -615,7 +615,7 @@
                                value="<%= coupon.discountValue %>" 
                                min="1" 
                                <%= coupon.discountType === 'percentage' ? 'max="100"' : '' %> 
-                               step="0.01" required>
+                               step="0.01"  >
                         <div class="form-help" id="discountValueHelp">
                             <%= coupon.discountType === 'percentage' ? 'Enter percentage value (1-100)' : 'Enter fixed discount amount in ₹' %>
                         </div>
@@ -635,7 +635,7 @@
                     <div class="form-group">
                         <label for="minimumPrice" class="form-label required">Minimum Purchase Amount</label>
                         <input type="number" id="minimumPrice" name="minimumPrice" class="form-input" 
-                               value="<%= coupon.minimumPrice %>" min="0" step="0.01" required>
+                               value="<%= coupon.minimumPrice %>" min="0" step="0.01"  >
                         <div class="form-help">Minimum cart value required to use this coupon</div>
                         <div class="error-message" id="minimumPriceError"></div>
                     </div>
@@ -715,7 +715,7 @@
                     <div class="form-group">
                         <label for="expireOn" class="form-label required">Expiry Date</label>
                         <input type="datetime-local" id="expireOn" name="expireOn" class="form-input" 
-                               value="<%= new Date(coupon.expireOn).toISOString().slice(0, 16) %>" required>
+                               value="<%= new Date(coupon.expireOn).toISOString().slice(0, 16) %>" >
                         <div class="form-help">Date and time when this coupon expires</div>
                         <div class="error-message" id="expireOnError"></div>
                     </div>

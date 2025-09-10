@@ -178,8 +178,34 @@ const updateOrderStatus = async (req, res) => {
       order.deliveryDate = new Date();
     }
 
-    if (status.toLowerCase() === 'cancelled' && req.body.reason) {
-      order.cancellationReason = req.body.reason;
+    if (status.toLowerCase() === 'cancelled') {
+    console.log('afeedaaaaa1') 
+
+  if (order.paymentMethod === "Wallet" || order.paymentMethod === "Online") {
+    console.log('afeedaaaaa2') 
+    let wallet = await Wallet.findOne({ userId: order.user });
+
+    if (!wallet) {
+      wallet = new Wallet({ userId: order.user, balance: 0, transactions: [] });
+    }
+
+    wallet.balance += order.totalAmount + order.shippingCharge -order.couponDiscount
+    wallet.transactions.push({
+      type: "credit",
+      amount: order.totalAmount + order.shippingCharge -order.couponDiscount,
+      description: `Refund for cancelled order #${order.orderID} by admin`,
+      balanceAfter: wallet.balance,
+      orderId: order._id,
+      source: "order_cancellation",
+      metadata: {
+        refundReason: req.body.reason,
+        paymentMethod: "wallet",
+      },
+    });
+
+    await wallet.save();
+    order.paymentStatus = "refunded";
+  } 
     }
 
     order.statusHistory.push({

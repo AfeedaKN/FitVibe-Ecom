@@ -908,31 +908,43 @@
         </div>
 
         <div class="payment-methods">
-          <h3>Select Payment Method</h3>
-          <label>
-            <input type="radio" name="paymentMethod" value="COD" checked>
-            <span>Cash on Delivery</span>
-            <i class="fas fa-money-bill-wave"></i>
-          </label>
-          <label>
-            <input type="radio" name="paymentMethod" value="Online">
-            <span>Online Payment</span>
-            <i class="fas fa-credit-card"></i>
-          </label>
-          <% if (walletBalance >= total) { %>
-          <label id="walletPaymentOption">
-            <input type="radio" name="paymentMethod" value="Wallet">
-            <span>Pay with Wallet</span>
-            <i class="fas fa-wallet"></i>
-          </label>
-          <% } else { %>
-          <label id="walletPaymentOption" class="disabled" title="Insufficient wallet balance">
-            <input type="radio" name="paymentMethod" value="Wallet" disabled>
-            <span>Pay with Wallet (Insufficient Balance)</span>
-            <i class="fas fa-wallet"></i>
-          </label>
-          <% } %>
+  <h3>Select Payment Method</h3>
+
+  <% if (total <= 1000) { %>
+    <label>
+      <input type="radio" name="paymentMethod" value="COD" checked>
+      <span>Cash on Delivery</span>
+      <i class="fas fa-money-bill-wave"></i>
+    </label>
+  <% } else { %>
+    <label class="disabled" title="COD available only for orders up to ₹1000">
+      <input type="radio" name="paymentMethod" value="COD" disabled>
+      <span>Cash on Delivery (Available only for orders ≤ ₹1000)</span>
+      <i class="fas fa-money-bill-wave"></i>
+    </label>
+  <% } %>
+
+  <label>
+    <input type="radio" name="paymentMethod" value="Online" <%= total > 1000 ? "checked" : "" %>>
+    <span>Online Payment</span>
+    <i class="fas fa-credit-card"></i>
+  </label>
+
+  <% if (walletBalance >= total) { %>
+    <label id="walletPaymentOption">
+      <input type="radio" name="paymentMethod" value="Wallet">
+      <span>Pay with Wallet</span>
+      <i class="fas fa-wallet"></i>
+    </label>
+  <% } else { %>
+    <label id="walletPaymentOption" class="disabled" title="Insufficient wallet balance">
+      <input type="radio" name="paymentMethod" value="Wallet" disabled>
+      <span>Pay with Wallet (Insufficient Balance)</span>
+      <i class="fas fa-wallet"></i>
+    </label>
+  <% } %>
         </div>
+
 
         <% const isOutOfStock = cart.items.some(item => 
           item.productId && 

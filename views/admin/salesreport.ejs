@@ -1,683 +1,769 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
 </head>
+
 <body>
     <%- include('./partials/header', { pageTitle: 'Sales Report - FitVibe Admin' }) %>
 
-    <%- include('./partials/sidebar', { page: 'sales' }) %>
+        <%- include('./partials/sidebar', { page: 'sales' }) %>
 
-    <div class="main-content">
-        <!-- Page Header -->
-        <div class="page-header">
-            <h1 class="page-title">
-                <i class="fas fa-chart-line"></i>
-                Sales Report
-            </h1>
-            <div class="header-actions">
-                <select class="btn btn-primary export-select" onchange="exportReport(this.value)">
-                    <option value="" disabled selected>Export Report</option>
-                    <option value="pdf">Export as PDF</option>
-                    <option value="excel">Export as Excel</option>
-                </select>
-            </div>
-        </div>
+            <div class="main-content">
+                <!-- Page Header -->
+                <div class="page-header">
+                    <h1 class="page-title">
+                        <i class="fas fa-chart-line"></i>
+                        Sales Report
+                    </h1>
+                    <div class="header-actions">
+                        <select class="btn btn-primary export-select" onchange="exportReport(this.value)">
+                            <option value="" disabled selected>Export Report</option>
+                            <option value="pdf">Export as PDF</option>
+                            <option value="excel">Export as Excel</option>
+                        </select>
+                    </div>
+                </div>
 
-        <!-- Filter Section -->
-        <div class="filter-section">
-            <form action="/admin/sales" method="GET" class="filter-form">
-                <div class="filter-group">
-                    <select name="period" class="filter-select" onchange="this.form.submit()">
-                        <option value="daily" <%= period === 'daily' ? 'selected' : '' %>>Daily</option>
-                        <option value="weekly" <%= period === 'weekly' ? 'selected' : '' %>>Weekly</option>
-                        <option value="monthly" <%= period === 'monthly' ? 'selected' : '' %>>Monthly</option>
-                        <option value="yearly" <%= period === 'yearly' ? 'selected' : '' %>>Yearly</option>
-                        <option value="custom" <%= period === 'custom' ? 'selected' : '' %>>Custom Range</option>
-                    </select>
-                    <% if (period === 'custom') { %>
-                        <input type="date" name="startDate" class="filter-input" value="<%= startDate || '' %>" max="<%= new Date().toISOString().split('T')[0] %>">
-                        <input type="date" name="endDate" class="filter-input" value="<%= endDate || '' %>" max="<%= new Date().toISOString().split('T')[0] %>">
+                <!-- Filter Section -->
+                <div class="filter-section">
+                    <form action="/admin/sales" method="GET" class="filter-form">
+                        <div class="filter-group">
+                            <select name="period" class="filter-select" onchange="this.form.submit()">
+                                <option value="daily" <%=period==='daily' ? 'selected' : '' %>>Daily</option>
+                                <option value="weekly" <%=period==='weekly' ? 'selected' : '' %>>Weekly</option>
+                                <option value="monthly" <%=period==='monthly' ? 'selected' : '' %>>Monthly</option>
+                                <option value="yearly" <%=period==='yearly' ? 'selected' : '' %>>Yearly</option>
+                                <option value="custom" <%=period==='custom' ? 'selected' : '' %>>Custom Range</option>
+                            </select>
+                            <% if (period==='custom' ) { %>
+                                <input type="date" name="startDate" class="filter-input" value="<%= startDate || '' %>"
+                                    max="<%= new Date().toISOString().split('T')[0] %>">
+                                <input type="date" name="endDate" class="filter-input" value="<%= endDate || '' %>"
+                                    max="<%= new Date().toISOString().split('T')[0] %>">
+                                <% } %>
+                                    <select name="status" class="filter-select" onchange="this.form.submit()">
+                                        <option value="" <%=!filterStatus ? 'selected' : '' %>>All Status</option>
+                                        <option value="delivered" <%=filterStatus==='delivered' ? 'selected' : '' %>
+                                            >Delivered</option>
+                                        <option value="cancelled" <%=filterStatus==='cancelled' ? 'selected' : '' %>
+                                            >Cancelled</option>
+                                        <option value="returned" <%=filterStatus==='returned' ? 'selected' : '' %>
+                                            >Returned</option>
+                                    </select>
+                                    <button type="submit" class="filter-btn" aria-label="Apply Filters">
+                                        <i class="fas fa-filter"></i>
+                                    </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Alerts -->
+                <% if (messages.error) { %>
+                    <div class="alert alert-danger" role="alert">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <%= messages.error %>
+                    </div>
                     <% } %>
-                    <select name="status" class="filter-select" onchange="this.form.submit()">
-                        <option value="" <%= !filterStatus ? 'selected' : '' %>>All Status</option>
-                        <option value="completed" <%= filterStatus === 'completed' ? 'selected' : '' %>>Completed</option>
-                        <option value="cancelled" <%= filterStatus === 'cancelled' ? 'selected' : '' %>>Cancelled</option>
-                        <option value="refunded" <%= filterStatus === 'refunded' ? 'selected' : '' %>>Refunded</option>
-                    </select>
-                    <button type="submit" class="filter-btn" aria-label="Apply Filters">
-                        <i class="fas fa-filter"></i>
-                    </button>
-                </div>
-            </form>
-        </div>
+                        <% if (messages.success) { %>
+                            <div class="alert alert-success" role="alert">
+                                <i class="fas fa-check-circle"></i>
+                                <%= messages.success %>
+                            </div>
+                            <% } %>
 
-        <!-- Alerts -->
-        <% if (messages.error) { %>
-            <div class="alert alert-danger" role="alert">
-                <i class="fas fa-exclamation-circle"></i> <%= messages.error %>
-            </div>
-        <% } %>
-        <% if (messages.success) { %>
-            <div class="alert alert-success" role="alert">
-                <i class="fas fa-check-circle"></i> <%= messages.success %>
-            </div>
-        <% } %>
+                                <!-- Statistics Cards -->
+                                <div class="stats-grid">
+                                    <div class="stat-card">
+                                        <div class="stat-header">
+                                            <span class="stat-title">Overall Sales Count</span>
+                                            <div class="stat-icon total">
+                                                <i class="fas fa-shopping-cart"></i>
+                                            </div>
+                                        </div>
+                                        <div class="stat-value">
+                                            <%= totalOrders %>
+                                        </div>
+                                    </div>
 
-        <!-- Statistics Cards -->
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-header">
-                    <span class="stat-title">Overall Sales Count</span>
-                    <div class="stat-icon total">
-                        <i class="fas fa-shopping-cart"></i>
-                    </div>
-                </div>
-                <div class="stat-value"><%= totalOrders %></div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-header">
-                    <span class="stat-title">Overall Order Amount</span>
-                    <div class="stat-icon total">
-                        <i class="fas fa-rupee-sign"></i>
-                    </div>
-                </div>
-                <div class="stat-value">₹<%= totalSales.toLocaleString('en-IN') %></div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-header">
-                    <span class="stat-title">Overall Discount</span>
-                    <div class="stat-icon discount">
-                        <i class="fas fa-percent"></i>
-                    </div>
-                </div>
-                <div class="stat-value">₹<%= totalDiscount.toLocaleString('en-IN') %></div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-header">
-                    <span class="stat-title">Orders Completed</span>
-                    <div class="stat-icon completed">
-                        <i class="fas fa-check-circle"></i>
-                    </div>
-                </div>
-                <div class="stat-value"><%= completedOrders %></div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-title">Orders Cancelled</span>
-                <div class="stat-icon cancelled">
-                    <i class="fas fa-times-circle"></i>
-                </div>
-            </div>
-            <div class="stat-value"><%= cancelledOrders %></div>
-            </div>
- 
-        </div>
+                                    <div class="stat-card">
+                                        <div class="stat-header">
+                                            <span class="stat-title">Overall Discount</span>
+                                            <div class="stat-icon discount">
+                                                <i class="fas fa-percent"></i>
+                                            </div>
+                                        </div>
+                                        <div class="stat-value">₹<%= totalDiscount.toLocaleString('en-IN') %>
+                                        </div>
+                                    </div>
+                                    <div class="stat-card">
+                                        <div class="stat-header">
+                                            <span class="stat-title">Orders Delivered</span>
+                                            <div class="stat-icon completed">
+                                                <i class="fas fa-check-circle"></i>
+                                            </div>
+                                        </div>
+                                        <div class="stat-value">
+                                            <%= deliveredProducts %>
+                                        </div>
+                                    </div>
+                                    <div class="stat-card">
+                                        <div class="stat-header">
+                                            <span class="stat-title">Orders Cancelled</span>
+                                            <div class="stat-icon cancelled">
+                                                <i class="fas fa-times-circle"></i>
+                                            </div>
+                                        </div>
+                                        <div class="stat-value">
+                                            <%= cancelledProducts %>
+                                        </div>
+                                    </div>
+                                    <div class="stat-card">
+                                        <div class="stat-header">
+                                            <span class="stat-title">Orders Returned</span>
+                                            <div class="stat-icon refunded">
+                                                <i class="fas fa-undo"></i>
+                                            </div>
+                                        </div>
+                                        <div class="stat-value">
+                                            <%= returnedProducts %>
+                                        </div>
+                                    </div>
+                                </div>
 
-        <!-- Sales Table -->
-        <div class="sales-table-container">
-            <div class="table-header">
-                <h2 class="table-title">Sales Details</h2>
+                                <!-- Sales Table -->
+                                <div class="sales-table-container">
+                                    <div class="table-header">
+                                        <h2 class="table-title">Sales Details</h2>
+                                    </div>
+                                    <% if (salesData && salesData.length> 0) { %>
+                                        <div class="table-wrapper">
+                                            <table class="sales-table">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Order ID</th>
+                                                        <th>Product Name</th>
+                                                        <th>Variant</th>
+                                                        <th>Date</th>
+                                                        <th>Customer</th>
+                                                        <th>Amount</th>
+                                                        <th>Coupon Deduction</th>
+                                                        <th>Payment Method</th>
+                                                        <th>Status</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <% salesData.forEach(product=> {
+                                                        const order = product.order;
+                                                        const statusClass = {
+                                                        delivered: 'completed',
+                                                        cancelled: 'cancelled',
+                                                        returned: 'refunded',
+                                                        pending: 'pending',
+                                                        processing: 'pending',
+                                                        shipped: 'pending',
+                                                        'out for delivery': 'pending',
+                                                        'return pending': 'pending'
+                                                        }[(product.status || '').toLowerCase()] || 'pending'; // -- safe
+                                                        const salePrice = product.variant?.salePrice || 0;
+                                                        const varientPrice = product.variant?.varientPrice || 0;
+                                                        const productAmount = (salePrice || varientPrice) *
+                                                        (product.quantity || 1);
+
+                                                        const couponDeduction = order.couponDiscount ?
+                                                        (order.couponDiscount / (order.products?.length || 1)) : 0;
+                                                        %>
+                                                        <tr>
+                                                            <td><span class="order-id">
+                                                                    <%= order.orderID %>
+                                                                </span></td>
+                                                            <td>
+                                                                <%= product.productData?.name || 'Unknown' %>
+                                                            </td>
+                                                            <td>
+                                                                <%= product.variant?.size || 'N/A' %>
+                                                            </td>
+                                                            <td>
+                                                                <%= new
+                                                                    Date(order.createdAt).toLocaleDateString('en-IN') %>
+                                                            </td>
+                                                            <td>
+                                                                <%= order.user?.name || 'Unknown' %>
+                                                            </td>
+                                                            <td>₹<%= ((product.variant?.salePrice ||
+                                                                    product.variant?.varientPrice || 0) *
+                                                                    (product.quantity || 1)).toLocaleString('en-IN') %>
+                                                            </td>
+                                                            <td>₹<%= couponDeduction.toLocaleString('en-IN') %>
+                                                            </td>
+                                                            <td>
+                                                                <%= order.paymentMethod %>
+                                                            </td>
+                                                            <td>
+                                                                <span class="status-badge status-<%= statusClass %>">
+                                                                    <%= product.status %>
+                                                                </span>
+                                                            </td>
+                                                        </tr>
+                                                        <% }) %>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        <% } else { %>
+                                            <div class="empty-state">
+                                                <i class="fas fa-chart-line"></i>
+                                                <h3>No Sales Data</h3>
+                                                <p>No sales records found for the selected period. Adjust filters or
+                                                    wait for new orders.</p>
+                                            </div>
+                                            <% } %>
+                                </div>
+
+
+                                <!-- Pagination -->
+                                <% if (totalPages> 1) { %>
+                                    <div class="pagination">
+                                        <% if (currentPage> 1) { %>
+                                            <a href="/admin/sales?page=<%= currentPage - 1 %><%= period ? '&period=' + period : '' %><%= startDate ? '&startDate=' + startDate : '' %><%= endDate ? '&endDate=' + endDate : '' %><%= filterStatus ? '&status=' + filterStatus : '' %>"
+                                                class="pagination-btn">
+                                                <i class="fas fa-chevron-left"></i>
+                                            </a>
+                                            <% } %>
+                                                <% for (let i=1; i <=totalPages; i++) { %>
+                                                    <a href="/admin/sales?page=<%= i %><%= period ? '&period=' + period : '' %><%= startDate ? '&startDate=' + startDate : '' %><%= endDate ? '&endDate=' + endDate : '' %><%= filterStatus ? '&status=' + filterStatus : '' %>"
+                                                        class="pagination-btn <%= currentPage === i ? 'active' : '' %>">
+                                                        <%= i %>
+                                                    </a>
+                                                    <% } %>
+                                                        <% if (currentPage < totalPages) { %>
+                                                            <a href="/admin/sales?page=<%= currentPage + 1 %><%= period ? '&period=' + period : '' %><%= startDate ? '&startDate=' + startDate : '' %><%= endDate ? '&endDate=' + endDate : '' %><%= filterStatus ? '&status=' + filterStatus : '' %>"
+                                                                class="pagination-btn">
+                                                                <i class="fas fa-chevron-right"></i>
+                                                            </a>
+                                                            <% } %>
+                                    </div>
+                                    <% } %>
             </div>
-            <% if (salesData && salesData.length > 0) { %>
-                <div class="table-wrapper">
-                    <table class="sales-table">
-                        <thead>
-                            <tr>
-                                <th>Order ID</th>
-                                <th>Date</th>
-                                <th>Customer</th>
-                                <th>Total Amount</th>
-                                <th>Coupon Deduction</th>
-                                <th>Payment Method</th>
-                                <th>Status</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <% salesData.forEach(sale => { %>
-                                <% 
-                                    const statusClass = {
-                                        completed: 'completed',
-                                        cancelled: 'cancelled',
-                                        refunded: 'refunded'
-                                    }[sale.orderStatus.toLowerCase()] || 'pending';
-                                    const totalDiscountAmount = sale.discountAmount || 0;
-                                    const couponDeduction = sale.couponDiscount || 0;
-                                %>
-                                <tr>
-                                    <td><span class="order-id"><%= sale.orderID %></span></td>
-                                    <td><%= new Date(sale.createdAt).toLocaleDateString('en-IN') %></td>
-                                    <td><%= sale.user?.name || 'Unknown' %></td>
-                                    <td>₹<%= sale.finalAmount.toLocaleString('en-IN') %></td>
-                                    <td>₹<%= couponDeduction.toLocaleString('en-IN') %></td>
-                                    <td><%= sale.paymentMethod %></td>
-                                    <td>
-                                        <span class="status-badge status-<%= statusClass %>">
-                                            <%= sale.orderStatus %>
-                                        </span>
-                                    </td>
-                                </tr>
-                            <% }) %>
-                        </tbody>
-                    </table>
-                </div>
-            <% } else { %>
-                <div class="empty-state">
-                    <i class="fas fa-chart-line"></i>
-                    <h3>No Sales Data</h3>
-                    <p>No sales records found for the selected period. Adjust filters or wait for new orders.</p>
-                </div>
-            <% } %>
-        </div>
 
-        <!-- Pagination -->
-        <% if (totalPages > 1) { %>
-            <div class="pagination">
-                <% if (currentPage > 1) { %>
-                    <a href="/admin/sales?page=<%= currentPage - 1 %><%= period ? '&period=' + period : '' %><%= startDate ? '&startDate=' + startDate : '' %><%= endDate ? '&endDate=' + endDate : '' %><%= filterStatus ? '&status=' + filterStatus : '' %>" class="pagination-btn">
-                        <i class="fas fa-chevron-left"></i>
-                    </a>
-                <% } %>
-                <% for (let i = 1; i <= totalPages; i++) { %>
-                    <a href="/admin/sales?page=<%= i %><%= period ? '&period=' + period : '' %><%= startDate ? '&startDate=' + startDate : '' %><%= endDate ? '&endDate=' + endDate : '' %><%= filterStatus ? '&status=' + filterStatus : '' %>" class="pagination-btn <%= currentPage === i ? 'active' : '' %>">
-                        <%= i %>
-                    </a>
-                <% } %>
-                <% if (currentPage < totalPages) { %>
-                    <a href="/admin/sales?page=<%= currentPage + 1 %><%= period ? '&period=' + period : '' %><%= startDate ? '&startDate=' + startDate : '' %><%= endDate ? '&endDate=' + endDate : '' %><%= filterStatus ? '&status=' + filterStatus : '' %>" class="pagination-btn">
-                        <i class="fas fa-chevron-right"></i>
-                    </a>
-                <% } %>
-            </div>
-        <% } %>
-    </div>
+            <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.js"></script>
+            <script>
+                function exportReport(format) {
+                    if (format) {
+                        const url = `/admin/sales/export?format=${format}&${new URLSearchParams(window.location.search).toString()}`;
+                        window.open(url, '_blank');
+                    }
+                }
 
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script>
-        function exportReport(format) {
-            if (format) {
-                const url = `/admin/sales/export?format=${format}&${new URLSearchParams(window.location.search).toString()}`;
-                window.open(url, '_blank');
-            }
-        }
-
-        document.addEventListener('DOMContentLoaded', () => {
-            const exportSelect = document.querySelector('.export-select');
-            exportSelect.addEventListener('change', (e) => {
-                if (e.target.value) {
-                    Swal.fire({
-                        title: 'Export Report?',
-                        text: `Are you sure you want to export the report as ${e.target.value.toUpperCase()}?`,
-                        icon: 'question',
-                        showCancelButton: true,
-                        confirmButtonColor: '#667eea',
-                        cancelButtonColor: '#64748b',
-                        confirmButtonText: 'Yes, Export',
-                        cancelButtonText: 'Cancel'
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                            exportReport(e.target.value);
-                            e.target.value = ''; // Reset dropdown after export
-                        } else {
-                            e.target.value = ''; // Reset if cancelled
+                document.addEventListener('DOMContentLoaded', () => {
+                    const exportSelect = document.querySelector('.export-select');
+                    exportSelect.addEventListener('change', (e) => {
+                        if (e.target.value) {
+                            Swal.fire({
+                                title: 'Export Report?',
+                                text: `Are you sure you want to export the report as ${e.target.value.toUpperCase()}?`,
+                                icon: 'question',
+                                showCancelButton: true,
+                                confirmButtonColor: '#667eea',
+                                cancelButtonColor: '#64748b',
+                                confirmButtonText: 'Yes, Export',
+                                cancelButtonText: 'Cancel'
+                            }).then((result) => {
+                                if (result.isConfirmed) {
+                                    exportReport(e.target.value);
+                                    e.target.value = ''; // Reset dropdown after export
+                                } else {
+                                    e.target.value = ''; // Reset if cancelled
+                                }
+                            });
                         }
                     });
+                });
+            </script>
+
+            <style>
+                /* Main Content */
+                .main-content {
+                    margin-left: 280px;
+                    padding: 2rem 1.5rem;
+                    min-height: 100vh;
+                    transition: padding 0.3s ease;
+                    width: 12000px;
                 }
-            });
-        });
-    </script>
-
-    <style>
-        /* Main Content */
-        .main-content {
-            margin-left: 280px;
-            padding: 2rem 1.5rem;
-            min-height: 100vh;
-            transition: padding 0.3s ease;
-        }
-
-        /* Page Header */
-        .page-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 2rem;
-            background: #ffffff;
-            padding: 2rem;
-            border-radius: 16px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-            border: 1px solid #e2e8f0;
-        }
-
-        .page-title {
-            font-size: 2rem;
-            font-weight: 700;
-            color: #0f172a;
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-
-        .page-title i {
-            color: #667eea;
-        }
-
-        .header-actions {
-            display: flex;
-            gap: 1rem;
-        }
-
-        .export-select {
-            padding: 0.75rem 1.5rem;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 0.875rem;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: #ffffff;
-            box-shadow: 0 4px 6px -1px rgba(102, 126, 234, 0.3);
-            transition: all 0.3s ease;
-            appearance: none;
-            -webkit-appearance: none;
-            -moz-appearance: none;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23ffffff' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'%3E%3C/path%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            background-position: right 1rem center;
-        }
-
-        .export-select:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 15px -3px rgba(102, 126, 234, 0.4);
-        }
-
-        /* Filter Section */
-        .filter-section {
-            margin-bottom: 2rem;
-        }
-
-        .filter-form {
-            display: flex;
-            gap: 1rem;
-            flex-wrap: wrap;
-        }
-
-        .filter-group {
-            display: flex;
-            gap: 0.5rem;
-            align-items: center;
-        }
-
-        .filter-input {
-            padding: 0.75rem 1rem;
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
-            font-size: 0.875rem;
-            background: #f8fafc;
-            transition: all 0.3s ease;
-        }
-
-        .filter-input:focus {
-            outline: none;
-            border-color: #6366f1;
-            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
-        }
-
-        .filter-select {
-            padding: 0.75rem 1rem;
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
-            font-size: 0.875rem;
-            background: #f8fafc;
-            transition: all 0.3s ease;
-        }
-
-        .filter-select:focus {
-            outline: none;
-            border-color: #6366f1;
-            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
-        }
-
-        .filter-btn {
-            padding: 0.75rem 1.5rem;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: #ffffff;
-            border: none;
-            border-radius: 8px;
-            font-size: 0.875rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-        }
-
-        .filter-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 15px -3px rgba(102, 126, 234, 0.4);
-        }
-
-        /* Statistics Grid */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 2rem;
-        }
-
-        .stat-card {
-            background: #ffffff;
-            padding: 1.5rem;
-            border-radius: 16px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-            border: 1px solid #e2e8f0;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .stat-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 4px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        }
-
-        .stat-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1rem;
-        }
-
-        .stat-title {
-            font-size: 0.875rem;
-            color: #64748b;
-            font-weight: 500;
-        }
-
-        .stat-icon {
-            width: 40px;
-            height: 40px;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.25rem;
-        }
-
-        .stat-icon.total {
-            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
-            color: #667eea;
-        }
-
-        .stat-icon.completed {
-            background: linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, rgba(21, 128, 61, 0.1) 100%);
-            color: #22c55e;
-        }
-
-        .stat-icon.cancelled {
-            background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(185, 28, 28, 0.1) 100%);
-            color: #ef4444;
-        }
-
-        .stat-icon.refunded {
-            background: linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(180, 83, 9, 0.1) 100%);
-            color: #f59e0b;
-        }
-
-        .stat-icon.discount {
-            background: linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(180, 83, 9, 0.1) 100%);
-            color: #f59e0b;
-        }
-
-        .stat-value {
-            font-size: 2rem;
-            font-weight: 700;
-            color: #0f172a;
-        }
-
-        /* Sales Table */
-        .sales-table-container {
-            background: #ffffff;
-            border-radius: 16px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-            border: 1px solid #e2e8f0;
-            margin-bottom: 2rem;
-        }
-
-        .table-header {
-            padding: 1.5rem 2rem;
-            border-bottom: 1px solid #e2e8f0;
-            background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
-        }
-
-        .table-title {
-            font-size: 1.25rem;
-            font-weight: 600;
-            color: #0f172a;
-        }
-
-        .table-wrapper {
-            overflow-x: auto;
-            max-width: 100%;
-        }
-
-        .sales-table {
-            width: 100%;
-            border-collapse: collapse;
-            min-width: 1100px;
-        }
-
-        .sales-table th,
-        .sales-table td {
-            padding: 0.75rem 1rem;
-            text-align: left;
-            border-bottom: 1px solid #e2e8f0;
-            vertical-align: middle;
-            white-space: nowrap;
-        }
-
-        .sales-table th:first-child,
-        .sales-table td:first-child {
-            padding-left: 1.5rem;
-        }
-
-        .sales-table th:last-child,
-        .sales-table td:last-child {
-            padding-right: 1.5rem;
-            width: 120px;
-            min-width: 120px;
-        }
-
-        .sales-table th {
-            background: #f8fafc;
-            font-weight: 600;
-            color: #374151;
-            font-size: 0.875rem;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-
-        .sales-table tbody tr {
-            transition: all 0.3s ease;
-        }
-
-        .sales-table tbody tr:hover {
-            background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
-        }
-
-        .order-id {
-            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
-            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
-            color: #667eea;
-            padding: 0.25rem 0.5rem;
-            border-radius: 6px;
-            font-weight: 600;
-            font-size: 0.875rem;
-        }
-
-        .status-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.25rem;
-            padding: 0.25rem 0.75rem;
-            border-radius: 50px;
-            font-size: 0.75rem;
-            font-weight: 600;
-        }
-
-        .status-badge.completed {
-            background: linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, rgba(21, 128, 61, 0.1) 100%);
-            color: #22c55e;
-        }
-
-        .status-badge.cancelled {
-            background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(185, 28, 28, 0.1) 100%);
-            color: #ef4444;
-        }
-
-        .status-badge.refunded {
-            background: linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(180, 83, 9, 0.1) 100%);
-            color: #f59e0b;
-        }
-
-        .status-badge.pending {
-            background: linear-gradient(135deg, rgba(202, 138, 4, 0.1) 0%, rgba(133, 77, 0, 0.1) 100%);
-            color: #ca8a04;
-        }
-
-        /* Empty State */
-        .empty-state {
-            text-align: center;
-            padding: 4rem 2rem;
-            color: #64748b;
-        }
-
-        .empty-state i {
-            font-size: 4rem;
-            color: #d1d5db;
-            margin-bottom: 1rem;
-        }
-
-        .empty-state h3 {
-            font-size: 1.5rem;
-            color: #374151;
-            margin-bottom: 0.5rem;
-        }
-
-        .empty-state p {
-            margin-bottom: 2rem;
-        }
-
-        /* Pagination */
-        .pagination {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 0.5rem;
-            margin-top: 2rem;
-        }
-
-        .pagination-btn {
-            padding: 0.5rem 1rem;
-            border: 1px solid #e2e8f0;
-            background: #ffffff;
-            color: #64748b;
-            text-decoration: none;
-            border-radius: 6px;
-            transition: all 0.3s ease;
-        }
-
-        .pagination-btn:hover {
-            background: #667eea;
-            color: #ffffff;
-            border-color: #667eea;
-        }
-
-        .pagination-btn.active {
-            background: #667eea;
-            color: #ffffff;
-            border-color: #667eea;
-        }
-
-        .pagination-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        /* Alerts */
-        .alert {
-            border-radius: 12px;
-            padding: 1rem 1.5rem;
-            margin-bottom: 1.5rem;
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .alert-success {
-            background: #d1fae5;
-            color: #065f46;
-        }
-
-        .alert-danger {
-            background: #fee2e2;
-            color: #991b1b;
-        }
-
-        /* Responsive Design */
-        @media (max-width: 1024px) {
-            .main-content {
-                padding: 1.5rem 1rem;
-            }
-
-            .filter-form {
-                flex-direction: column;
-                gap: 1rem;
-            }
-
-            .filter-group {
-                width: 100%;
-            }
-
-            .stats-grid {
-                grid-template-columns: 1fr 1fr;
-            }
-        }
-
-        @media (max-width: 768px) {
-            .main-content {
-                margin-left: 0;
-                padding: 1rem;
-            }
-
-            .page-header {
-                flex-direction: column;
-                gap: 1rem;
-                align-items: stretch;
-            }
-
-            .header-actions {
-                margin-left: 0;
-            }
-
-            .stats-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .sales-table-container {
-                overflow-x: auto;
-            }
-
-            .sales-table {
-                min-width: 800px;
-            }
-        }
-    </style>
+
+                /* Page Header */
+                .page-header {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    margin-bottom: 2rem;
+                    background: #ffffff;
+                    padding: 2rem;
+                    border-radius: 16px;
+                    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+                    border: 1px solid #e2e8f0;
+                }
+
+                .page-title {
+                    font-size: 2rem;
+                    font-weight: 700;
+                    color: #0f172a;
+                    display: flex;
+                    align-items: center;
+                    gap: 1rem;
+                }
+
+                .page-title i {
+                    color: #667eea;
+                }
+
+                .header-actions {
+                    display: flex;
+                    gap: 1rem;
+                }
+
+                .export-select {
+                    padding: 0.75rem 1.5rem;
+                    border: none;
+                    border-radius: 8px;
+                    cursor: pointer;
+                    font-weight: 600;
+                    font-size: 0.875rem;
+
+                    /* background gradient always visible */
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+
+                    color: #ffffff;
+                    box-shadow: 0 4px 6px -1px rgba(102, 126, 234, 0.3);
+                    transition: all 0.3s ease;
+
+                    appearance: none;
+                    -webkit-appearance: none;
+                    -moz-appearance: none;
+
+                    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23ffffff' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'%3E%3C/path%3E%3C/svg%3E");
+                    background-repeat: no-repeat;
+                    background-position: right 1rem center;
+                }
+
+                .export-select:hover {
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    /* keep gradient */
+                    transform: translateY(-2px);
+                    box-shadow: 0 10px 15px -3px rgba(102, 126, 234, 0.4);
+                }
+
+
+                /* Filter Section */
+                .filter-section {
+                    margin-bottom: 2rem;
+                }
+
+                .filter-form {
+                    display: flex;
+                    gap: 1rem;
+                    flex-wrap: wrap;
+                }
+
+                .filter-group {
+                    display: flex;
+                    gap: 0.5rem;
+                    align-items: center;
+                }
+
+                .filter-input {
+                    padding: 0.75rem 1rem;
+                    border: 1px solid #e2e8f0;
+                    border-radius: 8px;
+                    font-size: 0.875rem;
+                    background: #f8fafc;
+                    transition: all 0.3s ease;
+                }
+
+                .filter-input:focus {
+                    outline: none;
+                    border-color: #6366f1;
+                    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+                }
+
+                .filter-select {
+                    padding: 0.75rem 1rem;
+                    border: 1px solid #e2e8f0;
+                    border-radius: 8px;
+                    font-size: 0.875rem;
+                    background: #f8fafc;
+                    transition: all 0.3s ease;
+                }
+
+                .filter-select:focus {
+                    outline: none;
+                    border-color: #6366f1;
+                    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+                }
+
+                .filter-btn {
+                    padding: 0.75rem 1.5rem;
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    color: #ffffff;
+                    border: none;
+                    border-radius: 8px;
+                    font-size: 0.875rem;
+                    font-weight: 500;
+                    cursor: pointer;
+                    transition: all 0.3s ease;
+                    display: flex;
+                    align-items: center;
+                }
+
+                .filter-btn:hover {
+                    transform: translateY(-2px);
+                    box-shadow: 0 10px 15px -3px rgba(102, 126, 234, 0.4);
+                }
+
+                /* Statistics Grid */
+                .stats-grid {
+                    display: grid;
+                    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+                    gap: 1.5rem;
+                    margin-bottom: 2rem;
+                }
+
+                .stat-card {
+                    background: #ffffff;
+                    padding: 1.5rem;
+                    border-radius: 16px;
+                    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+                    border: 1px solid #e2e8f0;
+                    position: relative;
+                    overflow: hidden;
+                }
+
+                .stat-card::before {
+                    content: '';
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 4px;
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                }
+
+                .stat-header {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    margin-bottom: 1rem;
+                }
+
+                .stat-title {
+                    font-size: 0.875rem;
+                    color: #64748b;
+                    font-weight: 500;
+                }
+
+                .stat-icon {
+                    width: 40px;
+                    height: 40px;
+                    border-radius: 10px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 1.25rem;
+                }
+
+                .stat-icon.total {
+                    background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+                    color: #667eea;
+                }
+
+                .stat-icon.completed {
+                    background: linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, rgba(21, 128, 61, 0.1) 100%);
+                    color: #22c55e;
+                }
+
+                .stat-icon.cancelled {
+                    background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(185, 28, 28, 0.1) 100%);
+                    color: #ef4444;
+                }
+
+                .stat-icon.refunded {
+                    background: linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(180, 83, 9, 0.1) 100%);
+                    color: #f59e0b;
+                }
+
+                .stat-icon.discount {
+                    background: linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(180, 83, 9, 0.1) 100%);
+                    color: #f59e0b;
+                }
+
+                .stat-value {
+                    font-size: 2rem;
+                    font-weight: 700;
+                    color: #0f172a;
+                }
+
+                /* Sales Table */
+                .sales-table-container {
+                    background: #ffffff;
+                    border-radius: 16px;
+                    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+                    border: 1px solid #e2e8f0;
+                    margin-bottom: 2rem;
+                    width: 1580px;
+                }
+
+                .table-header {
+                    padding: 1.5rem 2rem;
+                    border-bottom: 1px solid #e2e8f0;
+                    background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+                }
+
+                .table-title {
+                    font-size: 1.25rem;
+                    font-weight: 600;
+                    color: #0f172a;
+                }
+
+                .table-wrapper {
+                    overflow-x: auto;
+                    max-width: 100%;
+                }
+
+                .sales-table {
+                    width: 100%;
+                    border-collapse: collapse;
+                    min-width: 1100px;
+                }
+
+                .sales-table th,
+                .sales-table td {
+                    padding: 0.75rem 1rem;
+                    text-align: left;
+                    border-bottom: 1px solid #e2e8f0;
+                    vertical-align: middle;
+                    white-space: nowrap;
+                }
+
+                .sales-table th:first-child,
+                .sales-table td:first-child {
+                    padding-left: 1.5rem;
+                }
+
+                .sales-table th:last-child,
+                .sales-table td:last-child {
+                    padding-right: 1.5rem;
+                    width: 120px;
+                    min-width: 120px;
+                }
+
+                .sales-table td:nth-child(2) {
+                    white-space: normal;
+                    /* wrap product names */
+                    word-break: break-word;
+                    max-width: 250px;
+                    /* adjust width to your layout */
+                }
+
+                .sales-table th,
+                .sales-table td {
+                    padding: 0.75rem 1rem;
+                    text-align: center;
+                    /* horizontal center */
+                    vertical-align: middle;
+                    /* vertical center */
+                    border-bottom: 1px solid #e2e8f0;
+                    white-space: nowrap;
+                }
+
+
+                .sales-table th {
+                    background: #f8fafc;
+                    font-weight: 600;
+                    color: #374151;
+                    font-size: 0.875rem;
+                    text-transform: uppercase;
+                    letter-spacing: 0.05em;
+                }
+
+                .sales-table tbody tr {
+                    transition: all 0.3s ease;
+                }
+
+                .sales-table tbody tr:hover {
+                    background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+                }
+
+                .order-id {
+                    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+                    background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+                    color: #667eea;
+                    padding: 0.25rem 0.5rem;
+                    border-radius: 6px;
+                    font-weight: 600;
+                    font-size: 0.875rem;
+                }
+
+                .status-badge {
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 0.25rem;
+                    padding: 0.25rem 0.75rem;
+                    border-radius: 50px;
+                    font-size: 0.75rem;
+                    font-weight: 600;
+                }
+
+                .status-badge.completed {
+                    background: linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, rgba(21, 128, 61, 0.1) 100%);
+                    color: #22c55e;
+                }
+
+                .status-badge.cancelled {
+                    background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(185, 28, 28, 0.1) 100%);
+                    color: #ef4444;
+                }
+
+                .status-badge.refunded {
+                    background: linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(180, 83, 9, 0.1) 100%);
+                    color: #f59e0b;
+                }
+
+                .status-badge.pending {
+                    background: linear-gradient(135deg, rgba(202, 138, 4, 0.1) 0%, rgba(133, 77, 0, 0.1) 100%);
+                    color: #ca8a04;
+                }
+
+                /* Empty State */
+                .empty-state {
+                    text-align: center;
+                    padding: 4rem 2rem;
+                    color: #64748b;
+                }
+
+                .empty-state i {
+                    font-size: 4rem;
+                    color: #d1d5db;
+                    margin-bottom: 1rem;
+                }
+
+                .empty-state h3 {
+                    font-size: 1.5rem;
+                    color: #374151;
+                    margin-bottom: 0.5rem;
+                }
+
+                .empty-state p {
+                    margin-bottom: 2rem;
+                }
+
+                /* Pagination */
+                .pagination {
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    gap: 0.5rem;
+                    margin-top: 2rem;
+                }
+
+                .pagination-btn {
+                    padding: 0.5rem 1rem;
+                    border: 1px solid #e2e8f0;
+                    background: #ffffff;
+                    color: #64748b;
+                    text-decoration: none;
+                    border-radius: 6px;
+                    transition: all 0.3s ease;
+                }
+
+                .pagination-btn:hover {
+                    background: #667eea;
+                    color: #ffffff;
+                    border-color: #667eea;
+                }
+
+                .pagination-btn.active {
+                    background: #667eea;
+                    color: #ffffff;
+                    border-color: #667eea;
+                }
+
+                .pagination-btn:disabled {
+                    opacity: 0.5;
+                    cursor: not-allowed;
+                }
+
+                /* Alerts */
+                .alert {
+                    border-radius: 12px;
+                    padding: 1rem 1.5rem;
+                    margin-bottom: 1.5rem;
+                    font-weight: 500;
+                    display: flex;
+                    align-items: center;
+                    gap: 0.5rem;
+                }
+
+                .alert-success {
+                    background: #d1fae5;
+                    color: #065f46;
+                }
+
+                .alert-danger {
+                    background: #fee2e2;
+                    color: #991b1b;
+                }
+
+                /* Responsive Design */
+                @media (max-width: 1024px) {
+                    .main-content {
+                        padding: 1.5rem 1rem;
+                    }
+
+                    .filter-form {
+                        flex-direction: column;
+                        gap: 1rem;
+                    }
+
+                    .filter-group {
+                        width: 100%;
+                    }
+
+                    .stats-grid {
+                        grid-template-columns: 1fr 1fr;
+                    }
+                }
+
+                @media (max-width: 768px) {
+                    .main-content {
+                        margin-left: 0;
+                        padding: 1rem;
+                    }
+
+                    .page-header {
+                        flex-direction: column;
+                        gap: 1rem;
+                        align-items: stretch;
+                    }
+
+                    .header-actions {
+                        margin-left: 0;
+                    }
+
+                    .stats-grid {
+                        grid-template-columns: 1fr;
+                    }
+
+                    .sales-table-container {
+                        overflow-x: auto;
+                    }
+
+                    .sales-table {
+                        min-width: 800px;
+                    }
+                }
+            </style>
 </body>
+
 </html>
