@@ -380,7 +380,7 @@ const cancelOrderItem = async (req, res) => {
     if (product) {
       const variant = product.variants.find(v => v.size === variantSize);
       if (variant) {
-        variant.variantQuantity += item.quantity;
+        variant.varientquatity = (variant.varientquatity || 0) + (item.quantity || 0);
         await product.save();
       }
     }
@@ -463,6 +463,7 @@ const cancelOrderItem = async (req, res) => {
       }
 
       refundProcessed = true;
+      
     }
 
     if (!refundProcessed) {
@@ -640,11 +641,11 @@ const returnOrderItem = async (req, res) => {
       order.orderStatus = "return pending";
     }
 
-    order.statusHistory.push({
-      status: "item return requested",
-      date: new Date(),
-      description: `Return requested for: ${product?.name || "Product"} (${variantSize}) - Reason: ${reason}. Refund of ₹${refundAmount.toFixed(2)} is pending admin approval.`,
-    });
+   order.statusHistory.push({
+  status: "item return requested",
+  date: new Date(),
+  description: `Return requested for: ${product?.name} (${variantSize}) - Reason: ${reason}. Refund of ₹${refundAmount} is pending admin approval.`,
+});
 
     await order.save();
 

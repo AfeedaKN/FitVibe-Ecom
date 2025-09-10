@@ -30,9 +30,7 @@ const loadProducts = async (req, res) => {
     const filter = {
   isDeleted: false, 
 }
-
-
-    if (searchQuery) {
+if (searchQuery) {
       filter.$or = [
         { name: { $regex: searchQuery, $options: "i" } },
         { description: { $regex: searchQuery, $options: "i" } },
@@ -576,6 +574,7 @@ const deleteProduct = async (req, res) => {
     }
      product.isDeleted = true
     await product.save()
+    
     
 
     return res.status(200).json({
