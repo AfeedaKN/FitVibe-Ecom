@@ -4,6 +4,7 @@ const env = require("dotenv").config();
 const nodemailer = require("nodemailer");
 const bcrypt = require("bcrypt");
 const Category = require('../../models/categorySchema');
+const Wishlist = require('../../models/wishlistSchema');
 
 const loadHomepage = async (req, res) => {
     try {
@@ -29,7 +30,6 @@ const loadHomepage = async (req, res) => {
         ];
 
         const listedCategories = await Category.find({ isDeleted: false, isListed: true });
-        
         const listedCategoryIds = listedCategories.map(cat => cat._id);
 
         const query = {
@@ -47,16 +47,27 @@ const loadHomepage = async (req, res) => {
             .sort({ createdAt: -1 })
             .limit(5);
 
-        if (!req.session.user) {
-            res.render('home', { user: null, newArrivals, trending, collections });
-        } else {
-            res.render('home', { user: req.session.user, newArrivals, trending, collections });
+        // Wishlist count logic
+        let wishlistCount = 0;
+        if (req.session.user) {
+            const wishlist = await Wishlist.findOne({ user: req.session.user._id });
+            wishlistCount = wishlist ? wishlist.items.length : 0;
         }
+
+        res.render('home', { 
+            user: req.session.user || null, 
+            newArrivals, 
+            trending, 
+            collections, 
+            wishlistCount,  // <-- Pass wishlist count to EJS
+        });
+
     } catch (error) {
         console.log("Home page error:", error);
         res.status(500).send("Server error");
     }
 };
+
 
 
 const productDetails = async (req, res) => {

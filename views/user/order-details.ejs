@@ -1516,7 +1516,7 @@
             <input type="hidden" name="variantSize" id="cancelItemVariantSize">
             <div class="mb-3">
               <label for="cancelItemReasonSelect" class="form-label">Reason for Cancellation (Required)</label>
-              <select class="form-control" id="cancelItemReasonSelect" name="reasonType" required>
+              <select class="form-control" id="cancelItemReasonSelect" name="reasonType">
                 <option value="">Select a reason</option>
                 <option value="Changed my mind">Changed my mind</option>
                 <option value="Found a better price elsewhere">Found a better price elsewhere</option>
@@ -1620,7 +1620,7 @@
             <input type="hidden" name="variantSize" id="returnItemVariantSize">
             <div class="mb-3">
               <label for="returnItemReasonSelect" class="form-label">Reason for Return (Required)</label>
-              <select class="form-control" id="returnItemReasonSelect" name="reasonType" required>
+              <select class="form-control" id="returnItemReasonSelect" name="reasonType">
                 <option value="">Select a reason</option>
                 <option value="Damaged product">Damaged product</option>
                 <option value="Wrong item received">Wrong item received</option>
@@ -1673,8 +1673,7 @@
     }
   });
 
-  // 🛑 Cancel Item Modal Data Populate
-  document.querySelectorAll('.cancel-item-btn').forEach(btn => {
+   document.querySelectorAll('.cancel-item-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       document.getElementById('cancelItemOrderId').value = btn.dataset.orderId;
       document.getElementById('cancelItemProductId').value = btn.dataset.productId;
@@ -1702,8 +1701,36 @@
         const submitBtn = form.querySelector('button[type="submit"]');
         const originalContent = submitBtn.innerHTML;
 
-        // Validation for return forms
-        if (formId.includes('return')) {
+        // Validation and field shaping per form
+        if (formId === 'returnItemForm') {
+          const reasonSelect = form.querySelector('select[name="reasonType"]');
+          const customReasonTextarea = form.querySelector('textarea[name="customReason"]');
+
+          if (!reasonSelect || !reasonSelect.value) {
+            Toast.fire({ icon: 'warning', title: 'Please select a reason for the return.' });
+            return;
+          }
+
+          if (reasonSelect.value === 'Other' && (!customReasonTextarea || !customReasonTextarea.value.trim())) {
+            Toast.fire({ icon: 'warning', title: 'Please provide a detailed reason for the return.' });
+            return;
+          }
+
+          // Combine reason fields for return item into single reason
+          let combinedReason = '';
+          if (data.reasonType === 'Other') {
+            combinedReason = (data.customReason || '').trim();
+          } else {
+            combinedReason = (data.reasonType || '').trim();
+          }
+          if (data.additionalDetails && data.additionalDetails.trim()) {
+            combinedReason += (combinedReason ? ' - ' : '') + data.additionalDetails.trim();
+          }
+          data.reason = combinedReason;
+          delete data.reasonType;
+          delete data.customReason;
+          delete data.additionalDetails;
+        } else if (formId.includes('return')) {
           const reasonSelect = form.querySelector('select[name="reasonType"]');
           const customReasonTextarea = form.querySelector('textarea[name="customReason"]');
           
@@ -1735,6 +1762,30 @@
           delete data.reasonType;
           delete data.customReason;
           delete data.additionalDetails;
+        } else if (formId === 'cancelItemForm') {
+          const reasonSelect = form.querySelector('select[name="reasonType"]');
+          const customReasonTextarea = form.querySelector('textarea[name="customReason"]');
+
+          if (!reasonSelect || !reasonSelect.value) {
+            Toast.fire({ icon: 'warning', title: 'Please select a reason for cancellation.' });
+            return;
+          }
+
+          if (reasonSelect.value === 'Other' && (!customReasonTextarea || !customReasonTextarea.value.trim())) {
+            Toast.fire({ icon: 'warning', title: 'Please provide a detailed reason for cancellation.' });
+            return;
+          }
+
+          // Combine reason fields for cancel item into single reason
+          let combinedReason = '';
+          if (data.reasonType === 'Other') {
+            combinedReason = (data.customReason || '').trim();
+          } else {
+            combinedReason = (data.reasonType || '').trim();
+          }
+          data.reason = combinedReason;
+          delete data.reasonType;
+          delete data.customReason;
         }
 
         submitBtn.disabled = true;

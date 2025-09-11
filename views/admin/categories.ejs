@@ -54,7 +54,7 @@
                     <i class="fas fa-eye"></i>
                 </div>
                 <div class="stat-content">
-                    <div class="stat-number">
+                    <div class="stat-number" id="listedCount">
                         <% if (cat && cat.length > 0) { %>
                             <%= cat.filter(c => c.isListed).length %>
                         <% } else { %>
@@ -69,7 +69,7 @@
                     <i class="fas fa-eye-slash"></i>
                 </div>
                 <div class="stat-content">
-                    <div class="stat-number">
+                    <div class="stat-number" id="unlistedCount">
                         <% if (cat && cat.length > 0) { %>
                             <%= cat.filter(c => !c.isListed).length %>
                         <% } else { %>
@@ -243,7 +243,7 @@
                                 </thead>
                                 <tbody>
                                     <% cat.forEach((category, index) => { %>
-                                        <tr class="category-row">
+                                        <tr class="category-row" data-category-id="<%= category._id %>">
                                             <td>
                                                 <span class="serial-number"><%= (currentPage - 1) * 5 + index + 1 %></span>
                                             </td>
@@ -1430,7 +1430,65 @@ async function toggleCategory(categoryId, action) {
                 color: '#171717',
                 confirmButtonColor: '#171717'
             });
-            window.location.reload();
+            // Update UI without reload
+            try {
+                const decodedId = decodeURIComponent(categoryId);
+                const row = document.querySelector(`tr.category-row[data-category-id="${decodedId}"]`);
+                const listedCountEl = document.getElementById('listedCount');
+                const unlistedCountEl = document.getElementById('unlistedCount');
+                if (row) {
+                    const statusBadge = row.querySelector('.status-badge');
+                    const actionButtons = row.querySelector('.action-buttons');
+
+                    if (action === 'unlist') {
+                        // Switch to Unlisted
+                        if (statusBadge) {
+                            statusBadge.classList.remove('status-listed');
+                            statusBadge.classList.add('status-unlisted');
+                            statusBadge.innerHTML = '<i class="fas fa-circle"></i> Unlisted';
+                        }
+                        if (actionButtons) {
+                            const oldBtn = actionButtons.querySelector('.unlist-btn');
+                            const newBtn = document.createElement('button');
+                            newBtn.className = 'action-btn list-btn';
+                            newBtn.title = 'List Category';
+                            newBtn.innerHTML = '<i class="fas fa-eye"></i>';
+                            newBtn.onclick = () => toggleCategory(encodeURIComponent(decodedId), 'list');
+                            if (oldBtn) actionButtons.replaceChild(newBtn, oldBtn);
+                        }
+                        if (listedCountEl && unlistedCountEl) {
+                            const listed = Math.max(0, parseInt(listedCountEl.textContent || '0', 10) - 1);
+                            const unlisted = parseInt(unlistedCountEl.textContent || '0', 10) + 1;
+                            listedCountEl.textContent = listed;
+                            unlistedCountEl.textContent = unlisted;
+                        }
+                    } else {
+                        // Switch to Listed
+                        if (statusBadge) {
+                            statusBadge.classList.remove('status-unlisted');
+                            statusBadge.classList.add('status-listed');
+                            statusBadge.innerHTML = '<i class="fas fa-circle"></i> Listed';
+                        }
+                        if (actionButtons) {
+                            const oldBtn = actionButtons.querySelector('.list-btn');
+                            const newBtn = document.createElement('button');
+                            newBtn.className = 'action-btn unlist-btn';
+                            newBtn.title = 'Unlist Category';
+                            newBtn.innerHTML = '<i class="fas fa-eye-slash"></i>';
+                            newBtn.onclick = () => toggleCategory(encodeURIComponent(decodedId), 'unlist');
+                            if (oldBtn) actionButtons.replaceChild(newBtn, oldBtn);
+                        }
+                        if (listedCountEl && unlistedCountEl) {
+                            const listed = parseInt(listedCountEl.textContent || '0', 10) + 1;
+                            const unlisted = Math.max(0, parseInt(unlistedCountEl.textContent || '0', 10) - 1);
+                            listedCountEl.textContent = listed;
+                            unlistedCountEl.textContent = unlisted;
+                        }
+                    }
+                }
+            } catch (e) {
+                console.error('UI update error:', e);
+            }
         } else {
             Swal.fire({
                 icon: 'error',

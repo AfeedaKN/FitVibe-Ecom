@@ -620,7 +620,7 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
 
-      <form id="cancelOrderForm" method="POST">
+      <form id="cancelOrderForm" method="POST" novalidate>
         <input type="hidden" name="orderId" id="cancelOrderId">
 
         <div class="modal-body">
@@ -662,13 +662,13 @@
         <h5 class="modal-title" id="returnOrderModalLabel">Request Return</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
-      <form id="returnOrderForm" method="POST">
+      <form id="returnOrderForm" method="POST" novalidate>
         <input type="hidden" name="orderId" id="returnOrderId">
         <div class="modal-body">
           <p>Please select a reason for returning this order:</p>
           <div class="mb-3">
             <label for="returnReasonSelect" class="form-label">Return Reason</label>
-            <select class="form-select" id="returnReasonSelect" name="reason" onchange="handleReturnReason(this)" required>
+            <select class="form-select" id="returnReasonSelect" name="reason" onchange="handleReturnReason(this)" novalidate>
               <option value="" disabled selected>Select a reason</option>
               <option value="Wrong item">Wrong item delivered</option>
               <option value="Damaged">Damaged or defective product</option>
@@ -896,36 +896,59 @@
     ['cancelOrderForm', 'returnOrderForm'].forEach(formId => {
     const form = document.getElementById(formId);
     if (form) {
-        form.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const formData = new FormData(form);
-            const action = formId === 'cancelOrderForm' ? 'cancel' : 'return';
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const formData = new FormData(form);
+        const action = formId === 'cancelOrderForm' ? 'cancel' : 'return';
 
-            // Validate reason for cancel
-            if (action === 'cancel' && !form.querySelector('#cancelReasonSelect').value.trim()) {
-                alert("Please select a reason for cancellation.");
-                return;
-            }
-
-            try {
-                const response = await fetch(`/order/${action}/${formData.get('orderId')}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(Object.fromEntries(formData))
-                });
-
-                const result = await response.json();
-
-                if (result.success) {
-                    window.location.reload();
-                } else {
-                    alert(`Failed to ${action} order: ${result.message}`);
-                }
-            } catch (error) {
-                alert(`Error ${action}ing order.`);
-            }
+        // SweetAlert2 Toast setup
+        const Toast = Swal.mixin({
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true
         });
-    }
+
+        // Validate reason for cancel
+        if (action === 'cancel' && !form.querySelector('#cancelReasonSelect').value.trim()) {
+            Toast.fire({
+                icon: 'error',
+                title: 'Please select a reason for cancellation.'
+            });
+            return;
+        }
+
+        try {
+            const response = await fetch(`/order/${action}/${formData.get('orderId')}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(Object.fromEntries(formData))
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                Toast.fire({
+                    icon: 'success',
+                    title: `Order ${action}ed successfully!`
+                });
+                setTimeout(() => window.location.reload(), 1000); // reload after toast
+            } else {
+                Toast.fire({
+                    icon: 'error',
+                    title: `Failed to ${action} order: ${result.message}`
+                });
+            }
+        } catch (error) {
+            Toast.fire({
+                icon: 'error',
+                title: `Error ${action}ing order.`
+            });
+        }
+    });
+}
+
 });
 
     // Handle reason selection for cancel/return forms

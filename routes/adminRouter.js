@@ -20,6 +20,7 @@ router.get("/logout", adminController.adminLogout);
 router.get("/users", adminAuth, customerController.customerInfo);
 router.get("/blockCustomer", adminAuth, customerController.blockCustomer);
 router.get("/unblockCustomer", adminAuth, customerController.unblockCustomer);
+router.get("/user/details", adminAuth, customerController.customerDetails);
 
 router.get("/categories", adminAuth, categoryController.categoryInfo);
 router.post("/addCategory", adminAuth, categoryController.addCategory);

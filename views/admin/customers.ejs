@@ -51,7 +51,7 @@
                     <i class="fas fa-user-check"></i>
                 </div>
                 <div class="stat-content">
-                    <div class="stat-number">
+                    <div class="stat-number" id="activeCount">
                         <% if (data && data.length > 0) { %>
                             <%= data.filter(u => !u.isBlocked).length %>
                         <% } else { %>
@@ -66,7 +66,7 @@
                     <i class="fas fa-user-lock"></i>
                 </div>
                 <div class="stat-content">
-                    <div class="stat-number">
+                    <div class="stat-number" id="blockedCount">
                         <% if (data && data.length > 0) { %>
                             <%= data.filter(u => u.isBlocked).length %>
                         <% } else { %>
@@ -178,7 +178,7 @@
                         </thead>
                         <tbody>
                             <% data.forEach((customer, index) => { %>
-                                <tr class="customer-row">
+                                <tr class="customer-row" data-user-id="<%= customer._id %>">
                                     <td>
                                         <div class="customer-info">
                                             <div class="customer-avatar">
@@ -967,7 +967,101 @@
         if (result.isConfirmed) {
             try {
                 const endpoint = action === 'block' ? '/admin/blockCustomer' : '/admin/unblockCustomer';
-                window.location.href = `${endpoint}?id=${userId}`;
+                const response = await fetch(`${endpoint}?id=${encodeURIComponent(userId)}`, {
+                    method: 'GET',
+                    headers: { 
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    credentials: 'include'
+                });
+
+                if (response.redirected) {
+                    // If backend still redirects, follow it (fallback)
+                    window.location.href = response.url;
+                    return;
+                }
+
+                let resultJson = null;
+                try {
+                    resultJson = await response.json();
+                } catch (e) {
+                    resultJson = { success: false, message: 'Unexpected response' };
+                }
+
+                if (resultJson && resultJson.success) {
+                    // Update UI: row badge, button swap, counters
+                    const row = document.querySelector(`tr.customer-row[data-user-id="${userId}"]`);
+                    const activeEl = document.getElementById('activeCount');
+                    const blockedEl = document.getElementById('blockedCount');
+
+                    if (row) {
+                        const statusBadge = row.querySelector('.status-badge');
+                        const actionButtons = row.querySelector('.action-buttons');
+
+                        if (action === 'block') {
+                            if (statusBadge) {
+                                statusBadge.classList.remove('status-active');
+                                statusBadge.classList.add('status-blocked');
+                                statusBadge.innerHTML = '<i class="fas fa-circle"></i> Blocked';
+                            }
+                            if (actionButtons) {
+                                const oldBtn = actionButtons.querySelector('.block-btn');
+                                const newBtn = document.createElement('button');
+                                newBtn.className = 'action-btn unblock-btn';
+                                newBtn.title = 'Unblock Customer';
+                                newBtn.innerHTML = '<i class="fas fa-unlock"></i>';
+                                newBtn.onclick = () => toggleBlock(userId, 'unblock');
+                                if (oldBtn) actionButtons.replaceChild(newBtn, oldBtn);
+                            }
+                            if (activeEl && blockedEl) {
+                                const active = Math.max(0, parseInt(activeEl.textContent || '0', 10) - 1);
+                                const blocked = parseInt(blockedEl.textContent || '0', 10) + 1;
+                                activeEl.textContent = active;
+                                blockedEl.textContent = blocked;
+                            }
+                        } else {
+                            if (statusBadge) {
+                                statusBadge.classList.remove('status-blocked');
+                                statusBadge.classList.add('status-active');
+                                statusBadge.innerHTML = '<i class="fas fa-circle"></i> Active';
+                            }
+                            if (actionButtons) {
+                                const oldBtn = actionButtons.querySelector('.unblock-btn');
+                                const newBtn = document.createElement('button');
+                                newBtn.className = 'action-btn block-btn';
+                                newBtn.title = 'Block Customer';
+                                newBtn.innerHTML = '<i class="fas fa-lock"></i>';
+                                newBtn.onclick = () => toggleBlock(userId, 'block');
+                                if (oldBtn) actionButtons.replaceChild(newBtn, oldBtn);
+                            }
+                            if (activeEl && blockedEl) {
+                                const active = parseInt(activeEl.textContent || '0', 10) + 1;
+                                const blocked = Math.max(0, parseInt(blockedEl.textContent || '0', 10) - 1);
+                                activeEl.textContent = active;
+                                blockedEl.textContent = blocked;
+                            }
+                        }
+
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Success',
+                            text: resultJson.message || `Customer ${action}ed successfully`,
+                            background: '#ffffff',
+                            color: '#171717',
+                            confirmButtonColor: '#171717'
+                        });
+                    }
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: (resultJson && resultJson.message) || `Failed to ${action} customer`,
+                        background: '#ffffff',
+                        color: '#171717',
+                        confirmButtonColor: '#525252'
+                    });
+                }
             } catch (error) {
                 console.error(`Error ${action}ing customer:`, error);
                 Swal.fire({
@@ -982,10 +1076,61 @@
         }
     }
 
-    function viewCustomerDetails(userId) {
-        // Show the modal with placeholder content
-        const modal = new bootstrap.Modal(document.getElementById('customerDetailsModal'));
-        modal.show();
+    async function viewCustomerDetails(userId) {
+        const modalEl = document.getElementById('customerDetailsModal');
+        const contentEl = document.getElementById('customerDetailsContent');
+        const modal = new bootstrap.Modal(modalEl);
+        try {
+            contentEl.innerHTML = `
+                <div class="text-center py-4">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <div class="mt-2 text-muted">Loading customer details...</div>
+                </div>`;
+            modal.show();
+            const resp = await fetch(`/admin/user/details?id=${encodeURIComponent(userId)}`, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                credentials: 'include'
+            });
+            const result = await resp.json();
+            if (!result.success) {
+                contentEl.innerHTML = `<div class="alert alert-danger">${result.message || 'Failed to load details'}</div>`;
+                return;
+            }
+            const u = result.data;
+            const created = u.createdAt ? new Date(u.createdAt).toLocaleString() : 'N/A';
+            const updated = u.updatedAt ? new Date(u.updatedAt).toLocaleString() : 'N/A';
+
+            contentEl.innerHTML = `
+                <div class="container-fluid">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="p-3 border rounded-3">
+                                <h6 class="mb-2">Basic Info</h6>
+                                <p class="mb-1"><strong>Name:</strong> ${u.name || 'N/A'}</p>
+                                <p class="mb-1"><strong>Email:</strong> ${u.email || 'N/A'}</p>
+                                <p class="mb-1"><strong>Phone:</strong> ${u.phone || 'N/A'}</p>
+                                <p class="mb-1"><strong>Status:</strong> ${u.isBlocked ? '<span class="badge bg-danger">Blocked</span>' : '<span class="badge bg-success">Active</span>'}</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="p-3 border rounded-3">
+                                <h6 class="mb-2">Timestamps</h6>
+                                <p class="mb-1"><strong>Created:</strong> ${created}</p>
+                                <p class="mb-1"><strong>Updated:</strong> ${updated}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+        } catch (e) {
+            console.error('View customer details error:', e);
+            contentEl.innerHTML = `<div class="alert alert-danger">Error loading customer details.</div>`;
+        }
     }
 
     // Initialize tooltips
