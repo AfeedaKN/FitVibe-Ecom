@@ -41,7 +41,7 @@
                         <i class="fas fa-users"></i>
                     </div>
                     <div class="stats-content">
-                        <div class="stats-number">1,234</div>
+                        <div class="stats-number"><%= typeof totalUsers !== 'undefined' ? totalUsers : 0 %></div>
                         <div class="stats-label">Total Customers</div>
                         <div class="stats-change stats-change-positive">
                             <i class="fas fa-arrow-up"></i>
@@ -57,7 +57,7 @@
                         <i class="fas fa-rupee-sign"></i>
                     </div>
                     <div class="stats-content">
-                        <div class="stats-number">₹2,45,678</div>
+                        <div class="stats-number">₹<%= typeof totalRevenue !== 'undefined' ? totalRevenue.toLocaleString('en-IN', { maximumFractionDigits: 0 }) : 0 %></div>
                         <div class="stats-label">Total Revenue</div>
                         <div class="stats-change stats-change-positive">
                             <i class="fas fa-arrow-up"></i>
@@ -73,7 +73,7 @@
                         <i class="fas fa-shopping-cart"></i>
                     </div>
                     <div class="stats-content">
-                        <div class="stats-number">567</div>
+                        <div class="stats-number"><%= typeof totalOrders !== 'undefined' ? totalOrders : 0 %></div>
                         <div class="stats-label">Total Orders</div>
                         <div class="stats-change stats-change-positive">
                             <i class="fas fa-arrow-up"></i>
@@ -89,7 +89,7 @@
                         <i class="fas fa-box"></i>
                     </div>
                     <div class="stats-content">
-                        <div class="stats-number">89</div>
+                        <div class="stats-number"><%= typeof totalProducts !== 'undefined' ? totalProducts : 0 %></div>
                         <div class="stats-label">Total Products</div>
                         <div class="stats-change stats-change-negative">
                             <i class="fas fa-arrow-down"></i>
@@ -109,13 +109,13 @@
                         <div class="d-flex justify-content-between align-items-center">
                             <h5 class="card-title mb-0">Sales Overview</h5>
                             <div class="dropdown">
-                                <button class="btn btn-ghost-modern btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                <button class="btn btn-ghost-modern btn-sm dropdown-toggle" id="chartFilterBtn" type="button" data-bs-toggle="dropdown">
                                     Last 7 days
                                 </button>
                                 <ul class="dropdown-menu dropdown-menu-modern">
-                                    <li><a class="dropdown-item" href="#">Last 7 days</a></li>
-                                    <li><a class="dropdown-item" href="#">Last 30 days</a></li>
-                                    <li><a class="dropdown-item" href="#">Last 3 months</a></li>
+                                    <li><a class="dropdown-item chart-filter" data-period="daily" href="#">Last 7 days</a></li>
+                                    <li><a class="dropdown-item chart-filter" data-period="monthly" href="#">Monthly (12 months)</a></li>
+                                    <li><a class="dropdown-item chart-filter" data-period="yearly" href="#">Yearly (5 years)</a></li>
                                 </ul>
                             </div>
                         </div>
@@ -142,11 +142,11 @@
                                         <i class="fas fa-circle"></i>
                                         Pending
                                     </span>
-                                    <span class="status-count">24</span>
+                                    <span class="status-count"><%= statusCounts && statusCounts.pending || 0 %></span>
                                 </div>
                                 <div class="status-progress">
                                     <div class="progress progress-modern">
-                                        <div class="progress-bar progress-bar-modern" style="width: 30%"></div>
+                                        <div class="progress-bar progress-bar-modern" style="width: <%= statusPercents && statusPercents.pending || 0 %>%"></div>
                                     </div>
                                 </div>
                             </div>
@@ -157,11 +157,11 @@
                                         <i class="fas fa-circle"></i>
                                         Processing
                                     </span>
-                                    <span class="status-count">18</span>
+                                    <span class="status-count"><%= statusCounts && statusCounts.processing || 0 %></span>
                                 </div>
                                 <div class="status-progress">
                                     <div class="progress progress-modern">
-                                        <div class="progress-bar progress-bar-modern" style="width: 22%"></div>
+                                        <div class="progress-bar progress-bar-modern" style="width: <%= statusPercents && statusPercents.processing || 0 %>%"></div>
                                     </div>
                                 </div>
                             </div>
@@ -172,11 +172,11 @@
                                         <i class="fas fa-circle"></i>
                                         Shipped
                                     </span>
-                                    <span class="status-count">32</span>
+                                    <span class="status-count"><%= statusCounts && statusCounts.shipped || 0 %></span>
                                 </div>
                                 <div class="status-progress">
                                     <div class="progress progress-modern">
-                                        <div class="progress-bar progress-bar-modern" style="width: 40%"></div>
+                                        <div class="progress-bar progress-bar-modern" style="width: <%= statusPercents && statusPercents.shipped || 0 %>%"></div>
                                     </div>
                                 </div>
                             </div>
@@ -187,11 +187,11 @@
                                         <i class="fas fa-circle"></i>
                                         Delivered
                                     </span>
-                                    <span class="status-count">156</span>
+                                    <span class="status-count"><%= statusCounts && statusCounts.delivered || 0 %></span>
                                 </div>
                                 <div class="status-progress">
                                     <div class="progress progress-modern">
-                                        <div class="progress-bar progress-bar-modern" style="width: 85%"></div>
+                                        <div class="progress-bar progress-bar-modern" style="width: <%= statusPercents && statusPercents.delivered || 0 %>%"></div>
                                     </div>
                                 </div>
                             </div>
@@ -228,63 +228,31 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr>
-                                        <td>
-                                            <span class="fw-medium order-id-dashboard">#ORD-001</span>
-                                        </td>
-                                        <td>
-                                            <div class="d-flex align-items-center gap-2">
-                                                <div class="user-avatar-sm">J</div>
-                                                <span>John Doe</span>
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <span class="status-badge status-processing">
-                                                <i class="fas fa-circle"></i>
-                                                Processing
-                                            </span>
-                                        </td>
-                                        <td class="amount-dashboard">₹2,499</td>
-                                        <td class="text-muted-modern">2 hours ago</td>
-                                    </tr>
-                                    <tr>
-                                        <td>
-                                            <span class="fw-medium order-id-dashboard">#ORD-002</span>
-                                        </td>
-                                        <td>
-                                            <div class="d-flex align-items-center gap-2">
-                                                <div class="user-avatar-sm">S</div>
-                                                <span>Sarah Wilson</span>
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <span class="status-badge status-shipped">
-                                                <i class="fas fa-circle"></i>
-                                                Shipped
-                                            </span>
-                                        </td>
-                                        <td class="amount-dashboard">₹1,899</td>
-                                        <td class="text-muted-modern">5 hours ago</td>
-                                    </tr>
-                                    <tr>
-                                        <td>
-                                            <span class="fw-medium order-id-dashboard">#ORD-003</span>
-                                        </td>
-                                        <td>
-                                            <div class="d-flex align-items-center gap-2">
-                                                <div class="user-avatar-sm">M</div>
-                                                <span>Mike Johnson</span>
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <span class="status-badge status-delivered">
-                                                <i class="fas fa-circle"></i>
-                                                Delivered
-                                            </span>
-                                        </td>
-                                        <td class="amount-dashboard">₹3,299</td>
-                                        <td class="text-muted-modern">1 day ago</td>
-                                    </tr>
+                                    <% if (recentOrders && recentOrders.length) { %>
+                                        <% recentOrders.forEach(function(o){ %>
+                                            <tr>
+                                                <td>
+                                                    <span class="fw-medium order-id-dashboard">#<%= o.orderID %></span>
+                                                </td>
+                                                <td>
+                                                    <div class="d-flex align-items-center gap-2">
+                                                        <div class="user-avatar-sm"><%= (o.user && o.user.name ? o.user.name.charAt(0).toUpperCase() : 'U') %></div>
+                                                        <span><%= o.user && o.user.name ? o.user.name : 'Unknown' %></span>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <span class="status-badge status-<%= (o.orderStatus || '').replace(/\s+/g, '-') %>">
+                                                        <i class="fas fa-circle"></i>
+                                                        <%= o.orderStatus %>
+                                                    </span>
+                                                </td>
+                                                <td class="amount-dashboard">₹<%= (o.finalAmount || 0).toLocaleString('en-IN', { maximumFractionDigits: 0 }) %></td>
+                                                <td class="text-muted-modern"><%= new Date(o.createdAt).toLocaleString('en-IN', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: 'short' }) %></td>
+                                            </tr>
+                                        <% }) %>
+                                    <% } else { %>
+                                        <tr><td colspan="5" class="text-center text-muted-modern py-3">No recent orders</td></tr>
+                                    <% } %>
                                 </tbody>
                             </table>
                         </div>
@@ -300,57 +268,24 @@
                     </div>
                     <div class="card-body-modern">
                         <div class="top-products-list">
-                            <div class="product-item">
-                                <div class="product-info">
-                                    <div class="product-image">
-                                        <i class="fas fa-dumbbell"></i>
+                            <% if (topProducts && topProducts.length) { %>
+                                <% topProducts.forEach(function(p){ %>
+                                    <div class="product-item">
+                                        <div class="product-info">
+                                            <div class="product-image">
+                                                <i class="fas fa-box"></i>
+                                            </div>
+                                            <div class="product-details">
+                                                <div class="product-name"><%= p.name %></div>
+                                                <div class="product-sales"><%= p.quantity %> sold</div>
+                                            </div>
+                                        </div>
+                                        <div class="product-revenue">₹<%= (p.revenue || 0).toLocaleString('en-IN', { maximumFractionDigits: 0 }) %></div>
                                     </div>
-                                    <div class="product-details">
-                                        <div class="product-name">Premium Dumbbells</div>
-                                        <div class="product-sales">156 sold</div>
-                                    </div>
-                                </div>
-                                <div class="product-revenue">₹45,680</div>
-                            </div>
-
-                            <div class="product-item">
-                                <div class="product-info">
-                                    <div class="product-image">
-                                        <i class="fas fa-running"></i>
-                                    </div>
-                                    <div class="product-details">
-                                        <div class="product-name">Running Shoes</div>
-                                        <div class="product-sales">89 sold</div>
-                                    </div>
-                                </div>
-                                <div class="product-revenue">₹32,450</div>
-                            </div>
-
-                            <div class="product-item">
-                                <div class="product-info">
-                                    <div class="product-image">
-                                        <i class="fas fa-tshirt"></i>
-                                    </div>
-                                    <div class="product-details">
-                                        <div class="product-name">Workout T-Shirt</div>
-                                        <div class="product-sales">234 sold</div>
-                                    </div>
-                                </div>
-                                <div class="product-revenue">₹28,900</div>
-                            </div>
-
-                            <div class="product-item">
-                                <div class="product-info">
-                                    <div class="product-image">
-                                        <i class="fas fa-weight-hanging"></i>
-                                    </div>
-                                    <div class="product-details">
-                                        <div class="product-name">Resistance Bands</div>
-                                        <div class="product-sales">67 sold</div>
-                                    </div>
-                                </div>
-                                <div class="product-revenue">₹18,750</div>
-                            </div>
+                                <% }) %>
+                            <% } else { %>
+                                <div class="text-center text-muted-modern py-3">No product sales data</div>
+                            <% } %>
                         </div>
                     </div>
                 </div>
@@ -847,68 +782,88 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Sales Chart with purple theme
         const ctx = document.getElementById('salesChart');
-        if (ctx) {
-            new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-                    datasets: [{
-                        label: 'Sales',
-                        data: [12000, 19000, 15000, 25000, 22000, 30000, 28000],
-                        borderColor: '#667eea',
-                        backgroundColor: 'rgba(102, 126, 234, 0.1)',
-                        borderWidth: 3,
-                        fill: true,
-                        tension: 0.4,
-                        pointBackgroundColor: '#667eea',
-                        pointBorderColor: '#ffffff',
-                        pointBorderWidth: 2,
-                        pointRadius: 6,
-                        pointHoverRadius: 8,
-                        pointHoverBackgroundColor: '#764ba2',
-                        pointHoverBorderColor: '#ffffff'
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            display: false
-                        }
+        let chartInstance = null;
+        const filterBtn = document.getElementById('chartFilterBtn');
+
+        async function loadChart(period = 'daily') {
+            try {
+                const resp = await fetch(`/admin/dashboard/chart-data?period=${encodeURIComponent(period)}`, {
+                    headers: { 'Accept': 'application/json' },
+                    credentials: 'include'
+                });
+                const result = await resp.json();
+                if (!result.success) return;
+
+                const labels = result.labels;
+                const data = result.data;
+
+                const config = {
+                    type: 'line',
+                    data: {
+                        labels,
+                        datasets: [{
+                            label: 'Sales',
+                            data,
+                            borderColor: '#667eea',
+                            backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                            borderWidth: 3,
+                            fill: true,
+                            tension: 0.4,
+                            pointBackgroundColor: '#667eea',
+                            pointBorderColor: '#ffffff',
+                            pointBorderWidth: 2,
+                            pointRadius: 4,
+                            pointHoverRadius: 6,
+                            pointHoverBackgroundColor: '#764ba2',
+                            pointHoverBorderColor: '#ffffff'
+                        }]
                     },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            grid: {
-                                color: '#e2e8f0'
-                            },
-                            ticks: {
-                                color: '#64748b',
-                                callback: function(value) {
-                                    return '₹' + (value / 1000) + 'k';
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                grid: { color: '#e2e8f0' },
+                                ticks: {
+                                    color: '#64748b',
+                                    callback: function(value) { return '₹' + (value / 1000) + 'k'; }
                                 }
-                            }
-                        },
-                        x: {
-                            grid: {
-                                display: false
                             },
-                            ticks: {
-                                color: '#64748b'
-                            }
-                        }
-                    },
-                    elements: {
-                        point: {
-                            hoverBackgroundColor: '#764ba2'
+                            x: { grid: { display: false }, ticks: { color: '#64748b' } }
                         }
                     }
+                };
+
+                if (chartInstance) {
+                    chartInstance.destroy();
                 }
-            });
+                chartInstance = new Chart(ctx, config);
+
+                // Update filter button text
+                if (filterBtn) {
+                    if (period === 'yearly') filterBtn.textContent = 'Yearly (5 years)';
+                    else if (period === 'monthly') filterBtn.textContent = 'Monthly (12 months)';
+                    else filterBtn.textContent = 'Last 7 days';
+                }
+            } catch (e) {
+                console.error('Chart load error:', e);
+            }
         }
+
+        // Initial load
+        if (ctx) loadChart('daily');
+
+        // Bind filter clicks
+        document.querySelectorAll('.chart-filter').forEach(a => {
+            a.addEventListener('click', (e) => {
+                e.preventDefault();
+                const period = a.dataset.period || 'daily';
+                loadChart(period);
+            });
+        });
     });
 </script>
 

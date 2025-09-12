@@ -15,6 +15,7 @@ router.post('/addproducts', adminAuth, upload.array('productImages', 10), produc
 router.get("/login", adminController.loadAdminLogin);
 router.post("/login", adminController.adminLogin);
 router.get("/dashboard", adminAuth, adminController.loadAdminDashboard);
+router.get("/dashboard/chart-data", adminAuth, adminController.getDashboardChartData);
 router.get("/logout", adminController.adminLogout);
 
 router.get("/users", adminAuth, customerController.customerInfo);

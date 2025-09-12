@@ -104,6 +104,7 @@ router.post("/wallet/add-funds", userAuth, walletController.addFunds);
 router.post("/coupon/apply", userAuth, couponController.applyCoupon);
 router.post("/coupon/remove", userAuth, couponController.removeCoupon);
 router.post("/coupon/validate", userAuth, couponController.validateCoupon);
+router.get("/coupon/available", userAuth, couponController.getAvailableCoupons);
 
 router.get("/api/cart/count", userAuth, cartController.getCartCount);
 router.get("/api/wishlist/count", userAuth, wishlistController.getWishlistCount);

@@ -392,8 +392,102 @@ const validateCoupon = async (req, res) => {
   }
 };
 
+const getAvailableCoupons = async (req, res) => {
+  try {
+    if (!req.user || !req.user._id) {
+      return res.status(401).json({ success: false, message: 'Please log in to view coupons' });
+    }
+
+    const userId = req.user._id;
+    const cart = await Cart.findOne({ userId }).populate('items.productId');
+    if (!cart || cart.items.length === 0) {
+      return res.json({ success: true, coupons: [] });
+    }
+
+    // Compute subtotal from cart
+    let subtotal = 0;
+    cart.items.forEach(item => {
+      const product = item.productId;
+      if (!product) return;
+      const matchedVariant = product.variants?.find(v => v._id.toString() === item.variantId.toString());
+      if (!matchedVariant) return;
+      subtotal += (matchedVariant.salePrice || 0) * item.quantity;
+    });
+
+    if (subtotal <= 0) {
+      return res.json({ success: true, coupons: [] });
+    }
+
+    const now = new Date();
+
+    // Fetch active coupons meeting basic constraints
+    const coupons = await Coupon.find({
+      isList: true,
+      isActive: true,
+      isDeleted: { $ne: true },
+      expireOn: { $gte: now },
+      minimumPrice: { $lte: subtotal }
+    }).lean();
+
+    // Filter out used-by-user or exceeded usage limit, and compute estimated discount
+    const results = [];
+    for (const c of coupons) {
+      // Skip if user already used
+      const usedByUser = await Order.findOne({
+        user: userId,
+        'coupon.couponId': c._id,
+        orderStatus: { $ne: 'payment-failed' }
+      }).lean();
+      if (usedByUser) continue;
+
+      // Check usage limit
+      if (c.usageLimit) {
+        const totalUsage = await Order.countDocuments({
+          'coupon.couponId': c._id,
+          orderStatus: { $ne: 'payment-failed' }
+        });
+        if (totalUsage >= c.usageLimit) continue;
+      }
+
+      // Estimate discount for current cart
+      let discountAmount = 0;
+      if (c.discountType === 'percentage') {
+        discountAmount = (subtotal * c.discountValue) / 100;
+        if (c.maxDiscountAmount && discountAmount > c.maxDiscountAmount) {
+          discountAmount = c.maxDiscountAmount;
+        }
+      } else {
+        discountAmount = Math.min(c.discountValue, subtotal);
+      }
+
+      results.push({
+        code: c.name,
+        description: c.description || '',
+        discountType: c.discountType,
+        discountValue: c.discountValue,
+        maxDiscountAmount: c.maxDiscountAmount || null,
+        minimumPrice: c.minimumPrice || 0,
+        expireOn: c.expireOn,
+        estimatedDiscount: discountAmount
+      });
+    }
+
+    // Sort by estimated discount desc, then by closest expiry
+    results.sort((a, b) => {
+      if (b.estimatedDiscount !== a.estimatedDiscount) return b.estimatedDiscount - a.estimatedDiscount;
+      return new Date(a.expireOn) - new Date(b.expireOn);
+    });
+
+    return res.json({ success: true, coupons: results });
+  } catch (error) {
+    console.error('Error fetching available coupons:', error);
+    return res.status(500).json({ success: false, message: 'Error fetching available coupons' });
+  }
+};
+
 module.exports = {
   applyCoupon,
   removeCoupon,
-  validateCoupon
+  validateCoupon,
+  getAvailableCoupons
 };
