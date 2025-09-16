@@ -1103,22 +1103,50 @@
 
       // View available coupons
       viewAvailableBtn.addEventListener('click', async () => {
-        couponsModal.style.display = 'block';
-        document.body.style.overflow = 'hidden';
-        couponsList.innerHTML = '<div style="text-align:center; color:#64748b; padding:1rem;">Loading...</div>';
+        // Disable button to prevent multiple clicks
+        viewAvailableBtn.disabled = true;
+        const originalText = viewAvailableBtn.innerHTML;
+        viewAvailableBtn.innerHTML = '<span class="spinner"></span> Loading...';
+        
         try {
-          const res = await fetch('/coupon/available', { credentials: 'include' });
+          couponsModal.style.display = 'block';
+          document.body.style.overflow = 'hidden';
+          couponsList.innerHTML = '<div style="text-align:center; color:#64748b; padding:1rem;">Loading available coupons...</div>';
+          
+          // Add timeout to prevent hanging
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+          
+          const res = await fetch('/coupon/available', { 
+            credentials: 'include',
+            signal: controller.signal,
+            headers: {
+              'Content-Type': 'application/json'
+            }
+          });
+          
+          clearTimeout(timeoutId);
+          
+          if (!res.ok) {
+            throw new Error(`HTTP error! status: ${res.status}`);
+          }
+          
           const data = await res.json();
-          if (!data.success) throw new Error(data.message || 'Failed to fetch coupons');
+          
+          if (!data.success) {
+            throw new Error(data.message || 'Failed to fetch coupons');
+          }
+          
           if (!data.coupons || data.coupons.length === 0) {
-            couponsList.innerHTML = '<div style="text-align:center; color:#64748b; padding:1rem;">No coupons available for your cart.</div>';
+            couponsList.innerHTML = '<div class="coupons-empty">No coupons available for your current cart value.</div>';
             return;
           }
+          
           couponsList.innerHTML = data.coupons.map(c => `
             <div class="coupon-item">
               <div class="coupon-item-info">
                 <div class="coupon-code">${c.code}</div>
-                <div class="coupon-desc">${c.description || ''}</div>
+                <div class="coupon-desc">${c.description || 'Special discount offer'}</div>
                 <div class="coupon-savings">Est. savings: ₹${(c.estimatedDiscount || 0).toLocaleString('en-IN', { maximumFractionDigits: 2 })}</div>
                 <div class="coupon-meta">Min: ₹${(c.minimumPrice || 0).toLocaleString('en-IN')} • Expires: ${new Date(c.expireOn).toLocaleDateString('en-IN')}</div>
               </div>
@@ -1128,16 +1156,37 @@
             </div>
           `).join('');
 
-          couponsList.querySelectorAll('button.apply-coupon-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
+          // Add event listeners to apply buttons
+          couponsList.querySelectorAll('button.btn-apply-coupon').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              e.preventDefault();
               const code = btn.getAttribute('data-code');
-              couponsModal.style.display = 'none';
-              couponCodeInput.value = code;
-              applyCoupon();
+              if (code) {
+                // Close modal first
+                couponsModal.style.display = 'none';
+                document.body.style.overflow = '';
+                // Set coupon code and apply
+                couponCodeInput.value = code;
+                applyCoupon();
+              }
             });
           });
+          
         } catch (err) {
-          couponsList.innerHTML = '<div style="text-align:center; color:#ef4444; padding:1rem;">Error loading coupons</div>';
+          console.error('Error loading coupons:', err);
+          let errorMessage = 'Error loading coupons. Please try again.';
+          
+          if (err.name === 'AbortError') {
+            errorMessage = 'Request timed out. Please check your connection and try again.';
+          } else if (err.message) {
+            errorMessage = err.message;
+          }
+          
+          couponsList.innerHTML = `<div style="text-align:center; color:#ef4444; padding:1rem;">${errorMessage}</div>`;
+        } finally {
+          // Re-enable button
+          viewAvailableBtn.disabled = false;
+          viewAvailableBtn.innerHTML = originalText;
         }
       });
 

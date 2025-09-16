@@ -196,12 +196,40 @@
                                 <th>Variant</th>
                                 <th>Quantity</th>
                                 <th>Price</th>
-                                <th>Total</th>
+                                <th>Balance Amount</th>
                                 <th>Status</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <% order.products.forEach(item => { %>
+                            <% 
+                            // Calculate order subtotal for coupon discount distribution
+                            let orderSubtotal = 0;
+                            order.products.forEach(orderItem => {
+                                orderSubtotal += (orderItem.variant.salePrice * orderItem.quantity);
+                            });
+                            
+                            // Get total coupon discount
+                            let totalCouponDiscount = 0;
+                            if (order.couponDiscount && order.couponDiscount > 0) {
+                                totalCouponDiscount = order.couponDiscount;
+                            } else if (order.coupon && order.coupon.discountAmount && order.coupon.discountAmount > 0) {
+                                totalCouponDiscount = order.coupon.discountAmount;
+                            }
+                            %>
+                            
+                            <% order.products.forEach(item => { 
+                                // Calculate item subtotal
+                                const itemSubtotal = item.variant.salePrice * item.quantity;
+                                
+                                // Calculate proportional coupon discount for this item
+                                let itemCouponDiscount = 0;
+                                if (totalCouponDiscount > 0 && orderSubtotal > 0) {
+                                    itemCouponDiscount = (itemSubtotal / orderSubtotal) * totalCouponDiscount;
+                                }
+                                
+                                // Calculate balance amount (item subtotal minus coupon discount)
+                                const itemBalanceAmount = itemSubtotal - itemCouponDiscount;
+                            %>
                                 <tr>
                                     <td>
                                         <div class="product-info">
@@ -224,7 +252,16 @@
                                         <span class="price-value">₹<%= item.variant.salePrice.toLocaleString('en-IN', { minimumFractionDigits: 2 }) %></span>
                                     </td>
                                     <td>
-                                        <span class="total-value">₹<%= (item.variant.salePrice * item.quantity).toLocaleString('en-IN', { minimumFractionDigits: 2 }) %></span>
+                                        <div class="balance-amount-section">
+                                            <span class="balance-value">₹<%= itemBalanceAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 }) %></span>
+                                            <% if (itemCouponDiscount > 0) { %>
+                                                <div class="balance-breakdown">
+                                                    <small class="text-muted">
+                                                        Subtotal: ₹<%= itemSubtotal.toFixed(2) %> - Coupon: ₹<%= itemCouponDiscount.toFixed(2) %>
+                                                    </small>
+                                                </div>
+                                            <% } %>
+                                        </div>
                                     </td>
                                     <td>
                                         <span class="status-badge status-<%= item.status.toLowerCase().replace(/\s+/g, '-') %>">
@@ -770,6 +807,29 @@
         font-weight: 600;
         color: #0f172a;
         font-family: 'Inter', sans-serif;
+    }
+
+    /* Balance Amount Section */
+    .balance-amount-section {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+
+    .balance-value {
+        font-weight: 600;
+        color: #0f172a;
+        font-family: 'Inter', sans-serif;
+    }
+
+    .balance-breakdown {
+        font-size: 0.75rem;
+        color: #64748b;
+        font-style: italic;
+    }
+
+    .text-muted {
+        color: #64748b !important;
     }
 
     /* Status Badges */

@@ -8,32 +8,35 @@ const mongoose = require('mongoose');
 
 const calculateItemFinalAmount = (item, order) => {
   const itemSubtotal = item.variant.salePrice * item.quantity;
-  
+
+  // Calculate coupon discount
   let totalCouponDiscount = 0;
   if (order.couponDiscount && order.couponDiscount > 0) {
     totalCouponDiscount = order.couponDiscount;
   } else if (order.coupon && order.coupon.discountAmount && order.coupon.discountAmount > 0) {
     totalCouponDiscount = order.coupon.discountAmount;
   }
-  
+
   let orderSubtotal = 0;
   order.products.forEach(orderItem => {
     orderSubtotal += (orderItem.variant.salePrice * orderItem.quantity);
   });
-  
+
   let itemCouponDiscount = 0;
   if (totalCouponDiscount > 0 && orderSubtotal > 0) {
     itemCouponDiscount = (itemSubtotal / orderSubtotal) * totalCouponDiscount;
   }
-  
+
+  // Final calculation - only balance amount (item price minus coupon discount)
   const itemFinalAmount = itemSubtotal - itemCouponDiscount;
-  
+
   return {
     itemSubtotal,
     itemCouponDiscount,
     itemFinalAmount
   };
 };
+
 
 const getOrders = async (req, res) => {
   try {
@@ -362,11 +365,12 @@ const cancelOrderItem = async (req, res) => {
 
     let cancelledItemSubtotal, itemCouponDiscount, cancelledItemFinalAmount;
     try {
+      // For individual item cancellation - only balance amount (item price minus coupon discount)
       const amounts = calculateItemFinalAmount(item, order);
       cancelledItemSubtotal = amounts.itemSubtotal;
       itemCouponDiscount = amounts.itemCouponDiscount;
       cancelledItemFinalAmount = amounts.itemFinalAmount;
-      console.log('Calculated amounts:', amounts);
+      console.log('Calculated amounts (balance amount only):', amounts);
     } catch (calcError) {
       console.error('Error in calculateItemFinalAmount:', calcError.message);
       console.error(calcError.stack);
@@ -520,27 +524,13 @@ const cancelOrderItem = async (req, res) => {
 
 const returnOrderItem = async (req, res) => {
   try {
-    console.log("Incoming request headers:", req.headers);
-    console.log("Raw request body:", req.body);
-
-    if (!req.body) {
-      console.error("req.body is undefined");
-      return res.status(400).json({
-        success: false,
-        message: "Request body is missing",
-      });
-    }
-
     const { orderId, productId, variantSize, reason } = req.body;
-    console.log("Destructured:", { orderId, productId, variantSize, reason });
-
     const userId = req.user._id;
 
     if (!orderId || !productId || !variantSize || !reason) {
-      console.log("Missing fields:", { orderId, productId, variantSize, reason });
       return res.status(400).json({
         success: false,
-        message: "Missing required fields: orderId, productId, variantSize, or reason",
+        message: "Missing required fields",
       });
     }
 
@@ -551,117 +541,61 @@ const returnOrderItem = async (req, res) => {
       });
     }
 
-    const order = await Order.findOne({ _id: orderId, user: userId });
+    const order = await Order.findOne({ _id: orderId, user: userId }).populate("products.product");
     if (!order) {
       return res.status(404).json({
         success: false,
-        message: "Order not found or not owned by user",
+        message: "Order not found",
       });
     }
 
-    if (order.orderStatus !== "delivered" && order.orderStatus !== "return pending") {
-      return res.status(400).json({
-        success: false,
-        message: "Only delivered items can be returned",
-      });
-    }
-
-    console.log("All Items in Order:");
-    order.products.forEach((item, idx) => {
-      console.log(
-        `Item ${idx + 1}: Product=${item.product}, Size=${item.variant.size}, Status=${item.status}`
-      );
-    });
-
-    const itemIndex = order.products.findIndex(
-      (item) => item.product.equals(productId) && item.variant.size === variantSize
+    const item = order.products.find(
+      (p) => p.product._id.toString() === productId && p.variant.size === variantSize
     );
 
-    if (itemIndex === -1) {
-      return res.status(404).json({
-        success: false,
-        message: "Item not found in order",
-      });
+    if (!item) {
+      return res.status(404).json({ success: false, message: "Item not found in order" });
     }
 
-    const item = order.products[itemIndex];
-
-    console.log("Selected Item to Return:");
-    console.log(`Product: ${item.product}, Size: ${item.variant.size}, Status: ${item.status}`);
-
-    if (item.status === "return pending") {
-      return res.status(400).json({
-        success: false,
-        message: "Return already requested for this item",
-      });
+    if (["return pending", "returned"].includes(item.status)) {
+      return res.status(400).json({ success: false, message: "Item already returned or pending" });
     }
 
-    if (item.status === "returned") {
-      return res.status(400).json({
-        success: false,
-        message: "Item is already returned",
-      });
-    }
+    // ✅ Calculate only (don’t apply stock/wallet yet)
+    const { itemFinalAmount } = calculateItemFinalAmount(item, order);
 
-    const { itemSubtotal: returnedItemSubtotal, itemCouponDiscount, itemFinalAmount: returnedItemFinalAmount } = calculateItemFinalAmount(item, order);
-
+    // ✅ Mark item as return pending
     item.status = "return pending";
     item.returnReason = reason;
     item.returnRequestDate = new Date();
+    item.refundAmount = itemFinalAmount;
+    item.refundStatus = "pending";
 
-    const product = await Product.findById(productId);
-    if (product) {
-      const variant = product.variants.find((v) => v.size === variantSize);
-      if (variant) {
-        variant.varientquatity += item.quantity;
-        await product.save();
-      }
-    }
+    // ✅ Order status -> return pending
+    order.orderStatus = "return pending";
 
-    const refundAmount = returnedItemFinalAmount;
-    
-    item.refundStatus = 'pending';
-    item.refundAmount = refundAmount;
-    item.refundRequestDate = new Date();
-    
-    order.refundAmount = (order.refundAmount || 0) + refundAmount;
-    order.refundStatus = 'pending';
-    if (!order.refundRequestDate) {
-      order.refundRequestDate = new Date();
-    }
-    
-    order.finalAmount = Math.max(0, order.finalAmount - returnedItemFinalAmount);
-    order.totalAmount = Math.max(0, order.totalAmount - returnedItemSubtotal);
-    
-
-    const allItemsReturnPending = order.products.every((item) =>
-      ["return pending", "returned"].includes(item.status)
-    );
-    if (allItemsReturnPending) {
-      order.orderStatus = "return pending";
-    }
-
-   order.statusHistory.push({
-  status: "item return requested",
-  date: new Date(),
-  description: `Return requested for: ${product?.name} (${variantSize}) - Reason: ${reason}. Refund of ₹${refundAmount} is pending admin approval.`,
-});
+    // ✅ Add history
+    order.statusHistory.push({
+      status: "return pending",
+      date: new Date(),
+      description: `Return requested for ${item.product.name} (Size: ${variantSize}). Reason: ${reason}`
+    });
 
     await order.save();
 
     return res.json({
       success: true,
-      message: `Return request submitted successfully. Refund of ₹${refundAmount.toFixed(2)} is pending admin approval and will be credited to your wallet once approved.`,
+      message: "Return request submitted. Waiting for admin approval.",
     });
+
   } catch (error) {
-    console.error("Error processing return request:", error);
-    return res.status(500).json({
-      success: false,
-      message: "Server error while processing return request",
-      error: error.message,
-    });
+    console.error("Return request error:", error);
+    return res.status(500).json({ success: false, message: "Server error", error: error.message });
   }
 };
+
+
+
 
 const downloadInvoice = async (req, res) => {
   try {

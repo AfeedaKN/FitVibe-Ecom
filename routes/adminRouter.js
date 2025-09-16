@@ -42,6 +42,7 @@ router.put("/toggle-product-listing/:id", adminAuth, productController.togglePro
 router.patch("/products/:id/toggle-status", adminAuth, productController.toggleProductListing);
 
 router.get("/orders", adminAuth, orderController.loadOrders);
+router.get("/return-requests", adminAuth, orderController.loadReturnRequests);
 router.post("/order/status", adminAuth, orderController.updateOrderStatus);
 router.get("/order/:id", adminAuth, orderController.viewOrderDetails);
 router.post("/order/return-approve/:orderId", adminAuth, orderController.approveReturn);
