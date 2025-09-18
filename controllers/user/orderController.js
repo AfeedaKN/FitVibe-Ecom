@@ -9,7 +9,7 @@ const mongoose = require('mongoose');
 const calculateItemFinalAmount = (item, order) => {
   const itemSubtotal = item.variant.salePrice * item.quantity;
 
-  // Calculate coupon discount
+  
   let totalCouponDiscount = 0;
   if (order.couponDiscount && order.couponDiscount > 0) {
     totalCouponDiscount = order.couponDiscount;
@@ -27,7 +27,7 @@ const calculateItemFinalAmount = (item, order) => {
     itemCouponDiscount = (itemSubtotal / orderSubtotal) * totalCouponDiscount;
   }
 
-  // Final calculation - only balance amount (item price minus coupon discount)
+  
   const itemFinalAmount = itemSubtotal - itemCouponDiscount;
 
   return {
@@ -297,11 +297,9 @@ const returnOrder = async (req, res) => {
 };
 
 const cancelOrderItem = async (req, res) => {
-  
   try {
     const { orderId, productId, variantSize, reason } = req.body;
-    
-    const userId = req.user?._id; 
+    const userId = req.user?._id;
 
     if (!mongoose.Types.ObjectId.isValid(orderId) || !mongoose.Types.ObjectId.isValid(productId)) {
       return res.status(400).json({
@@ -315,14 +313,13 @@ const cancelOrderItem = async (req, res) => {
         message: 'Missing required fields: orderId, productId, or variantSize'
       });
     }
-    
 
     if (!userId) {
       console.log(`User not authenticated for orderId: ${orderId}, session: ${JSON.stringify(req.session)}`);
       return res.status(401).json({ success: false, message: 'User not authenticated. Please log in.' });
     }
 
-    const order = await Order.findOne({ _id: orderId, user: userId })
+    const order = await Order.findOne({ _id: orderId, user: userId });
     if (!order) {
       return res.status(404).json({
         success: false,
@@ -361,11 +358,9 @@ const cancelOrderItem = async (req, res) => {
     item.cancelReason = reason || '';
     item.cancelDate = new Date();
 
-  
-
     let cancelledItemSubtotal, itemCouponDiscount, cancelledItemFinalAmount;
     try {
-      // For individual item cancellation - only balance amount (item price minus coupon discount)
+      
       const amounts = calculateItemFinalAmount(item, order);
       cancelledItemSubtotal = amounts.itemSubtotal;
       itemCouponDiscount = amounts.itemCouponDiscount;
@@ -377,8 +372,12 @@ const cancelOrderItem = async (req, res) => {
       throw calcError;
     }
 
-    order.finalAmount = Math.max(0, order.finalAmount - cancelledItemFinalAmount);
-    order.totalAmount = Math.max(0, order.totalAmount - cancelledItemSubtotal);
+    
+    const isSingleProductOrder = order.products.length === 1;
+
+    
+    order.finalAmount = Math.max(0, order.finalAmount - cancelledItemFinalAmount - (isSingleProductOrder ? order.shippingCharge : 0));
+    order.totalAmount = Math.max(0, order.totalAmount - cancelledItemSubtotal - (isSingleProductOrder ? order.shippingCharge : 0));
 
     const product = await Product.findById(productId);
     if (product) {
@@ -389,7 +388,10 @@ const cancelOrderItem = async (req, res) => {
       }
     }
 
-    const refundAmount = cancelledItemFinalAmount;
+    let refundAmount = cancelledItemFinalAmount;
+    if (isSingleProductOrder) {
+      refundAmount += order.shippingCharge; 
+    }
 
     let refundProcessed = false;
     if (
@@ -398,14 +400,16 @@ const cancelOrderItem = async (req, res) => {
       (order.paymentStatus === 'completed' || order.paymentStatus === 'success' || order.paymentStatus === 'partially refunded')
     ) {
       const userId = order.user;
-      let refundDescription = `Refund for cancelled item ${product?.name || 'Product'} (${variantSize}) in order ${order.orderID} - Balance Amount: ₹${refundAmount.toFixed(2)}`;
+      let refundDescription = `Refund for cancelled item ${product?.name || 'Product'} (${variantSize}) in order ${order.orderID} - Balance Amount: ₹${cancelledItemFinalAmount.toFixed(2)}`;
       if (itemCouponDiscount > 0) {
         refundDescription += ` (Subtotal: ₹${cancelledItemSubtotal.toFixed(2)} - Coupon Discount: ₹${itemCouponDiscount.toFixed(2)})`;
       }
+      if (isSingleProductOrder && order.shippingCharge > 0) {
+        refundDescription += ` + Shipping Charge: ₹${order.shippingCharge.toFixed(2)}`;
+      }
 
       let wallet = await Wallet.findOne({ userId });
-      
-      
+
       if (!wallet) {
         wallet = new Wallet({
           userId,
@@ -457,7 +461,7 @@ const cancelOrderItem = async (req, res) => {
       order.statusHistory.push({
         status: 'item cancelled',
         date: new Date(),
-        description: `Item cancelled: ${product?.name || 'Product'} (${variantSize})${reason ? ` - Reason: ${reason}` : ''}. ₹${refundAmount.toFixed(2)} refunded to wallet.`
+        description: `Item cancelled: ${product?.name || 'Product'} (${variantSize})${reason ? ` - Reason: ${reason}` : ''}. ₹${refundAmount.toFixed(2)} refunded to wallet (including ₹${isSingleProductOrder ? order.shippingCharge.toFixed(2) : '0.00'} shipping charge).`
       });
 
       if (!order.products.every(p => p.status === 'cancelled')) {
@@ -467,7 +471,6 @@ const cancelOrderItem = async (req, res) => {
       }
 
       refundProcessed = true;
-      
     }
 
     if (!refundProcessed) {
@@ -503,7 +506,7 @@ const cancelOrderItem = async (req, res) => {
 
     let successMessage = 'Item cancelled successfully.';
     if (refundProcessed) {
-      successMessage += ` ₹${refundAmount.toFixed(2)} credited to your wallet.`;
+      successMessage += ` ₹${refundAmount.toFixed(2)} credited to your wallet (including ₹${isSingleProductOrder ? order.shippingCharge.toFixed(2) : '0.00'} shipping charge).`;
     }
 
     return res.json({

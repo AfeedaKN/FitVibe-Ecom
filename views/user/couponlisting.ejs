@@ -3,679 +3,611 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>FitVibe - My Coupons</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        /* Professional Coupons Page - Matching Profile Theme */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f8fafc;
+            color: #1e293b;
+            line-height: 1.6;
+            margin-left: 280px;
+        }
+
+        .coupons-container {
+            padding: 2rem 1.5rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* Page Header */
+        .page-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .page-title {
+            font-size: 2.25rem;
+            font-weight: 700;
+            color: #0f172a;
+            margin: 0;
+            letter-spacing: -0.025em;
+        }
+
+        .page-subtitle {
+            font-size: 1rem;
+            color: #64748b;
+            margin-top: 0.5rem;
+        }
+
+        /* Search & Filter Section */
+        .search-section {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+        }
+
+        .search-form {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 0.75rem 1rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px 0 0 12px;
+            font-size: 0.875rem;
+            transition: all 0.3s ease;
+            background: #f8fafc;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #6366f1;
+            background: #ffffff;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        .search-btn {
+            padding: 0.75rem 1.5rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #ffffff;
+            border: none;
+            border-radius: 0 12px 12px 0;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+        }
+
+        .search-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(102, 126, 234, 0.4);
+        }
+
+        .filter-row {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .filter-group {
+            display: flex;
+            align-items: center;
+        }
+
+        .filter-select {
+            padding: 0.75rem 1rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 0.875rem;
+            background: #f8fafc;
+            transition: all 0.3s ease;
+        }
+
+        .filter-select:focus {
+            outline: none;
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        .clear-btn {
+            padding: 0.75rem 1.5rem;
+            background: #f44336;
+            color: #ffffff;
+            border: none;
+            border-radius: 12px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .clear-btn:hover {
+            background: #d32f2f;
+            transform: translateY(-2px);
+        }
+
+        /* Coupons Grid */
+        .coupons-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .coupon-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            overflow: hidden;
+        }
+
+        .coupon-card:hover {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            transform: translateY(-4px);
+        }
+
+        .coupon-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px dashed #e2e8f0;
+        }
+
+        .coupon-code {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #0f172a;
+            margin: 0;
+            text-transform: uppercase;
+        }
+
+        .coupon-status {
+            padding: 0.375rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: capitalize;
+        }
+
+        .status-active {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .status-inactive {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .coupon-details {
+            display: grid;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .detail-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .detail-item:last-child {
+            border-bottom: none;
+        }
+
+        .detail-label {
+            font-size: 0.875rem;
+            color: #64748b;
+            font-weight: 500;
+        }
+
+        .detail-value {
+            font-size: 0.875rem;
+            color: #0f172a;
+            font-weight: 500;
+        }
+
+        .expired-text {
+            color: #991b1b;
+            font-weight: 600;
+        }
+
+        .coupon-actions {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 1rem;
+        }
+
+        .apply-btn {
+            padding: 0.5rem 1rem;
+            background: linear-gradient(135deg, #10b981 0%, #065f46 100%);
+            color: #ffffff;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .apply-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.3);
+        }
+
+        .disabled-text {
+            font-size: 0.875rem;
+            color: #64748b;
+            font-style: italic;
+        }
+
+        .coupon-description {
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px dashed #e2e8f0;
+            font-size: 0.875rem;
+            color: #64748b;
+            line-height: 1.5;
+        }
+
+        /* Empty State */
+        .empty-coupons {
+            text-align: center;
+            padding: 4rem 2rem;
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+        }
+
+        .empty-coupons i {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            color: #cbd5e1;
+        }
+
+        .empty-coupons p {
+            font-size: 1.125rem;
+            color: #64748b;
+            margin-bottom: 1.5rem;
+        }
+
+        .shop-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #ffffff;
+            text-decoration: none;
+            border-radius: 12px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .shop-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(102, 126, 234, 0.4);
+            color: #ffffff;
+        }
+
+        /* Pagination */
+        .pagination-wrapper {
+            display: flex;
+            justify-content: center;
+            margin-top: 2rem;
+        }
+
+        .pagination {
+            display: flex;
+            gap: 0.5rem;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .pagination a,
+        .pagination span {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            text-decoration: none;
+            color: #64748b;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .pagination a:hover {
+            background: #f8fafc;
+            border-color: #6366f1;
+            color: #6366f1;
+        }
+
+        .pagination .active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #ffffff;
+            border-color: transparent;
+        }
+
+        /* Alerts */
+        .alert {
+            border-radius: 12px;
+            padding: 1rem 1.5rem;
+            margin-bottom: 1.5rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .alert-success {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .alert-danger {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            body {
+                margin-left: 0;
+            }
+
+            .coupons-container {
+                padding: 1rem;
+            }
+
+            .coupons-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .search-form {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .filter-row {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .page-title {
+                font-size: 1.875rem;
+            }
+
+            .coupon-card {
+                padding: 1rem;
+            }
+        }
+    </style>
 </head>
 <body>
+    <%- include('./partials/sidebar', { page: 'coupons' }) %>
 
-<%- include('./partials/sidebar', { page: 'coupons' }) %>
-
-<div class="coupons-container">
-  <!-- Page Header -->
-  <div class="page-header">
-    <h1 class="page-title">My Coupons</h1>
-    <p class="page-subtitle">Explore and apply your available coupons</p>
-  </div>
-
-<!-- Search & Filter Section -->
-<div class="search-filter-section">
-  <form action="/profile/coupons" method="GET" class="search-form">
-    <div class="filter-row">
-      <div class="input-group">
-        <input type="text" name="search" class="search-input" 
-               placeholder="Search by code or description..." 
-               value="<%= query || '' %>" 
-               aria-label="Search coupons">
-        <button type="submit" class="search-btn" aria-label="Search coupons">
-          <i class="fas fa-search"></i>
-        </button>
-      </div>
-
-      <div class="filter-group">
-        <select name="status" class="filter-select" onchange="this.form.submit()">
-          <option value="" <%= !filterStatus ? 'selected' : '' %>>All Status</option>
-          <option value="active" <%= filterStatus === 'active' ? 'selected' : '' %>>Active</option>
-          <option value="inactive" <%= filterStatus === 'inactive' ? 'selected' : '' %>>Inactive</option>
-        </select>
-      </div>
-
-      <button type="button" class="clear-btn" onclick="window.location.href='/profile/coupons'">
-        Clear Filters
-      </button>
-    </div>
-  </form>
-</div>
-
-
-
-  <!-- Alerts -->
-  <% if (messages.error) { %>
-    <div class="alert alert-danger" role="alert">
-      <i class="fas fa-exclamation-circle"></i> <%= messages.error %>
-    </div>
-  <% } %>
-  <% if (messages.success) { %>
-    <div class="alert alert-success" role="alert">
-      <i class="fas fa-check-circle"></i> <%= messages.success %>
-    </div>
-  <% } %>
-
-  <!-- Coupons Content -->
-  <% if (coupons.length > 0) { %>
-    <div class="coupons-grid">
-      <% coupons.forEach(coupon => { %>
-        <div class="coupon-card" data-coupon-id="<%= coupon._id %>">
-          <div class="coupon-header">
-            <h2 class="coupon-code"><%= coupon.name %></h2>
-            <span class="coupon-status <%= coupon.isActive ? 'status-active' : 'status-inactive' %>">
-              <%= coupon.isActive ? 'Active' : 'Expired' %>
-            </span>
-          </div>
-          <div class="coupon-details">
-            <div class="detail-item">
-              <span class="detail-label">Discount</span>
-              <span class="detail-value">
-                <% if (coupon.discountType === 'percentage') { %>
-                  <%= coupon.discountValue %>% (Max ₹<%= coupon.maxDiscountAmount || 'No Limit' %>)
-                <% } else { %>
-                  ₹<%= coupon.discountValue %>
-                <% } %>
-              </span>
-            </div>
-            <div class="detail-item">
-              <span class="detail-label">Min. Amount</span>
-              <span class="detail-value">₹<%= coupon.minimumPrice %></span>
-            </div>
-            <div class="detail-item">
-              <span class="detail-label">Expires On</span>
-              <span class="detail-value <%= new Date(coupon.expireOn) < new Date() ? 'expired-text' : '' %>">
-                <%= coupon.expireOn.toLocaleDateString() %>
-              </span>
-            </div>
-            <div class="detail-item">
-              <span class="detail-label">Usage</span>
-              <span class="detail-value"><%= coupon.usedCount %>/<%= coupon.usageLimit || 'Unlimited' %></span>
-            </div>
-          </div>
-          <div class="coupon-actions">
-            <% if (coupon.isActive && new Date(coupon.expireOn) >= new Date()) { %>
-              <button class="apply-btn" onclick="applyCoupon('<%= coupon._id %>')">
-                <i class="fas fa-tag"></i> Apply Now
-              </button>
-            <% } else { %>
-              <span class="disabled-text">Cannot Apply</span>
-            <% } %>
-          </div>
-          <div class="coupon-description">
-            <p><%= coupon.description %></p>
-          </div>
+    <div class="coupons-container">
+        <!-- Page Header -->
+        <div class="page-header">
+            <h1 class="page-title">My Coupons</h1>
+            <p class="page-subtitle">Explore and apply your available coupons</p>
         </div>
-      <% }) %>
-    </div>
-    
-    <!-- Pagination -->
-    <% if (totalPages > 1) { %>
-      <div class="pagination-wrapper">
-        <ul class="pagination">
-          <% for(let i = 1; i <= totalPages; i++) { %>
-            <li class="page-item <%= currentPage === i ? 'active' : '' %>">
-              <a class="page-link" href="/profile/coupons?page=<%= i %><%= query ? '&search=' + query : '' %><%= filterStatus ? '&status=' + filterStatus : '' %>">
-                <%= i %>
-              </a>
-            </li>
-          <% } %>
-        </ul>
-      </div>
-    <% } %>
-  <% } else { %>
-    <div class="empty-coupons">
-      <i class="fas fa-ticket-alt"></i>
-      <p>No coupons available yet</p>
-      <a href="/products" class="shop-btn">
-        <i class="fas fa-shopping-cart"></i> Start Shopping
-      </a>
-    </div>
-  <% } %>
-</div>
 
-<script>
-  // Apply coupon function (placeholder - implement backend logic)
-  function applyCoupon(couponId) {
-    Swal.fire({
-      title: 'Applying Coupon',
-      text: 'Would you like to apply this coupon to your cart?',
-      icon: 'question',
-      showCancelButton: true,
-      confirmButtonText: 'Yes, Apply',
-      cancelButtonText: 'No',
-      customClass: {
-        confirmButton: 'btn btn-primary',
-        cancelButton: 'btn btn-secondary'
-      }
-    }).then((result) => {
-      if (result.isConfirmed) {
-        fetch('/cart/apply-coupon', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ couponId })
-        })
-        .then(response => response.json())
-        .then(data => {
-          if (data.success) {
+        <!-- Search & Filter Section -->
+        <div class="search-section">
+            <form action="/profile/coupons" method="GET" class="search-form">
+                <div class="filter-row">
+                    <div class="input-group">
+                        <input type="text" name="search" class="search-input" 
+                               placeholder="Search by code or description..." 
+                               value="<%= query || '' %>" 
+                               aria-label="Search coupons">
+                        <button type="submit" class="search-btn" aria-label="Search coupons">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+
+                    <div class="filter-group">
+                        <select name="status" class="filter-select" onchange="this.form.submit()">
+                            <option value="" <%= !filterStatus ? 'selected' : '' %>>All Status</option>
+                            <option value="active" <%= filterStatus === 'active' ? 'selected' : '' %>>Active</option>
+                            <option value="inactive" <%= filterStatus === 'inactive' ? 'selected' : '' %>>Inactive</option>
+                        </select>
+                    </div>
+
+                    <button type="button" class="clear-btn" onclick="window.location.href='/profile/coupons'">
+                        Clear Filters
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Alerts -->
+        <% if (messages.error) { %>
+            <div class="alert alert-danger" role="alert">
+                <i class="fas fa-exclamation-circle"></i> <%= messages.error %>
+            </div>
+        <% } %>
+        <% if (messages.success) { %>
+            <div class="alert alert-success" role="alert">
+                <i class="fas fa-check-circle"></i> <%= messages.success %>
+            </div>
+        <% } %>
+
+        <!-- Coupons Content -->
+        <% if (coupons.length > 0) { %>
+            <div class="coupons-grid">
+                <% coupons.forEach(coupon => { %>
+                    <div class="coupon-card" data-coupon-id="<%= coupon._id %>">
+                        <div class="coupon-header">
+                            <h2 class="coupon-code"><%= coupon.name %></h2>
+                            <span class="coupon-status <%= coupon.isActive ? 'status-active' : 'status-inactive' %>">
+                                <%= coupon.isActive ? 'Active' : 'Expired' %>
+                            </span>
+                        </div>
+                        <div class="coupon-details">
+                            <div class="detail-item">
+                                <span class="detail-label">Discount</span>
+                                <span class="detail-value">
+                                    <% if (coupon.discountType === 'percentage') { %>
+                                        <%= coupon.discountValue %>% (Max ₹<%= coupon.maxDiscountAmount || 'No Limit' %>)
+                                    <% } else { %>
+                                        ₹<%= coupon.discountValue %>
+                                    <% } %>
+                                </span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Min. Amount</span>
+                                <span class="detail-value">₹<%= coupon.minimumPrice %></span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Expires On</span>
+                                <span class="detail-value <%= new Date(coupon.expireOn) < new Date() ? 'expired-text' : '' %>">
+                                    <%= coupon.expireOn.toLocaleDateString() %>
+                                </span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Usage</span>
+                                <span class="detail-value"><%= coupon.usedCount %>/<%= coupon.usageLimit || 'Unlimited' %></span>
+                            </div>
+                        </div>
+                        <div class="coupon-actions">
+                            <% if (coupon.isActive && new Date(coupon.expireOn) >= new Date()) { %>
+                                <button class="apply-btn" onclick="applyCoupon('<%= coupon._id %>')">
+                                    <i class="fas fa-tag"></i> <%=coupon.status%>
+                                </button>
+                            <% } else { %>
+                                <span class="disabled-text">Cannot Apply</span>
+                            <% } %>
+                        </div>
+                        <div class="coupon-description">
+                            <p><%= coupon.description %></p>
+                        </div>
+                    </div>
+                <% }) %>
+            </div>
+            
+            <!-- Pagination -->
+            <% if (totalPages > 1) { %>
+                <div class="pagination-wrapper">
+                    <ul class="pagination">
+                        <% for(let i = 1; i <= totalPages; i++) { %>
+                            <li class="page-item <%= currentPage === i ? 'active' : '' %>">
+                                <a class="page-link" href="/profile/coupons?page=<%= i %><%= query ? '&search=' + query : '' %><%= filterStatus ? '&status=' + filterStatus : '' %>">
+                                    <%= i %>
+                                </a>
+                            </li>
+                        <% } %>
+                    </ul>
+                </div>
+            <% } %>
+        <% } else { %>
+            <div class="empty-coupons">
+                <i class="fas fa-ticket-alt"></i>
+                <p>No coupons available yet</p>
+                <a href="/products" class="shop-btn">
+                    <i class="fas fa-shopping-cart"></i> Start Shopping
+                </a>
+            </div>
+        <% } %>
+    </div>
+
+    <script>
+        // Apply coupon function (placeholder - implement backend logic)
+        function applyCoupon(couponId) {
             Swal.fire({
-              icon: 'success',
-              title: 'Coupon Applied!',
-              text: data.message,
-              timer: 2000,
-              showConfirmButton: false
-            }).then(() => window.location.href = '/cart');
-          } else {
-            Swal.fire({
-              icon: 'error',
-              title: 'Error',
-              text: data.message || 'Failed to apply coupon'
+                title: 'Applying Coupon',
+                text: 'Would you like to apply this coupon to your cart?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Yes, Apply',
+                cancelButtonText: 'No',
+                customClass: {
+                    confirmButton: 'btn btn-primary',
+                    cancelButton: 'btn btn-secondary'
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch('/cart/apply-coupon', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ couponId })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Coupon Applied!',
+                                text: data.message,
+                                timer: 2000,
+                                showConfirmButton: false
+                            }).then(() => window.location.href = '/cart');
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: data.message || 'Failed to apply coupon'
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'An error occurred while applying the coupon'
+                        });
+                    });
+                }
             });
-          }
-        })
-        .catch(error => {
-          Swal.fire({
-            icon: 'error',
-            title: 'Error',
-            text: 'An error occurred while applying the coupon'
-          });
-        });
-      }
-    });
-  }
-
-  // Responsive enhancements
-  const couponsGrid = document.querySelector('.coupons-grid');
-  if (couponsGrid) {
-    couponsGrid.addEventListener('click', (e) => {
-      const card = e.target.closest('.coupon-card');
-      if (card && !e.target.closest('.coupon-actions')) {
-        // Expand card details (optional - implement toggle logic)
-        console.log('Coupon card clicked:', card.dataset.couponId);
-      }
-    });
-  }
-</script>
-
-<style>
-  /* Container Styling */
-  .coupons-container {
-    padding: 2rem 1.5rem;
-    max-width: 1200px;
-    margin: 0 auto;
-    transition: padding 0.3s ease;
-  }
-
-  .filter-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;  /* spacing between elements */
-}
-
-.input-group {
-  display: flex;
-  align-items: center;
-}
-
-.search-input {
-  padding: 6px 10px;
-  font-size: 14px;
-}
-
-.search-btn {
-  padding: 6px 10px;
-  cursor: pointer;
-}
-
-.filter-group select {
-  padding: 6px 10px;
-  font-size: 14px;
-  cursor: pointer;
-}
-
-.clear-btn {
-  background-color: #f44336;
-  color: white;
-  border: none;
-  padding: 6px 12px;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 14px;
-  transition: background-color 0.3s ease;
-}
-
-.clear-btn:hover {
-  background-color: #d32f2f;
-}
-
-
-  /* Page Header */
-  .page-header {
-    margin-bottom: 2rem;
-    padding-bottom: 1rem;
-    border-bottom: 2px solid #e2e8f0;
-  }
-
-  .page-title {
-    font-size: 2.25rem;
-    font-weight: 700;
-    color: #0f172a;
-    margin: 0;
-    letter-spacing: -0.025em;
-  }
-
-  .page-subtitle {
-    font-size: 1rem;
-    color: #64748b;
-    margin-top: 0.5rem;
-  }
-
-  /* Search & Filter Section */
-  .search-filter-section {
-    display: flex;
-    gap: 1rem;
-    margin-bottom: 2rem;
-    flex-wrap: wrap;
-  }
-
-  .input-group {
-    display: flex;
-    flex: 1;
-    position: relative;
-  }
-
-  .search-input {
-    flex: 1;
-    padding: 0.75rem 1rem;
-    border: 1px solid #e2e8f0;
-    border-radius: 12px 0 0 12px;
-    font-size: 0.875rem;
-    transition: all 0.3s ease;
-    background: #f8fafc;
-  }
-
-  .search-input:focus {
-    outline: none;
-    border-color: #6366f1;
-    background: #ffffff;
-    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
-  }
-
-  .search-btn {
-    padding: 0.75rem 1.5rem;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: #ffffff;
-    border: none;
-    border-radius: 0 12px 12px 0;
-    font-size: 0.875rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    display: flex;
-    align-items: center;
-  }
-
-  .search-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 10px 15px -3px rgba(102, 126, 234, 0.4);
-  }
-
-  .filter-group {
-    display: flex;
-    align-items: center;
-  }
-
-  .filter-select {
-    padding: 0.75rem 1rem;
-    border: 1px solid #e2e8f0;
-    border-radius: 12px;
-    font-size: 0.875rem;
-    background: #f8fafc;
-    transition: all 0.3s ease;
-  }
-
-  .filter-select:focus {
-    outline: none;
-    border-color: #6366f1;
-    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
-  }
-
-  /* Coupons Grid */
-  .coupons-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-    gap: 1.5rem;
-    margin-bottom: 2rem;
-  }
-
-  .coupon-card {
-    background: #ffffff;
-    border: 1px solid #e2e8f0;
-    border-radius: 16px;
-    padding: 1.5rem;
-    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
-    transition: all 0.3s ease;
-    cursor: pointer;
-    overflow: hidden;
-  }
-
-  .coupon-card:hover {
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-    transform: translateY(-4px);
-  }
-
-  .coupon-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1rem;
-    padding-bottom: 0.5rem;
-    border-bottom: 1px dashed #e2e8f0;
-  }
-
-  .coupon-code {
-    font-size: 1.25rem;
-    font-weight: 600;
-    color: #0f172a;
-    margin: 0;
-    text-transform: uppercase;
-  }
-
-  .coupon-status {
-    padding: 0.375rem 0.75rem;
-    border-radius: 20px;
-    font-size: 0.75rem;
-    font-weight: 600;
-    text-transform: capitalize;
-  }
-
-  .status-active {
-    background: #d1fae5;
-    color: #065f46;
-  }
-
-  .status-inactive {
-    background: #fee2e2;
-    color: #991b1b;
-  }
-
-  .coupon-details {
-    display: grid;
-    gap: 0.5rem;
-    margin-bottom: 1rem;
-  }
-
-  .detail-item {
-    display: flex;
-    justify-content: space-between;
-    padding: 0.5rem 0;
-    border-bottom: 1px solid #f1f5f9;
-  }
-
-  .detail-item:last-child {
-    border-bottom: none;
-  }
-
-  .detail-label {
-    font-size: 0.875rem;
-    color: #64748b;
-    font-weight: 500;
-  }
-
-  .detail-value {
-    font-size: 0.875rem;
-    color: #0f172a;
-    font-weight: 500;
-  }
-
-  .expired-text {
-    color: #991b1b;
-    font-weight: 600;
-  }
-
-  .coupon-actions {
-    display: flex;
-    justify-content: flex-end;
-    margin-top: 1rem;
-  }
-
-  .apply-btn {
-    padding: 0.5rem 1rem;
-    background: linear-gradient(135deg, #10b981 0%, #065f46 100%);
-    color: #ffffff;
-    border: none;
-    border-radius: 8px;
-    font-size: 0.875rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    display: flex;
-    align-items: center;
-    gap: 0.25rem;
-  }
-
-  .apply-btn:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.3);
-  }
-
-  .disabled-text {
-    font-size: 0.875rem;
-    color: #64748b;
-    font-style: italic;
-  }
-
-  .coupon-description {
-    margin-top: 1rem;
-    padding-top: 1rem;
-    border-top: 1px dashed #e2e8f0;
-    font-size: 0.875rem;
-    color: #64748b;
-    line-height: 1.5;
-  }
-
-  /* Empty State */
-  .empty-coupons {
-    text-align: center;
-    padding: 4rem 2rem;
-    background: #ffffff;
-    border: 1px solid #e2e8f0;
-    border-radius: 16px;
-    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
-  }
-
-  .empty-coupons i {
-    font-size: 4rem;
-    margin-bottom: 1rem;
-    color: #cbd5e1;
-  }
-
-  .empty-coupons p {
-    font-size: 1.125rem;
-    color: #64748b;
-    margin-bottom: 1.5rem;
-  }
-
-  .shop-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.75rem 1.5rem;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: #ffffff;
-    text-decoration: none;
-    border-radius: 12px;
-    font-weight: 500;
-    transition: all 0.3s ease;
-  }
-
-  .shop-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 10px 15px -3px rgba(102, 126, 234, 0.4);
-    color: #ffffff;
-  }
-
-  /* Pagination */
-  .pagination-wrapper {
-    display: flex;
-    justify-content: center;
-    margin-top: 2rem;
-  }
-
-  .pagination {
-    display: flex;
-    gap: 0.5rem;
-    list-style: none;
-    margin: 0;
-    padding: 0;
-  }
-
-  .page-item {
-    display: flex;
-  }
-
-  .page-link {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 40px;
-    height: 40px;
-    border: 1px solid #e2e8f0;
-    border-radius: 8px;
-    text-decoration: none;
-    color: #64748b;
-    font-weight: 500;
-    transition: all 0.3s ease;
-  }
-
-  .page-link:hover {
-    background: #f8fafc;
-    border-color: #6366f1;
-    color: #6366f1;
-  }
-
-  .page-item.active .page-link {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: #ffffff;
-    border-color: transparent;
-  }
-
-  /* Alerts */
-  .alert {
-    border-radius: 12px;
-    padding: 1rem 1.5rem;
-    margin-bottom: 1.5rem;
-    font-weight: 500;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-  }
-
-  .alert-success {
-    background: #d1fae5;
-    color: #065f46;
-  }
-
-  .alert-danger {
-    background: #fee2e2;
-    color: #991b1b;
-  }
-
-  .clear-btn {
-  background-color: #f44336; /* red */
-  color: white;
-  border: none;
-  padding: 6px 12px;
-  font-size: 14px;
-  cursor: pointer;
-  border-radius: 4px;
-  text-decoration: none;
-  user-select: none;
-  transition: background-color 0.3s ease;
-  pa
-}
-
-.clear-btn:hover {
-  background-color: #d32f2f;
-}
-
-  /* Responsive Design */
-  @media (max-width: 1024px) {
-    .coupons-container {
-      padding: 1.5rem 1rem;
-    }
-
-    .search-filter-section {
-      flex-direction: column;
-      gap: 1rem;
-    }
-
-    .input-group {
-      width: 100%;
-    }
-
-    .coupons-grid {
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    }
-  }
-
-  @media (max-width: 768px) {
-    body {
-      margin-left: 0;
-    }
-
-    .page-title {
-      font-size: 1.875rem;
-    }
-
-    .coupon-card {
-      padding: 1rem;
-    }
-
-    .coupon-header {
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 0.5rem;
-    }
-
-    .coupon-code {
-      font-size: 1.125rem;
-    }
-
-    .coupon-actions {
-      justify-content: center;
-    }
-  }
-
-  @media (max-width: 480px) {
-    .coupons-grid {
-      grid-template-columns: 1fr;
-    }
-
-    .coupon-details {
-      grid-template-columns: 1fr;
-    }
-
-    .search-input {
-      padding: 0.5rem 1rem;
-    }
-
-    .search-btn {
-      padding: 0.5rem 1rem;
-    }
-    .search-filter-section .input-group {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-
-
-  }
-</style>
-
+        }
+
+        // Responsive enhancements
+        const couponsGrid = document.querySelector('.coupons-grid');
+        if (couponsGrid) {
+            couponsGrid.addEventListener('click', (e) => {
+                const card = e.target.closest('.coupon-card');
+                if (card && !e.target.closest('.coupon-actions')) {
+                    // Expand card details (optional - implement toggle logic)
+                    console.log('Coupon card clicked:', card.dataset.couponId);
+                }
+            });
+        }
+    </script>
 </body>
 </html>

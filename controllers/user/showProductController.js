@@ -47,7 +47,7 @@ const loadHomepage = async (req, res) => {
             .sort({ createdAt: -1 })
             .limit(5);
 
-        // Wishlist count logic
+       
         let wishlistCount = 0;
         if (req.session.user) {
             const wishlist = await Wishlist.findOne({ user: req.session.user._id });
@@ -59,7 +59,7 @@ const loadHomepage = async (req, res) => {
             newArrivals, 
             trending, 
             collections, 
-            wishlistCount,  // <-- Pass wishlist count to EJS
+            wishlistCount,  
         });
 
     } catch (error) {

@@ -202,11 +202,11 @@ const verifyOTP = async (req, res) => {
 
             req.session.userOtp = null;
             req.session.userData = null;
-
+            req.session.user = newUser
             return res.status(200).json({
                 success: true,
                 message: "OTP verified successfully",
-                redirectUrl: "/login",
+                redirectUrl: "/",
             });
         } else {
             return res.status(400).json({

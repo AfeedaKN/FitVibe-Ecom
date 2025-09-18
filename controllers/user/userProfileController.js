@@ -343,7 +343,6 @@ const postChangePassword = async (req, res) => {
   }
 };
 
-
 const loadcoupon = async (req, res) => {
   try {
     const searchQuery = (req.query.search || "").trim();
@@ -372,8 +371,25 @@ const loadcoupon = async (req, res) => {
       .skip((page - 1) * limit)
       .limit(limit);
 
+    
+    const userId = req.session.user?._id; 
+    const couponStatuses = [];
+
+    for (let c of coupons) {
+      const usedByUser = await Order.findOne({
+        user: userId,
+        'coupon.couponId': c._id,
+        orderStatus: { $ne: 'payment-failed' }
+      }).lean();
+
+      couponStatuses.push({
+        ...c.toObject(),
+        status: usedByUser ? "Used" : "Available"
+      });
+    }
+
     res.render("couponlisting", {
-      coupons,
+      coupons: couponStatuses, 
       query: searchQuery,
       filterStatus,
       totalPages,
@@ -385,6 +401,7 @@ const loadcoupon = async (req, res) => {
     res.status(500).send("Server Error");
   }
 };
+
 
 const loadrefferalcode = async (req, res) => {
   try {

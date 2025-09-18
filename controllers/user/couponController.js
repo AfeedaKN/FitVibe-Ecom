@@ -404,7 +404,7 @@ const getAvailableCoupons = async (req, res) => {
       return res.json({ success: true, coupons: [] });
     }
 
-    // Compute subtotal from cart
+    
     let subtotal = 0;
     cart.items.forEach(item => {
       const product = item.productId;
@@ -420,7 +420,7 @@ const getAvailableCoupons = async (req, res) => {
 
     const now = new Date();
 
-    // Fetch active coupons meeting basic constraints
+    
     const coupons = await Coupon.find({
       isList: true,
       isActive: true,
@@ -429,10 +429,10 @@ const getAvailableCoupons = async (req, res) => {
       minimumPrice: { $lte: subtotal }
     }).lean();
 
-    // Filter out used-by-user or exceeded usage limit, and compute estimated discount
+    
     const results = [];
     for (const c of coupons) {
-      // Skip if user already used
+      
       const usedByUser = await Order.findOne({
         user: userId,
         'coupon.couponId': c._id,
@@ -440,7 +440,7 @@ const getAvailableCoupons = async (req, res) => {
       }).lean();
       if (usedByUser) continue;
 
-      // Check usage limit
+      
       if (c.usageLimit) {
         const totalUsage = await Order.countDocuments({
           'coupon.couponId': c._id,
@@ -449,7 +449,7 @@ const getAvailableCoupons = async (req, res) => {
         if (totalUsage >= c.usageLimit) continue;
       }
 
-      // Estimate discount for current cart
+      
       let discountAmount = 0;
       if (c.discountType === 'percentage') {
         discountAmount = (subtotal * c.discountValue) / 100;
@@ -472,7 +472,7 @@ const getAvailableCoupons = async (req, res) => {
       });
     }
 
-    // Sort by estimated discount desc, then by closest expiry
+    
     results.sort((a, b) => {
       if (b.estimatedDiscount !== a.estimatedDiscount) return b.estimatedDiscount - a.estimatedDiscount;
       return new Date(a.expireOn) - new Date(b.expireOn);

@@ -185,7 +185,7 @@ const updateOrderStatus = async (req, res) => {
           wallet = new Wallet({ userId: order.user, balance: 0, transactions: [] });
         }
 
-        // Calculate correct refund amount: finalAmount (which already includes shipping and excludes coupon discount)
+        
         const refundAmount = order.finalAmount;
         
         wallet.balance += refundAmount;
@@ -270,14 +270,14 @@ const approveReturn = async (req, res) => {
     let totalRefundAmount = 0;
     let processedItems = 0;
 
-    // Process each product with return pending status
+    
     for (const item of order.products) {
       if (item.status === 'return pending') {
         const productId = item.product._id;
         const variantSize = item.variant.size;
         const quantityToAdd = item.quantity;
 
-        // Find the product and variant
+        
         const product = await Product.findById(productId);
         if (!product) {
           console.error(`Product not found for ID: ${productId}`);
@@ -290,19 +290,19 @@ const approveReturn = async (req, res) => {
           continue;
         }
 
-        // Increase stock
+        
         variant.varientquatity += quantityToAdd;
 
-        // Calculate refund amount for this item - only balance amount (no shipping)
+        
         const { itemSubtotal, itemCouponDiscount, itemFinalAmount } = calculateItemFinalAmount(item, order, variant);
         item.refundAmount = itemFinalAmount;
         totalRefundAmount += itemFinalAmount;
         processedItems++;
 
-        // Update product status
+        
         item.status = 'returned';
 
-        // Add to status history for this item
+        
         order.statusHistory.push({
           status: 'returned',
           date: new Date(),
@@ -313,18 +313,18 @@ const approveReturn = async (req, res) => {
       }
     }
 
-    // Only proceed if we actually processed some items
+    
     if (processedItems === 0) {
       req.flash('error', 'No items found with return pending status');
       return res.redirect('/admin/orders');
     }
 
-    // Check if this is a full order return (all items are being returned)
+    
     const allItemsReturned = order.products.every(p => p.status === 'returned');
     let shippingRefund = 0;
     
     if (allItemsReturned) {
-      // For full order return, include shipping charge in refund
+      
       shippingRefund = order.shippingCharge || 0;
       totalRefundAmount += shippingRefund;
       
@@ -339,10 +339,10 @@ const approveReturn = async (req, res) => {
       }
     }
 
-    // Update order refund amount
+    
     order.refundAmount = (order.refundAmount || 0) + totalRefundAmount;
 
-    // Update wallet with balance amounts + shipping (if full return)
+    
     const userId = order.user;
     let refundDescription;
     
@@ -385,7 +385,7 @@ const approveReturn = async (req, res) => {
     await wallet.save();
     await order.save();
 
-    // Check if request came from return requests page
+    
     const referer = req.get('Referer');
     const successMessage = allItemsReturned && shippingRefund > 0
       ? `Return request approved successfully. ₹${totalRefundAmount.toFixed(2)} (including ₹${shippingRefund.toFixed(2)} shipping) refunded to customer wallet.`
@@ -430,7 +430,7 @@ const rejectReturn = async (req, res) => {
 
     await order.save();
 
-    // Check if request came from return requests page
+    
     const referer = req.get('Referer');
     if (referer && referer.includes('/admin/return-requests')) {
       req.flash('success', 'Return request rejected successfully');
@@ -449,16 +449,16 @@ const itemReturnApprove = async (req, res) => {
     const { orderId } = req.params;
     const { productId, variantSize } = req.body;
 
-    // Validate IDs
+    
     if (!mongoose.Types.ObjectId.isValid(orderId) || !mongoose.Types.ObjectId.isValid(productId)) {
       return res.status(400).json({ success: false, message: "Invalid order or product ID" });
     }
 
-    // Find order
+    
     const order = await Order.findById(orderId).populate('products.product');
     if (!order) return res.status(404).json({ success: false, message: "Order not found" });
 
-    // Find product in order with return pending status
+    
     const item = order.products.find(p =>
       p.product._id.toString() === productId &&
       p.variant.size === variantSize &&
@@ -472,16 +472,16 @@ const itemReturnApprove = async (req, res) => {
     const variant = product.variants.find(v => v.size === variantSize);
     if (!variant) return res.status(400).json({ success: false, message: "Variant not found" });
 
-    // Increase product stock
+    
     variant.varientquatity += item.quantity;
 
-    // Mark item as returned
+    
     item.status = "returned";
 
-    // Calculate item final amount
+    
     const { itemSubtotal, itemCouponDiscount, itemFinalAmount } = calculateItemFinalAmount(item, order, variant);
 
-    // Check if this will be a full order return after this item is approved
+    
     const allItemsWillBeReturned = order.products.every(p => 
       p.status === "returned" || 
       (p.product._id.toString() === productId && p.variant.size === variantSize)
@@ -490,13 +490,13 @@ const itemReturnApprove = async (req, res) => {
     let totalRefundAmount = itemFinalAmount;
     let shippingRefund = 0;
 
-    // If this is the last item to be returned (making it a full order return), include shipping
+    
     if (allItemsWillBeReturned) {
       shippingRefund = order.shippingCharge || 0;
       totalRefundAmount += shippingRefund;
     }
 
-    // Assign individual item refund amount (includes shipping if full return)
+    
     item.refundAmount = totalRefundAmount;
     console.log(item.refundAmount,"refund amount with shipping if applicable");
 
@@ -511,7 +511,7 @@ const itemReturnApprove = async (req, res) => {
         : `Refund for ${product.name} (Size: ${variantSize}) - Balance: ₹${itemFinalAmount.toFixed(2)}`;
     }
 
-    // Update wallet
+    
     let wallet = await Wallet.findOne({ userId: order.user });
     console.log("Wallet before update:", wallet?.balance);
 
@@ -542,10 +542,10 @@ const itemReturnApprove = async (req, res) => {
       });
     }
 
-    // Update order refund
+    
     order.refundAmount = (order.refundAmount || 0) + totalRefundAmount;
 
-    // Add order history
+    
     let historyDescription = `Admin approved return for product ${product.name} (Size: ${variantSize})`;
     if (allItemsWillBeReturned && shippingRefund > 0) {
       historyDescription += ` - Full order return includes shipping charge of ₹${shippingRefund.toFixed(2)}`;
@@ -557,12 +557,12 @@ const itemReturnApprove = async (req, res) => {
       description: historyDescription,
     });
 
-    // Update order status
+    
     const allItemsReturned = order.products.every(p => p.status === "returned");
     order.orderStatus = allItemsReturned ? "returned" : (order.products.some(p => p.status === "return pending") ? "return pending" : "delivered");
     if (allItemsReturned) order.paymentStatus = "refunded";
 
-    // Save all
+    
     await product.save();
     await wallet.save();
     await order.save();
@@ -633,7 +633,7 @@ const loadReturnRequests = async (req, res) => {
     const limit = 10;
     const skip = (page - 1) * limit;
 
-    // Find all orders with return pending status
+    
     const returnRequestsQuery = Order.find({ "products.status": 'return pending' })
       .populate('user')
       .populate('products.product')

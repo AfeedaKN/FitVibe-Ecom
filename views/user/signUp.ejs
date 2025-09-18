@@ -515,20 +515,22 @@
       }
     }
 
-    function phoneValidateChecking() {
-      const phoneval = phoneid.value.trim();
+function phoneValidateChecking() {
+  const phoneval = phoneid.value.trim();
 
-      if (phoneval === "") {
-        showError(error3, "Phone number is required");
-        return false;
-      } else if (!/^\d{10}$/.test(phoneval)) {
-        showError(error3, "Please enter a valid 10-digit phone number");
-        return false;
-      } else {
-        hideError(error3);
-        return true;
-      }
-    }
+  if (phoneval === "") {
+    showError(error3, "Phone number is required");
+    return false;
+  } 
+  else if (!/^[6-9]\d{9}$/.test(phoneval)) {
+    showError(error3, "Please enter a valid 10-digit Indian phone number");
+    return false;
+  } 
+  else {
+    hideError(error3);
+    return true;
+  }
+}
 
     function passValidateChecking() {
       const passval = passid.value;

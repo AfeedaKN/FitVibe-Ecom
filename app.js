@@ -81,9 +81,40 @@ app.use(express.static(path.join(__dirname, "public")))
 app.use('/uploads', express.static('uploads'));
 
 
+app.use("/", userRouter);
+app.use("/admin", adminRouter);
 
-app.use("/", userRouter)
-app.use("/admin", adminRouter)
+// 404 handler (for routes not found)
+app.use((req, res, next) => {
+  res.status(404);
+
+  // If it's an API request (like /api/...)
+  if (req.originalUrl.startsWith("/api")) {
+    return res.json({ success: false, message: "Route not found" });
+  }
+
+  // Otherwise render EJS 404 page
+  res.render("pageNotFound", { title: "Page Not Found" });
+});
+
+// Global error handler (for unexpected errors)
+app.use((err, req, res, next) => {
+  console.error("Unhandled Error:", err.stack);
+
+  res.status(err.status || 500);
+
+  if (req.originalUrl.startsWith("/api")) {
+    return res.json({
+      success: false,
+      message: err.message || "Internal Server Error",
+    });
+  }
+
+  res.render("pageNotFound", {
+    title: "Error",
+    message: err.message || "Something went wrong!",
+  });
+});
 
 
 const PORT = 3000 || process.env.PORT

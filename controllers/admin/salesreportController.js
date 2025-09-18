@@ -103,7 +103,7 @@ const salesreport = async (req, res) => {
                 } else if (product.status === "cancelled") {
                     cancelledProducts++;
                 } else if (product.status === "returned") {
-                    totalSales -= productAmount - couponDeductionPerProduct; // Subtract returned product amount
+                    totalSales -= productAmount - couponDeductionPerProduct; 
                     returnedProducts++;
                     totalRefunds += product.refundAmount || 0;
                 }
@@ -113,14 +113,14 @@ const salesreport = async (req, res) => {
 
 
 
-        // Pagination based on total number of products
+        
         const allProducts = allFilteredOrders.flatMap((order) => order.products.map(p => ({ ...p, order })));
         const totalPages = Math.ceil(allProducts.length / limit);
                         const salesData = allFilteredOrders
                 .flatMap(order =>
                     order.products.map(p => ({
-                    ...p.toObject(),            // flatten product fields directly
-                    productData: p.product,     // populated product
+                    ...p.toObject(),            
+                    productData: p.product,   
                     order
                     }))
                 )
@@ -134,7 +134,7 @@ const salesreport = async (req, res) => {
             startDate: startDate || "",
             endDate: endDate || "",
             filterStatus: status || "",
-            totalSales: Math.max(totalSales, 0), // Ensure non-negative total
+            totalSales: Math.max(totalSales, 0), 
             totalOrders: totalProducts,
             deliveredProducts,
             cancelledProducts,

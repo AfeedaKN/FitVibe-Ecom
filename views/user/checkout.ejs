@@ -828,7 +828,22 @@
       .coupons-list .coupon-item { flex-direction: column; align-items: stretch; }
       .coupon-item .btn-apply-coupon { width: 100%; justify-content: center; }
     }
-</style>
+
+    /* Error message styles */
+    .error-message {
+      color: #ef4444;
+      font-size: 0.75rem;
+      margin-top: 0.25rem;
+      display: none;
+    }
+    .error-message.show {
+      display: block;
+    }
+    .address-form input.error {
+      border-color: #ef4444;
+      box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+    }
+  </style>
 </head>
 
 <body>
@@ -873,13 +888,20 @@
       
       <form class="address-form" id="addressForm" action="/profile/address/edit" method="POST">
         <input type="hidden" name="addressId" id="addressId">
-        <input type="text" name="name" placeholder="Full Name" required>
-        <input type="text" name="address" placeholder="Street Address" required>
-        <input type="text" name="city" placeholder="City" required>
-        <input type="text" name="state" placeholder="State" required>
-        <input type="text" name="zipCode" placeholder="Zip Code" required>
-        <input type="text" name="country" placeholder="Country" required>
-        <input type="text" name="phone" placeholder="Phone Number" required>
+        <input type="text" name="name" placeholder="Full Name">
+        <div class="error-message" id="nameError"></div>
+        <input type="text" name="address" placeholder="Street Address">
+        <div class="error-message" id="addressError"></div>
+        <input type="text" name="city" placeholder="City">
+        <div class="error-message" id="cityError"></div>
+        <input type="text" name="state" placeholder="State">
+        <div class="error-message" id="stateError"></div>
+        <input type="text" name="zipCode" placeholder="Zip Code">
+        <div class="error-message" id="zipCodeError"></div>
+        <input type="text" name="country" placeholder="Country">
+        <div class="error-message" id="countryError"></div>
+        <input type="text" name="phone" placeholder="Phone Number">
+        <div class="error-message" id="phoneError"></div>
         <button type="submit">
           <i class="fas fa-save"></i>
           Save Address
@@ -1426,6 +1448,7 @@
       if (form.classList.contains('active')) {
         form.reset();
         document.getElementById('addressId').value = '';
+        clearErrors();
         form.scrollIntoView({ behavior: 'smooth' });
       }
     });
@@ -1454,6 +1477,7 @@
             form.querySelector('[name="country"]').value = address.country;
             form.querySelector('[name="phone"]').value = address.phone;
             
+            clearErrors();
             form.scrollIntoView({ behavior: 'smooth' });
             
             button.disabled = false;
@@ -1471,50 +1495,110 @@
       });
     });
 
-    // Save Address
-    document.getElementById('addressForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const formData = new FormData(e.target);
-      const data = Object.fromEntries(formData);
-      
-      const submitBtn = e.target.querySelector('button[type="submit"]');
-      submitBtn.disabled = true;
-      submitBtn.innerHTML = '<span class="spinner"></span> Saving...';
-      
-      try {
-        const response = await fetch('/save-address', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(data)
-        });
-        
-        if (response.ok) {
-          Toast.fire({
-            icon: 'success',
-            title: 'Address saved successfully!'
-          });
-          setTimeout(() => {
-            window.location.reload();
-          }, 1000);
-        } else {
-          Toast.fire({
-            icon: 'error',
-            title: 'Failed to save address'
-          });
-          submitBtn.disabled = false;
-          submitBtn.innerHTML = '<i class="fas fa-save"></i> Save Address';
-        }
-      } catch (error) {
-        Toast.fire({
-          icon: 'error',
-          title: 'Error saving address'
-        });
-        submitBtn.disabled = false;
-        submitBtn.innerHTML = '<i class="fas fa-save"></i> Save Address';
-      }
+    // Save Address with Validation
+document.getElementById('addressForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const form = e.target;
+  const submitBtn = form.querySelector('button[type="submit"]');
+  const formData = new FormData(form);
+  const data = Object.fromEntries(formData);
+
+  clearErrors();
+
+  let isValid = true;
+
+  // Common regex for fields (must contain at least 1 letter, min 3 chars)
+  const textRegex = /^(?=.*[a-zA-Z])[a-zA-Z\s-]{3,}$/;
+
+  // Validate name
+  const name = data.name.trim();
+  if (!textRegex.test(name)) {
+    showError('name', 'Name must be at least 3 letters and contain only letters, spaces, and hyphens');
+    isValid = false;
+  }
+
+  // Validate address (minimum 3 characters, must have a letter)
+  const address = data.address.trim();
+  if (!/^(?=.*[a-zA-Z]).{3,}$/.test(address)) {
+    showError('address', 'Address must be at least 3 characters and contain letters');
+    isValid = false;
+  }
+
+  // Validate city
+  const city = data.city.trim();
+  if (!textRegex.test(city)) {
+    showError('city', 'City must be at least 3 letters and contain only letters, spaces, and hyphens');
+    isValid = false;
+  }
+
+  // Validate state
+  const state = data.state.trim();
+  if (!textRegex.test(state)) {
+    showError('state', 'State must be at least 3 letters and contain only letters, spaces, and hyphens');
+    isValid = false;
+  }
+
+  // Validate zipCode (exactly 6 digits)
+  const zipCode = data.zipCode.trim();
+  if (!/^\d{6}$/.test(zipCode)) {
+    showError('zipCode', 'Zip code must be exactly 6 digits');
+    isValid = false;
+  }
+
+  // Validate country
+  const country = data.country.trim();
+  if (!textRegex.test(country)) {
+    showError('country', 'Country must be at least 3 letters and contain only letters, spaces, and hyphens');
+    isValid = false;
+  }
+
+  // Validate phone (Indian: 10 digits starting with 6-9)
+  const phone = data.phone.trim();
+  if (!/^[6-9]\d{9}$/.test(phone)) {
+    showError('phone', 'Phone number must be 10 digits and start with 6, 7, 8, or 9');
+    isValid = false;
+  }
+
+  if (!isValid) {
+    return;
+  }
+
+  submitBtn.disabled = true;
+  submitBtn.innerHTML = '<span class="spinner"></span> Saving...';
+
+  try {
+    const response = await fetch('/save-address', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
     });
 
-    // Handle address selection
+    if (response.ok) {
+      Toast.fire({
+        icon: 'success',
+        title: 'Address saved successfully!'
+      });
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
+    } else {
+      Toast.fire({
+        icon: 'error',
+        title: 'Failed to save address'
+      });
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = '<i class="fas fa-save"></i> Save Address';
+    }
+  } catch (error) {
+    Toast.fire({
+      icon: 'error',
+      title: 'Error saving address'
+    });
+    submitBtn.disabled = false;
+    submitBtn.innerHTML = '<i class="fas fa-save"></i> Save Address';
+  }
+});
+       // Handle address selection
     document.querySelectorAll('input[name="address"]').forEach(radio => {
       radio.addEventListener('change', () => {
         document.querySelectorAll('.address-card').forEach(card => {
@@ -1767,6 +1851,27 @@
         }, index * 200);
       });
     });
+
+    // Validation Helper Functions
+    function showError(fieldId, message) {
+      const field = document.getElementById(`addressForm`).querySelector(`[name="${fieldId}"]`);
+      const errorElement = document.getElementById(`${fieldId}Error`);
+      if (field && errorElement) {
+        field.classList.add('error');
+        errorElement.textContent = message;
+        errorElement.classList.add('show');
+      }
+    }
+
+    function clearErrors() {
+      const fields = document.getElementById('addressForm').querySelectorAll('input');
+      const errorElements = document.querySelectorAll('.error-message');
+      fields.forEach(field => field.classList.remove('error'));
+      errorElements.forEach(error => {
+        error.textContent = '';
+        error.classList.remove('show');
+      });
+    }
   </script>
 </body>
 

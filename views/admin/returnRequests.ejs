@@ -370,7 +370,7 @@
                                             %>
                                                 <div class="returned-item">
                                                     <div class="product-refund">
-                                                        <span class="product-name-small"><%= product.product.name %> (Size: <%= product.variant.size %>)</span>
+                                                        <span class="product-name-small"></span>
                                                         <span class="final-amount">₹<%= refundAmount.toFixed(2) %></span>
                                                     </div>
                                                 </div>
@@ -386,25 +386,19 @@
                                         <div class="payment-method"><%= order.paymentMethod %></div>
                                     </td>
                                     <td>
-                                        <div class="return-reason">
-                                            <% 
-                                            // Get return reason from status history or products
-                                            let returnReason = 'No reason provided';
-                                            const returnHistory = order.statusHistory.filter(h => h.status === 'return pending').pop();
-                                            if (returnHistory && returnHistory.description) {
-                                                returnReason = returnHistory.description;
-                                            } else {
-                                                const productWithReason = order.products.find(p => p.returnReason);
-                                                if (productWithReason) {
-                                                    returnReason = productWithReason.returnReason;
-                                                }
-                                            }
-                                            %>
-                                            <span class="reason-text" title="<%= returnReason %>">
-                                                <%= returnReason.length > 50 ? returnReason.substring(0, 50) + '...' : returnReason %>
-                                            </span>
-                                        </div>
+                                    <div class="return-reason">
+                                        <%
+                                        // Show only product-level return reason
+                                        const productWithReason = order.products.find(p => p.returnReason);
+                                        let returnReason = productWithReason ? productWithReason.returnReason : "No reason provided";
+                                        %>
+                                        <span class="reason-text" title="<%= returnReason %>">
+                                        <%= returnReason.length > 50 ? returnReason.substring(0, 50) + '...' : returnReason %>
+                                        </span>
+                                    </div>
                                     </td>
+
+
                                     <td>
                                         <div class="action-buttons">
                                             <button class="action-btn view-btn" 
