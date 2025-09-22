@@ -60,9 +60,9 @@ router.get("/wishlist/check/:productId", userAuth, wishlistController.checkWishl
 
 router.get('/checkout',userAuth,checkoutController.getCheckout)
 router.post('/order/place', userAuth, checkoutController.placeOrder)
-// Use improved payment verification with correct enum values
+
 router.post('/order/verify-payment', userAuth, razorpayController.verifyRazorpayPayment)
-// Handle payment failures
+
 router.post('/order/payment-failed', userAuth, razorpayController.handlePaymentFailure)
 router.post('/order/fail', userAuth, razorpayController.handlePaymentFailure)
 router.get('/order/failure/:orderId', userAuth, checkoutController.getOrderFailure)

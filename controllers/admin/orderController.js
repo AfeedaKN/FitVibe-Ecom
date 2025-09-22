@@ -24,7 +24,7 @@ const calculateItemFinalAmount = (item, order, productVariant) => {
     itemCouponDiscount = (itemSubtotal / orderSubtotal) * totalCouponDiscount;
   }
 
-  // Final calculation - only balance amount (item price minus coupon discount)
+  
   const itemFinalAmount = itemSubtotal - itemCouponDiscount;
 
   return { itemSubtotal, itemCouponDiscount, itemFinalAmount };

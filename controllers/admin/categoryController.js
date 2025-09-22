@@ -67,6 +67,7 @@ const addCategory = async (req, res) => {
   }
 };
 
+
 const editCategory = async (req, res) => {
   try {
     const { id, name, description, categoryOffer } = req.body;
@@ -91,7 +92,7 @@ const editCategory = async (req, res) => {
     if (result.matchedCount === 0) {
       return res.status(404).json({ success: false, message: "Category not found" });
     }
-    // If no fields actually changed, treat as success (no-op)
+    
     if (result.modifiedCount === 0) {
       return res.status(200).json({ success: true, message: "No changes detected. Category is already up to date." });
     }

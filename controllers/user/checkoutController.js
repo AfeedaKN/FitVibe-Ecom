@@ -18,7 +18,6 @@ const getCheckout = async (req, res) => {
     const cart = await Cart.findOne({ userId }).populate('items.productId');
     const addresses = await Address.find({ user: userId });
 
-    
     let wallet = await Wallet.findOne({ userId });
     const walletBalance = wallet ? wallet.balance : 0;
 
@@ -33,21 +32,52 @@ const getCheckout = async (req, res) => {
         shipping: 0, 
         total: 0, 
         defaultAddress: null,
-        walletBalance: walletBalance
+        walletBalance: walletBalance,
+        flashMessages: req.flash('info')
       });
     }
 
-    cart.items.forEach(item => {
+    const originalItemCount = cart.items.length;
+    const validItems = [];
+    const removalMessages = [];
+
+    for (const item of cart.items) {
       const product = item.productId;
+      if (!product || product.isDeleted || !product.isListed) {
+        removalMessages.push(`An item was removed because it's no longer available.`);
+        continue;
+      }
+
       const matchedVariant = product.variants.find(variant => 
         variant._id.toString() === item.variantId.toString()
       );
+
+      if (!matchedVariant || matchedVariant.varientquatity <= 0) {
+        removalMessages.push(`'${product.name} - ${matchedVariant?.size || 'Variant'}' was removed as it is now out of stock.`);
+        continue;
+      }
+
+      if (matchedVariant.varientquatity < item.quantity) {
+        removalMessages.push(`Quantity for '${product.name} - ${matchedVariant.size}' was updated to ${matchedVariant.varientquatity} due to low stock.`);
+        item.quantity = matchedVariant.varientquatity;
+      }
+
       item.variant = matchedVariant; 
-    });
+      validItems.push(item);
+    }
+
+    if (validItems.length < originalItemCount) {
+      cart.items = validItems;
+      await cart.save();
+      req.flash('info', removalMessages);
+      
+      return res.redirect('/checkout');
+    }
 
     const subtotal = cart.items.reduce((sum, item) => {
       return sum + (item.variant?.salePrice || 0) * item.quantity;
     }, 0);
+
 
     const tax = 0; 
     const discount = 0; 
@@ -66,7 +96,8 @@ const getCheckout = async (req, res) => {
       shipping,
       total,
       defaultAddress: defaultAddress ? defaultAddress._id : null,
-      walletBalance: walletBalance
+      walletBalance: walletBalance,
+      flashMessages: req.flash('info')
     });
 
   } catch (error) {
@@ -94,15 +125,15 @@ const placeOrder = async (req, res) => {
       const matchedVariant = product.variants.find(variant => 
         variant._id.toString() === item.variantId.toString()
       );
-      item.variant = matchedVariant;
+      item.variantId = matchedVariant;
     });
 
     const outOfStock = cart.items.some(item => {
-      if (!item.variant) {
+      if (!item.variantId) {
         console.error(`Variant not found for item: ${item.productId._id}, variantId: ${item.variantId}`);
         return true;
       }
-      return item.variant.varientquatity < item.quantity;
+      return item.variantId.varientquatity < item.quantity;
     });
 
     if (outOfStock) {
@@ -115,7 +146,7 @@ const placeOrder = async (req, res) => {
     }
 
     const subtotal = cart.items.reduce((sum, item) => {
-      if (!item.variant) return sum;
+      if (!item.variantId) return sum;
       return sum + (item.variant.salePrice * item.quantity);
     }, 0);
 
@@ -197,9 +228,9 @@ const placeOrder = async (req, res) => {
       return {
         product: item.productId._id,
         variant: {
-          size: item.variant.size,
-          varientPrice: item.variant.varientPrice,
-          salePrice: item.variant.salePrice,
+          size: item.variantId.size,
+          varientPrice: item.variantId.varientPrice,
+          salePrice: item.variantId.salePrice,
         },
         quantity: item.quantity,
         status: 'pending'

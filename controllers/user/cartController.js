@@ -97,49 +97,65 @@ const addToCart = async (req, res) => {
 };
 
 const getCart = async (req, res) => {
-    try {
-        const user = req.session.user;
-        if (!user) {
-
-            return res.redirect('/login');
-        }
-
-        const cart = await Cart.findOne({ userId: user._id }).populate('items.productId');
-        if (!cart) {
-            return res.render('cart', { cart: null, cartItems: [], total: 0 });
-        }
-
-        const cartItems = [];
-        let total = 0;
-
-        for (const item of cart.items) {
-            if (item.productId) {
-                const product = item.productId;
-                const variant = product.variants.find(v => v._id.toString() === item.variantId.toString());
-                if (variant) {
-                    cartItems.push({
-                        product,
-                        variant,
-                        quantity: item.quantity
-                    });
-                    total += item.totalPrice;
-                }
-            }
-        }
-
-        console.log(cartItems,"sdds");
-        res.render('cart', {
-            cart,
-            cartItems,
-            total
-        });
-    } catch (error) {
-        console.error('Get cart error:', error);
-        res.status(500).render('pageNotFound', {
-            message: 'An error occurred while fetching your cart'
-        });
+  try {
+    const user = req.session.user;
+    if (!user) {
+      return res.redirect('/login');
     }
+
+    const cart = await Cart.findOne({ userId: user._id }).populate('items.productId');
+    if (!cart) {
+      return res.render('cart', { cart: null, cartItems: [], total: 0 });
+    }
+
+    const cartItems = [];
+    let total = 0;
+
+    for (const item of cart.items) {
+      if (item.productId) {
+        const product = item.productId;
+        const variant = product.variants.find(
+          (v) => v._id.toString() === item.variantId.toString()
+        );
+
+        if (variant) {
+           let isOutOfStock = false;
+          let availableQty = variant.stock;
+
+          if (availableQty <= 0) {
+            isOutOfStock = true;
+          } else if (item.quantity > availableQty) {
+            item.quantity = availableQty; 
+            await cart.save(); 
+          }
+
+          cartItems.push({
+            product,
+            variant,
+            quantity: item.quantity,
+            isOutOfStock, 
+          });
+
+          if (!isOutOfStock) {
+            total += item.totalPrice;
+          }
+        }
+      }
+    }
+
+    res.render('cart', {
+      cart,
+      cartItems,
+      total,
+    });
+  } catch (error) {
+    console.error("Get cart error:", error);
+    res.status(500).render("pageNotFound", {
+      message: "An error occurred while fetching your cart",
+    });
+  }
 };
+
 
 
 const updateCart = async (req, res) => {

@@ -65,12 +65,12 @@ const salesreport = async (req, res) => {
         let allFilteredOrders = await Order.find(query)
     .populate({
         path: "products.product",
-        select: "name"   // only fetch product name
+        select: "name"  
     })
     .populate("user");
 
 
-        // Filter products based on status if specified
+        
         if (status) {
                     allFilteredOrders = allFilteredOrders.map(order => {
             const obj = order.toObject();
@@ -82,7 +82,7 @@ const salesreport = async (req, res) => {
         }).filter(order => order.products.length > 0);
         }
 
-        // Calculate totals based on individual product statuses
+        
         let totalSales = 0;
         let totalProducts = 0;
         let deliveredProducts = 0;

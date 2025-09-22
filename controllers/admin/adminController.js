@@ -57,7 +57,7 @@ const loadAdminDashboard = async (req, res) => {
 
         const totalRevenue = totalRevenueAgg && totalRevenueAgg.length ? totalRevenueAgg[0].sum : 0;
 
-        // Status counts for progress widgets
+        
         const trackedStatuses = ['pending', 'processing', 'shipped', 'delivered'];
         const statusAggregation = await Order.aggregate([
             { $match: { orderStatus: { $in: trackedStatuses } } },
@@ -68,14 +68,14 @@ const loadAdminDashboard = async (req, res) => {
         const totalForProgress = trackedStatuses.reduce((sum, s) => sum + (statusCounts[s] || 0), 0);
         const statusPercents = trackedStatuses.reduce((acc, s) => (acc[s] = totalForProgress ? Math.round((statusCounts[s] || 0) * 100 / totalForProgress) : 0, acc), {});
 
-        // Recent orders
+        
         const recentOrders = await Order.find({})
             .populate('user')
             .sort({ createdAt: -1 })
             .limit(3)
             .lean();
 
-        // Top products by revenue
+        
         const topProductsAgg = await Order.aggregate([
             { $match: { orderStatus: { $nin: ['cancelled', 'payment-failed'] } } },
             { $unwind: '$products' },
@@ -133,14 +133,14 @@ const getDashboardChartData = async (req, res) => {
         let buckets = [];
 
         if (period === 'yearly') {
-            const startYear = now.getFullYear() - 4; // last 5 years
+            const startYear = now.getFullYear() - 4; 
             startDate = new Date(startYear, 0, 1);
             format = '%Y';
             for (let y = 0; y < 5; y++) {
                 buckets.push((startYear + y).toString());
             }
         } else if (period === 'monthly') {
-            const start = new Date(now.getFullYear(), now.getMonth() - 11, 1); // last 12 months
+            const start = new Date(now.getFullYear(), now.getMonth() - 11, 1); 
             startDate = start;
             format = '%Y-%m';
             const d = new Date(start);
@@ -151,7 +151,7 @@ const getDashboardChartData = async (req, res) => {
                 d.setMonth(d.getMonth() + 1);
             }
         } else {
-            // daily: last 7 days
+            
             startDate = new Date(now);
             startDate.setDate(now.getDate() - 6);
             format = '%Y-%m-%d';
