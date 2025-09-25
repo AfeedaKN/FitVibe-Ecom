@@ -7,10 +7,10 @@ const categoryController = require("../controllers/admin/categoryController");
 const productController = require("../controllers/admin/productController");
 const orderController = require("../controllers/admin/orderController");
 const couponController = require("../controllers/admin/couponController");
-const upload = require("../middlewares/uploadMiddleware"); 
+const {upload} = require("../middlewares/uploadMiddleware"); 
 const salesreportController=require("../controllers/admin/salesreportController")
 
-router.post('/addproducts', adminAuth, upload.array('productImages', 10), productController.addProduct);
+router.post('/addproducts', adminAuth, upload.array('productImages', 4), productController.addProduct);
 
 router.get("/login", adminController.loadAdminLogin);
 router.post("/login", adminController.adminLogin);
@@ -33,9 +33,9 @@ router.patch("/restoreCategory", adminAuth, categoryController.restoreCategory);
 router.get("/products", adminAuth, productController.loadProducts);
 router.get("/product/:id", adminAuth, productController.viewProduct);
 router.get("/addproducts", adminAuth, productController.loadAddProducts);
-router.post('/addproducts', adminAuth, upload.array('productImages', 10), productController.addProduct);
+router.post('/addproducts', adminAuth, upload.array('productImages', 4), productController.addProduct);
 router.get("/editproducts", adminAuth, productController.loadEditProducts);
-router.post('/editproducts', adminAuth, upload.array('productImages', 10), productController.updateProduct);
+router.post('/editproducts', adminAuth, upload.array('productImages', 4), productController.updateProduct);
 router.post("/update-product-offer", adminAuth, productController.updateProductOffer);
 router.delete("/deleteproduct/:id", adminAuth, productController.deleteProduct);
 router.put("/toggle-product-listing/:id", adminAuth, productController.toggleProductListing);

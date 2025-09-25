@@ -399,44 +399,59 @@ const updateProduct = async (req, res) => {
     const existingProduct = await Product.findById(productObjectId);
     let images = existingProduct.images || [];
 
-    if (deletedImages && deletedImages.trim() !== "") {
-      try {
-        const deletedIndices = JSON.parse(deletedImages);
-
-        if (Array.isArray(deletedIndices) && deletedIndices.length > 0) {
-          console.log("Processing deleted images:", deletedIndices);
-
-          const imagesToDelete = [];
-          deletedIndices.forEach((index) => {
-            if (images[index]) {
-              imagesToDelete.push(images[index]);
-            }
-          });
-
-          for (const image of imagesToDelete) {
-            if (image.public_id) {
-              try {
-                await cloudinary.uploader.destroy(image.public_id);
-                console.log(`Deleted image from Cloudinary: ${image.public_id}`);
-              } catch (cloudinaryError) {
-                console.error("Error deleting image from Cloudinary:", cloudinaryError);
-              }
-            }
+    // Safely handle deletedImages
+    let deletedIndices = [];
+    if (deletedImages) {
+      if (typeof deletedImages === 'string') {
+        // Trim and parse JSON string if it exists
+        const trimmedImages = deletedImages.trim();
+        if (trimmedImages) {
+          try {
+            deletedIndices = JSON.parse(trimmedImages);
+          } catch (parseError) {
+            console.error("Error parsing deletedImages JSON:", parseError);
+            deletedIndices = []; // Fallback to empty array on parse failure
           }
-
-          images = images.filter((_, index) => !deletedIndices.includes(index));
-
-          if (images.length > 0 && !images.some((img) => img.isMain)) {
-            images[0].isMain = true;
-          }
-
-          console.log(
-            `Successfully processed deletion of ${deletedIndices.length} images. Remaining images: ${images.length}`
-          );
         }
-      } catch (parseError) {
-        console.error("Error parsing deletedImages:", parseError);
+      } else if (Array.isArray(deletedImages)) {
+        // Already an array, use it directly (deduplicate for safety)
+        deletedIndices = [...new Set(deletedImages)];
+      } else {
+        console.warn("Unexpected deletedImages type:", typeof deletedImages);
+        deletedIndices = []; // Fallback for unexpected types
       }
+    }
+
+    if (deletedIndices.length > 0) {
+      console.log("Processing deleted images:", deletedIndices);
+
+      const imagesToDelete = [];
+      deletedIndices.forEach((index) => {
+        if (images[index]) {
+          imagesToDelete.push(images[index]);
+        }
+      });
+
+      for (const image of imagesToDelete) {
+        if (image.public_id) {
+          try {
+            await cloudinary.uploader.destroy(image.public_id);
+            console.log(`Deleted image from Cloudinary: ${image.public_id}`);
+          } catch (cloudinaryError) {
+            console.error("Error deleting image from Cloudinary:", cloudinaryError);
+          }
+        }
+      }
+
+      images = images.filter((_, index) => !deletedIndices.includes(index));
+
+      if (images.length > 0 && !images.some((img) => img.isMain)) {
+        images[0].isMain = true;
+      }
+
+      console.log(
+        `Successfully processed deletion of ${deletedIndices.length} images. Remaining images: ${images.length}`
+      );
     }
 
     const seen = new Set();

@@ -202,7 +202,7 @@
         </div>
 
         <!-- Recent Activity and Top Products -->
-        <div class="row g-4">
+        <div class="row g-4 mb-4">
             <!-- Recent Orders -->
             <div class="col-xl-8">
                 <div class="card-modern no-hover">
@@ -260,32 +260,64 @@
                 </div>
             </div>
 
-            <!-- Top Products -->
+            <!-- Right Column for Top Products and Categories -->
             <div class="col-xl-4">
-                <div class="card-modern no-hover">
-                    <div class="card-header-modern">
-                        <h5 class="card-title mb-0">Top Products</h5>
-                    </div>
-                    <div class="card-body-modern">
-                        <div class="top-products-list">
-                            <% if (topProducts && topProducts.length) { %>
-                                <% topProducts.forEach(function(p){ %>
-                                    <div class="product-item">
-                                        <div class="product-info">
-                                            <div class="product-image">
-                                                <i class="fas fa-box"></i>
+                <div class="d-flex flex-column gap-4">
+                    <!-- Top Products -->
+                    <div class="card-modern no-hover">
+                        <div class="card-header-modern">
+                            <h5 class="card-title mb-0">Top Products</h5>
+                        </div>
+                        <div class="card-body-modern">
+                            <div class="top-products-list">
+                                <% if (topProducts && topProducts.length) { %>
+                                    <% topProducts.forEach(function(p){ %>
+                                        <div class="product-item">
+                                            <div class="product-info">
+                                                <div class="product-image">
+                                                    <i class="fas fa-box"></i>
+                                                </div>
+                                                <div class="product-details">
+                                                    <div class="product-name"><%= p.name %></div>
+                                                    <div class="product-sales"><%= p.quantity %> sold</div>
+                                                </div>
                                             </div>
-                                            <div class="product-details">
-                                                <div class="product-name"><%= p.name %></div>
-                                                <div class="product-sales"><%= p.quantity %> sold</div>
-                                            </div>
+                                            <div class="product-revenue">₹<%= (p.revenue || 0).toLocaleString('en-IN', { maximumFractionDigits: 0 }) %></div>
                                         </div>
-                                        <div class="product-revenue">₹<%= (p.revenue || 0).toLocaleString('en-IN', { maximumFractionDigits: 0 }) %></div>
-                                    </div>
-                                <% }) %>
-                            <% } else { %>
-                                <div class="text-center text-muted-modern py-3">No product sales data</div>
-                            <% } %>
+                                    <% }) %>
+                                <% } else { %>
+                                    <div class="text-center text-muted-modern py-3">No product sales data</div>
+                                <% } %>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Top Categories -->
+                    <div class="card-modern no-hover">
+                        <div class="card-header-modern">
+                            <h5 class="card-title mb-0">Top Selling Categories</h5>
+                        </div>
+                        <div class="card-body-modern">
+                            <div class="top-products-list">
+                                <% if (topCategories && topCategories.length) { %>
+                                    <% topCategories.forEach(function(cat){ %>
+                                        <div class="product-item">
+                                            <div class="product-info">
+                                                <div class="product-image" style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);">
+                                                    <i class="fas fa-tags"></i>
+                                                </div>
+                                                <div class="product-details">
+                                                    <div class="product-name"><%= cat.name %></div>
+                                                    <div class="product-sales"><%= cat.totalSold %> sold</div>
+                                                </div>
+                                            </div>
+                                            <div class="product-revenue">₹<%= (cat.totalRevenue || 0).toLocaleString('en-IN', { maximumFractionDigits: 0 }) %></div>
+                                        </div>
+                                    <% }) %>
+                                <% } else { %>
+                                    <div class="text-center text-muted-modern py-3">No category sales data</div>
+                                <% } %>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -295,6 +327,62 @@
 </div>
 
 <style>
+
+
+/* Enhance alignment for Top Products and Categories */
+.col-xl-4 .d-flex {
+    min-height: 100%;
+}
+
+.card-modern {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.card-body-modern {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.top-products-list {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.product-item {
+    flex: 1 1 auto;
+    min-height: 0;
+}
+
+@media (min-width: 1200px) {
+    .col-xl-4 .d-flex {
+        flex-direction: row;
+        gap: 1.5rem;
+    }
+
+    .card-modern {
+        width: 100%;
+    }
+
+    .card-modern.flex-grow-1 {
+        flex: 1;
+    }
+}
+
+@media (max-width: 1199px) {
+    .col-xl-4 .d-flex {
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .card-modern {
+        width: 100%;
+    }
+}
     /* Modern Purple Theme Styles for Dashboard */
     
     /* Stats Cards */

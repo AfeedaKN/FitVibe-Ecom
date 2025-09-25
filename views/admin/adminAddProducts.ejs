@@ -1,517 +1,724 @@
 <%- include('./partials/header', { pageTitle: 'Add New Product' }) %>
 
-<%- include('./partials/sidebar', { page: 'products' }) %>
+    <%- include('./partials/sidebar', { page: 'products' }) %>
 
-<div class="main-content">
-    <!-- Top Header -->
-    <header class="top-header">
-        <div class="header-content">
-            <div class="header-left">
-                <button class="sidebar-toggle" onclick="toggleSidebar()">
-                    <i class="fas fa-bars"></i>
-                </button>
-                <div>
-                    <h1 class="page-title">Add New Product</h1>
-                    <div class="breadcrumbs">
-                        <a href="/admin/dashboard">Dashboard</a>
-                        <span class="breadcrumb-separator">/</span>
-                        <a href="/admin/products">Products</a>
-                        <span class="breadcrumb-separator">/</span>
-                        <span>Add Product</span>
+        <div class="main-content">
+            <!-- Top Header -->
+            <header class="top-header">
+                <div class="header-content">
+                    <div class="header-left">
+                        <button class="sidebar-toggle" onclick="toggleSidebar()">
+                            <i class="fas fa-bars"></i>
+                        </button>
+                        <div>
+                            <h1 class="page-title">Add New Product</h1>
+                            <div class="breadcrumbs">
+                                <a href="/admin/dashboard">Dashboard</a>
+                                <span class="breadcrumb-separator">/</span>
+                                <a href="/admin/products">Products</a>
+                                <span class="breadcrumb-separator">/</span>
+                                <span>Add Product</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="header-right">
+                        <a href="/admin/products" class="btn btn-outline-modern">
+                            <i class="fas fa-arrow-left me-2"></i>Back to Products
+                        </a>
+                        <div class="admin-profile">
+                            <div class="admin-avatar">
+                                A
+                            </div>
+                            <div class="admin-info">
+                                <div class="admin-name">Admin</div>
+                                <div class="admin-role">Administrator</div>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </div>
-            <div class="header-right">
-                <a href="/admin/products" class="btn btn-outline-modern">
-                    <i class="fas fa-arrow-left me-2"></i>Back to Products
-                </a>
-                <div class="admin-profile">
-                    <div class="admin-avatar">
-                        A
-                    </div>
-                    <div class="admin-info">
-                        <div class="admin-name">Admin</div>
-                        <div class="admin-role">Administrator</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </header>
+            </header>
 
-    <!-- Content Area -->
-    <div class="content-area">
-        <form id="addProductForm" action="/admin/addproducts" method="POST" enctype="multipart/form-data">
-            <div class="row">
-                <!-- Product Information -->
-                <div class="col-lg-8">
-                    <div class="card mb-4">
-                        <div class="card-header">
-                            <h5 class="mb-0">Product Information</h5>
-                        </div>
-                        <div class="card-body">
-                            <div class="row">
-                                <div class="col-md-6 mb-3">
-                                    <label for="name" class="form-label">Product Name *</label>
-                                    <input type="text" class="form-control" id="name" name="name" required>
-                                    <div class="invalid-feedback">Please provide a product name.</div>
+            <!-- Content Area -->
+            <div class="content-area">
+                <form id="addProductForm" action="/admin/addproducts" method="POST" enctype="multipart/form-data">
+                    <div class="row">
+                        <!-- Product Information -->
+                        <div class="col-lg-8">
+                            <div class="card mb-4">
+                                <div class="card-header">
+                                    <h5 class="mb-0">Product Information</h5>
                                 </div>
-                                <div class="col-md-6 mb-3">
-                                    <label for="categoryId" class="form-label">Category *</label>
-                                    <select class="form-select" id="categoryId" name="categoryId" required>
-                                        <option value="">Select Category</option>
-                                        <% categories.forEach(category => { %>
-                                            <option value="<%= category._id %>"><%= category.name %></option>
-                                        <% }) %>
-                                    </select>
-                                    <div class="invalid-feedback">Please select a category.</div>
-                                </div>
-                            </div>
-                            
-                            <div class="mb-3">
-                                <label for="description" class="form-label">Description *</label>
-                                <textarea class="form-control" id="description" name="description" rows="4" required></textarea>
-                                <div class="invalid-feedback">Please provide a description.</div>
-                            </div>
-
-                            <div class="row">
-                                <div class="col-md-4 mb-3">
-                                    <label for="brand" class="form-label">Brand</label>
-                                    <input type="text" class="form-control" id="brand" name="brand">
-                                </div>
-                                <div class="col-md-4 mb-3">
-                                    <label for="color" class="form-label">Color *</label>
-                                    <input type="text" class="form-control" id="color" name="color" required>
-                                    <div class="invalid-feedback">Please provide a color.</div>
-                                </div>
-                                <div class="col-md-4 mb-3">
-                                    <label for="fabric" class="form-label">Fabric *</label>
-                                    <input type="text" class="form-control" id="fabric" name="fabric" required>
-                                    <div class="invalid-feedback">Please provide fabric information.</div>
-                                </div>
-                            </div>
-
-                            <div class="row">
-                                <div class="col-md-6 mb-3">
-                                    <label for="sku" class="form-label">SKU</label>
-                                    <input type="text" class="form-control" id="sku" name="sku">
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <label for="offer" class="form-label">Product Offer (%)</label>
-                                    <input type="number" class="form-control" id="offer" name="offer" min="0" max="100" value="0">
-                                </div>
-                            </div>
-
-                            <div class="mb-3">
-                                <label for="tags" class="form-label">Tags (comma separated)</label>
-                                <input type="text" class="form-control" id="tags" name="tags" placeholder="casual, summer, cotton">
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Variants Section -->
-                    <div class="card mb-4">
-                        <div class="card-header">
-                            <h5 class="mb-0">Product Variants</h5>
-                        </div>
-                        <div class="card-body">
-                            <div class="row">
-                                <% ['S', 'M', 'L', 'XL'].forEach((size, index) => { %>
-                                    <div class="col-md-3 mb-3">
-                                        <label class="form-label">Size <%= size %></label>
-                                        <div class="variant-group">
-                                            <input type="number" 
-                                                   class="form-control mb-2" 
-                                                   name="varientPrice" 
-                                                   placeholder="Price" 
-                                                   min="0" 
-                                                   step="0.01">
-                                            <input type="number" 
-                                                   class="form-control" 
-                                                   name="varientquatity" 
-                                                   placeholder="Quantity" 
-                                                   min="0">
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label for="name" class="form-label">Product Name *</label>
+                                            <input type="text" class="form-control" id="name" name="name" >
+                                            <div class="invalid-feedback">Please provide a product name.</div>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label for="categoryId" class="form-label">Category *</label>
+                                            <select class="form-select" id="categoryId" name="categoryId" >
+                                                <option value="">Select Category</option>
+                                                <% categories.forEach(category=> { %>
+                                                    <option value="<%= category._id %>">
+                                                        <%= category.name %>
+                                                    </option>
+                                                    <% }) %>
+                                            </select>
+                                            <div class="invalid-feedback">Please select a category.</div>
                                         </div>
                                     </div>
-                                <% }) %>
+
+                                    <div class="mb-3">
+                                        <label for="description" class="form-label">Description *</label>
+                                        <textarea class="form-control" id="description" name="description" rows="4"
+                                            ></textarea>
+                                        <div class="invalid-feedback">Please provide a description.</div>
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col-md-4 mb-3">
+                                            <label for="brand" class="form-label">Brand</label>
+                                            <input type="text" class="form-control" id="brand" name="brand">
+                                            <div class="invalid-feedback">Please provide a brand.</div>
+                                        </div>
+                                        <div class="col-md-4 mb-3">
+                                            <label for="color" class="form-label">Color *</label>
+                                            <input type="text" class="form-control" id="color" name="color" >
+                                            <div class="invalid-feedback">Please provide a color.</div>
+                                        </div>
+                                        <div class="col-md-4 mb-3">
+                                            <label for="fabric" class="form-label">Fabric *</label>
+                                            <input type="text" class="form-control" id="fabric" name="fabric" >
+                                            <div class="invalid-feedback">Please provide fabric information.</div>
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label for="sku" class="form-label">SKU</label>
+                                            <input type="text" class="form-control" id="sku" name="sku">
+                                            <div class="invalid-feedback">Please provide a SKU.</div>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label for="offer" class="form-label">Product Offer (%)</label>
+                                            <input type="number" class="form-control" id="offer" name="offer" min="0"
+                                                max="100" value="0">
+                                                <div class="invalid-feedback">Please provide a offer.</div>
+                                        </div>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label for="tags" class="form-label">Tags (comma separated)</label>
+                                        <input type="text" class="form-control" id="tags" name="tags"
+                                            placeholder="casual, summer, cotton">
+                                            <div class="invalid-feedback">Please provide valid tags.</div>
+                                    </div>
+                                </div>
                             </div>
-                            <small class="text-muted">Enter price and quantity for each size. Leave empty for unavailable sizes.</small>
+
+                            <!-- Variants Section -->
+                            <div class="card mb-4">
+                                <div class="card-header">
+                                    <h5 class="mb-0">Product Variants</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <% ['S', 'M' , 'L' , 'XL' ].forEach((size, index)=> { %>
+                                            <div class="col-md-3 mb-3">
+                                                <label class="form-label">Size <%= size %></label>
+                                                <div class="variant-group">
+                                                    <input type="number" class="form-control mb-2" name="varientPrice"
+                                                        placeholder="Price" min="0" step="0.01">
+                                                    <input type="number" class="form-control" name="varientquatity"
+                                                        placeholder="Quantity" min="0">
+                                                </div>
+                                            </div>
+                                            <% }) %>
+                                    </div>
+                                    <small class="text-muted">Enter price and quantity for each size. Leave empty for
+                                        unavailable sizes.</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Images Section -->
+                        <div class="col-lg-4">
+                            <div class="card mb-4">
+                                <div class="card-header">
+                                    <h5 class="mb-0">Product Images</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <label for="productImages" class="form-label">Upload Images (Min 3 )
+                                            *</label>
+                                        <% if (error_msg) { %>
+                                            <div class="alert alert-danger">
+                                                <%= error_msg %>
+                                            </div>
+                                            <% } %>
+
+                                                <input type="file" class="form-control" id="productImages"
+                                                    name="productImages" multiple accept="image/*" >
+                                                <div class="invalid-feedback">Please upload at least 3 images.</div>
+                                                <small class="text-muted">Select multiple images (minimum 3). First
+                                                    image will be the main image.</small>
+                                    </div>
+
+                                    <!-- Image Preview Container -->
+                                    <div id="imagePreviewContainer" class="mt-3">
+                                        <!-- Previews will be added here -->
+                                    </div>
+
+                                    <!-- Cropped Images Container (hidden) -->
+                                    <div id="croppedImagesContainer" style="display: none;">
+                                        <!-- Cropped images will be stored here -->
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Form Actions -->
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="d-grid gap-2">
+                                        <button type="submit" class="btn btn-success" id="submitBtn">
+                                            <i class="fas fa-save"></i> Save Product
+                                        </button>
+                                        <a href="/admin/products" class="btn btn-secondary">
+                                            <i class="fas fa-arrow-left"></i> Back to Products
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                </div>
-
-                <!-- Images Section -->
-                <div class="col-lg-4">
-                    <div class="card mb-4">
-                        <div class="card-header">
-                            <h5 class="mb-0">Product Images</h5>
-                        </div>
-                        <div class="card-body">
-                            <div class="mb-3">
-                                <label for="productImages" class="form-label">Upload Images (Min 3 required) *</label>
-                                <input type="file" 
-                                       class="form-control" 
-                                       id="productImages" 
-                                       name="productImages" 
-                                       multiple 
-                                       accept="image/*" 
-                                       required>
-                                <div class="invalid-feedback">Please upload at least 3 images.</div>
-                                <small class="text-muted">Select multiple images (minimum 3). First image will be the main image.</small>
-                            </div>
-
-                            <!-- Image Preview Container -->
-                            <div id="imagePreviewContainer" class="mt-3">
-                                <!-- Previews will be added here -->
-                            </div>
-
-                            <!-- Cropped Images Container (hidden) -->
-                            <div id="croppedImagesContainer" style="display: none;">
-                                <!-- Cropped images will be stored here -->
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Form Actions -->
-                    <div class="card">
-                        <div class="card-body">
-                            <div class="d-grid gap-2">
-                                <button type="submit" class="btn btn-success" id="submitBtn">
-                                    <i class="fas fa-save"></i> Save Product
-                                </button>
-                                <a href="/admin/products" class="btn btn-secondary">
-                                    <i class="fas fa-arrow-left"></i> Back to Products
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </form>
-    </div>
-</div>
-
-<!-- Image Cropping Modal -->
-<div class="modal fade" id="cropModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Crop Image</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <div class="crop-container">
-                    <img id="cropImage" style="max-width: 100%;">
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-primary" id="cropConfirm">Crop & Save</button>
+                </form>
             </div>
         </div>
-    </div>
-</div>
 
-<style>
-/* Override conflicting styles from products.css to match admin theme */
-.main-content {
-    margin-left: 280px !important; /* Match sidebar width */
-    padding: 0 !important; /* Remove padding as content-area handles it */
-    background-color: var(--bg-secondary) !important;
-}
+        <!-- Image Cropping Modal -->
+        <div class="modal fade" id="cropModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Crop Image</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="crop-container">
+                            <img id="cropImage" style="max-width: 100%;">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-primary" id="cropConfirm">Crop & Save</button>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-@media (max-width: 768px) {
-    .main-content {
-        margin-left: 0 !important;
-    }
-}
+        <style>
+            /* Override conflicting styles from products.css to match admin theme */
+            .main-content {
+                margin-left: 280px !important;
+                /* Match sidebar width */
+                padding: 0 !important;
+                /* Remove padding as content-area handles it */
+                background-color: var(--bg-secondary) !important;
+            }
 
-/* Form Styles - Match admin theme */
-.form-control,
-.form-select {
-    border: 2px solid var(--border-light) !important;
-    border-radius: var(--radius-lg) !important;
-    padding: 0.75rem 1rem !important;
-    font-size: 0.875rem !important;
-    background: var(--bg-primary) !important;
-    color: var(--text-primary) !important;
-    transition: all var(--transition-normal) !important;
-}
+            @media (max-width: 768px) {
+                .main-content {
+                    margin-left: 0 !important;
+                }
+            }
 
-.form-control:focus,
-.form-select:focus {
-    border-color: var(--color-primary) !important;
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1) !important;
-    outline: none !important;
-}
+            /* Form Styles - Match admin theme */
+            .form-control,
+            .form-select {
+                border: 2px solid var(--border-light) !important;
+                border-radius: var(--radius-lg) !important;
+                padding: 0.75rem 1rem !important;
+                font-size: 0.875rem !important;
+                background: var(--bg-primary) !important;
+                color: var(--text-primary) !important;
+                transition: all var(--transition-normal) !important;
+            }
 
-/* Card Styles - Match admin theme */
-.card {
-    background: var(--bg-primary) !important;
-    border: 1px solid var(--border-light) !important;
-    border-radius: var(--radius-xl) !important;
-    box-shadow: var(--shadow-sm) !important;
-    margin-bottom: 1.5rem !important;
-}
+            .form-control:focus,
+            .form-select:focus {
+                border-color: var(--color-primary) !important;
+                box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1) !important;
+                outline: none !important;
+            }
 
-.card:hover {
-    box-shadow: var(--shadow-md) !important;
-}
+            /* Card Styles - Match admin theme */
+            .card {
+                background: var(--bg-primary) !important;
+                border: 1px solid var(--border-light) !important;
+                border-radius: var(--radius-xl) !important;
+                box-shadow: var(--shadow-sm) !important;
+                margin-bottom: 1.5rem !important;
+            }
 
-.card-header {
-    background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%) !important;
-    border-bottom: 1px solid var(--border-light) !important;
-    border-radius: var(--radius-xl) var(--radius-xl) 0 0 !important;
-    padding: 1.5rem !important;
-}
+            .card:hover {
+                box-shadow: var(--shadow-md) !important;
+            }
 
-.card-header h5 {
-    color: var(--text-primary) !important;
-    font-weight: 600 !important;
-    margin: 0 !important;
-    font-size: 1.125rem !important;
-}
+            .card-header {
+                background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%) !important;
+                border-bottom: 1px solid var(--border-light) !important;
+                border-radius: var(--radius-xl) var(--radius-xl) 0 0 !important;
+                padding: 1.5rem !important;
+            }
 
-.card-body {
-    padding: 1.5rem !important;
-}
+            .card-header h5 {
+                color: var(--text-primary) !important;
+                font-weight: 600 !important;
+                margin: 0 !important;
+                font-size: 1.125rem !important;
+            }
 
-/* Button Styles - Match admin theme */
-.btn {
-    border-radius: var(--radius-lg) !important;
-    padding: 0.75rem 1.5rem !important;
-    font-weight: 500 !important;
-    font-size: 0.875rem !important;
-    transition: all var(--transition-normal) !important;
-    border: none !important;
-    display: inline-flex !important;
-    align-items: center !important;
-    gap: 0.5rem !important;
-}
+            .card-body {
+                padding: 1.5rem !important;
+            }
 
-.btn-success {
-    background: linear-gradient(135deg, var(--color-success) 0%, var(--color-success-dark) 100%) !important;
-    color: var(--text-light) !important;
-    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3) !important;
-}
+            /* Button Styles - Match admin theme */
+            .btn {
+                border-radius: var(--radius-lg) !important;
+                padding: 0.75rem 1.5rem !important;
+                font-weight: 500 !important;
+                font-size: 0.875rem !important;
+                transition: all var(--transition-normal) !important;
+                border: none !important;
+                display: inline-flex !important;
+                align-items: center !important;
+                gap: 0.5rem !important;
+            }
 
-.btn-success:hover {
-    background: linear-gradient(135deg, var(--color-success-dark) 0%, var(--color-success) 100%) !important;
-    box-shadow: 0 8px 20px rgba(16, 185, 129, 0.4) !important;
-    transform: translateY(-2px) !important;
-    color: var(--text-light) !important;
-}
+            .btn-success {
+                background: linear-gradient(135deg, var(--color-success) 0%, var(--color-success-dark) 100%) !important;
+                color: var(--text-light) !important;
+                box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3) !important;
+            }
 
-.btn-secondary {
-    background: transparent !important;
-    color: var(--text-secondary) !important;
-    border: 2px solid var(--border-medium) !important;
-}
+            .btn-success:hover {
+                background: linear-gradient(135deg, var(--color-success-dark) 0%, var(--color-success) 100%) !important;
+                box-shadow: 0 8px 20px rgba(16, 185, 129, 0.4) !important;
+                transform: translateY(-2px) !important;
+                color: var(--text-light) !important;
+            }
 
-.btn-secondary:hover {
-    background: var(--bg-tertiary) !important;
-    color: var(--text-primary) !important;
-    border-color: var(--border-dark) !important;
-    transform: translateY(-2px) !important;
-}
+            .btn-secondary {
+                background: transparent !important;
+                color: var(--text-secondary) !important;
+                border: 2px solid var(--border-medium) !important;
+            }
 
-.btn-primary {
-    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%) !important;
-    color: var(--text-light) !important;
-    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3) !important;
-}
+            .btn-secondary:hover {
+                background: var(--bg-tertiary) !important;
+                color: var(--text-primary) !important;
+                border-color: var(--border-dark) !important;
+                transform: translateY(-2px) !important;
+            }
 
-.btn-primary:hover {
-    background: linear-gradient(135deg, var(--color-primary-dark) 0%, var(--color-primary) 100%) !important;
-    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4) !important;
-    transform: translateY(-2px) !important;
-    color: var(--text-light) !important;
-}
+            .btn-primary {
+                background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%) !important;
+                color: var(--text-light) !important;
+                box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3) !important;
+            }
 
-/* Form Labels */
-.form-label {
-    font-weight: 600 !important;
-    color: var(--text-primary) !important;
-    font-size: 0.875rem !important;
-    margin-bottom: 0.5rem !important;
-}
+            .btn-primary:hover {
+                background: linear-gradient(135deg, var(--color-primary-dark) 0%, var(--color-primary) 100%) !important;
+                box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4) !important;
+                transform: translateY(-2px) !important;
+                color: var(--text-light) !important;
+            }
 
-/* Variant Group Styling */
-.variant-group {
-    border: 1px solid var(--border-light) !important;
-    border-radius: var(--radius-lg) !important;
-    padding: 1rem !important;
-    background: var(--bg-secondary) !important;
-}
+            /* Form Labels */
+            .form-label {
+                font-weight: 600 !important;
+                color: var(--text-primary) !important;
+                font-size: 0.875rem !important;
+                margin-bottom: 0.5rem !important;
+            }
 
-/* Image Preview Styling */
-.image-preview-container {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1rem;
-    margin-top: 1rem;
-}
+            /* Variant Group Styling */
+            .variant-group {
+                border: 1px solid var(--border-light) !important;
+                border-radius: var(--radius-lg) !important;
+                padding: 1rem !important;
+                background: var(--bg-secondary) !important;
+            }
 
-.image-preview-item {
-    position: relative;
-    width: 120px;
-    height: 120px;
-    border: 2px solid var(--border-light);
-    border-radius: var(--radius-lg);
-    overflow: hidden;
-    background: var(--bg-secondary);
-    cursor: pointer;
-    transition: all var(--transition-normal);
-}
+            /* Image Preview Styling */
+            .image-preview-container {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 1rem;
+                margin-top: 1rem;
+            }
 
-.image-preview-item:hover {
-    border-color: var(--color-primary);
-    box-shadow: var(--shadow-md);
-    transform: translateY(-2px);
-}
+            .image-preview-item {
+                position: relative;
+                width: 120px;
+                height: 120px;
+                border: 2px solid var(--border-light);
+                border-radius: var(--radius-lg);
+                overflow: hidden;
+                background: var(--bg-secondary);
+                cursor: pointer;
+                transition: all var(--transition-normal);
+            }
 
-.image-preview-item img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transition: transform var(--transition-normal);
-}
+            .image-preview-item:hover {
+                border-color: var(--color-primary);
+                box-shadow: var(--shadow-md);
+                transform: translateY(-2px);
+            }
 
-.image-preview-item:hover img {
-    transform: scale(1.05);
-}
+            .image-preview-item img {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+                transition: transform var(--transition-normal);
+            }
 
-.image-preview-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.7);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    opacity: 0;
-    transition: opacity var(--transition-normal);
-    z-index: 10;
-}
+            .image-preview-item:hover img {
+                transform: scale(1.05);
+            }
 
-.image-preview-item:hover .image-preview-overlay {
-    opacity: 1;
-}
+            .image-preview-overlay {
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0, 0, 0, 0.7);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 0.5rem;
+                opacity: 0;
+                transition: opacity var(--transition-normal);
+                z-index: 10;
+            }
 
-.image-preview-overlay button {
-    border: none;
-    border-radius: var(--radius-md);
-    padding: 0.5rem;
-    font-size: 0.75rem;
-    cursor: pointer;
-    transition: all var(--transition-normal);
-    color: white;
-}
+            .image-preview-item:hover .image-preview-overlay {
+                opacity: 1;
+            }
 
-.image-preview-overlay button:hover {
-    transform: scale(1.1);
-}
+            .image-preview-overlay button {
+                border: none;
+                border-radius: var(--radius-md);
+                padding: 0.5rem;
+                font-size: 0.75rem;
+                cursor: pointer;
+                transition: all var(--transition-normal);
+                color: white;
+            }
 
-.main-image-badge {
-    position: absolute;
-    top: 0.5rem;
-    left: 0.5rem;
-    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
-    color: white;
-    padding: 0.25rem 0.5rem;
-    border-radius: var(--radius-md);
-    font-size: 0.7rem;
-    font-weight: 600;
-    z-index: 5;
-    box-shadow: 0 2px 4px rgba(102, 126, 234, 0.3);
-}
+            .image-preview-overlay button:hover {
+                transform: scale(1.1);
+            }
 
-/* Modal Styling */
-.modal-content {
-    border-radius: var(--radius-xl) !important;
-    border: none !important;
-    box-shadow: var(--shadow-xl) !important;
-}
+            .main-image-badge {
+                position: absolute;
+                top: 0.5rem;
+                left: 0.5rem;
+                background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+                color: white;
+                padding: 0.25rem 0.5rem;
+                border-radius: var(--radius-md);
+                font-size: 0.7rem;
+                font-weight: 600;
+                z-index: 5;
+                box-shadow: 0 2px 4px rgba(102, 126, 234, 0.3);
+            }
 
-.modal-header {
-    background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%) !important;
-    border-bottom: 1px solid var(--border-light) !important;
-    border-radius: var(--radius-xl) var(--radius-xl) 0 0 !important;
-}
+            /* Modal Styling */
+            .modal-content {
+                border-radius: var(--radius-xl) !important;
+                border: none !important;
+                box-shadow: var(--shadow-xl) !important;
+            }
 
-.modal-title {
-    color: var(--text-primary) !important;
-    font-weight: 600 !important;
-}
+            .modal-header {
+                background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%) !important;
+                border-bottom: 1px solid var(--border-light) !important;
+                border-radius: var(--radius-xl) var(--radius-xl) 0 0 !important;
+            }
 
-.crop-container {
-    max-height: 400px;
-    overflow: hidden;
-    position: relative;
-    border-radius: var(--radius-lg);
-}
+            .modal-title {
+                color: var(--text-primary) !important;
+                font-weight: 600 !important;
+            }
 
-/* Validation Styles */
-.was-validated .form-control:invalid,
-.form-control.is-invalid {
-    border-color: var(--color-danger) !important;
-}
+            .crop-container {
+                max-height: 400px;
+                overflow: hidden;
+                position: relative;
+                border-radius: var(--radius-lg);
+            }
 
-.was-validated .form-control:valid,
-.form-control.is-valid {
-    border-color: var(--color-success) !important;
-}
+            /* Validation Styles */
+            .was-validated .form-control:invalid,
+            .form-control.is-invalid {
+                border-color: var(--color-danger) !important;
+            }
 
-.was-validated .form-select:invalid,
-.form-select.is-invalid {
-    border-color: var(--color-danger) !important;
-}
+            .was-validated .form-control:valid,
+            .form-control.is-valid {
+                border-color: var(--color-success) !important;
+            }
 
-.was-validated .form-select:valid,
-.form-select.is-valid {
-    border-color: var(--color-success) !important;
-}
+            .was-validated .form-select:invalid,
+            .form-select.is-invalid {
+                border-color: var(--color-danger) !important;
+            }
 
-.invalid-feedback {
-    color: var(--color-danger) !important;
-    font-size: 0.875rem !important;
-    margin-top: 0.25rem !important;
-}
+            .was-validated .form-select:valid,
+            .form-select.is-valid {
+                border-color: var(--color-success) !important;
+            }
 
-/* Text Styling */
-.text-muted {
-    color: var(--text-muted) !important;
-}
+            .invalid-feedback {
+                color: var(--color-danger) !important;
+                font-size: 0.875rem !important;
+                margin-top: 0.25rem !important;
+            }
 
-/* Responsive Design */
-@media (max-width: 768px) {
-    .image-preview-item {
-        width: 100px;
-        height: 100px;
-    }
-    
-    .card-body {
-        padding: 1rem !important;
-    }
-    
-    .card-header {
-        padding: 1rem !important;
-    }
-}
-</style>
+            /* Text Styling */
+            .text-muted {
+                color: var(--text-muted) !important;
+            }
 
-<!-- Scripts -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
-<script src="/js/admin/productManagement.js"></script>
-<script>
-    // Initialize image cropping for add product page
-    document.addEventListener('DOMContentLoaded', function() {
-        initializeImageCropping();
-        initializeFormValidation();
+            /* Responsive Design */
+            @media (max-width: 768px) {
+                .image-preview-item {
+                    width: 100px;
+                    height: 100px;
+                }
+
+                .card-body {
+                    padding: 1rem !important;
+                }
+
+                .card-header {
+                    padding: 1rem !important;
+                }
+            }
+        </style>
+
+        <!-- Scripts -->
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
+        <script src="/js/admin/productManagement.js"></script>
+        <script>
+            // Initialize image cropping for add product page
+            document.addEventListener('DOMContentLoaded', function () {
+                initializeImageCropping();
+                initializeFormValidation();
+            });
+
+
+            document.addEventListener('DOMContentLoaded', function () {
+    initializeFormValidation();
+});
+
+function initializeFormValidation() {
+    const form = document.getElementById('addProductForm');
+    form.addEventListener('submit', function (event) {
+        let valid = true;
+
+        // Product Name
+        const name = document.getElementById('name');
+        if (!name.value.trim()) {
+            markInvalid(name, 'Please provide a product name.');
+            valid = false;
+        } else {
+            markValid(name);
+        }
+
+        // Category
+        const category = document.getElementById('categoryId');
+        if (!category.value) {
+            markInvalid(category, 'Please select a category.');
+            valid = false;
+        } else {
+            markValid(category);
+        }
+
+        // Description
+        const description = document.getElementById('description');
+        if (!description.value.trim()) {
+            markInvalid(description, 'Please provide a description.');
+            valid = false;
+        } else {
+            markValid(description);
+        }
+
+        // Color
+        const color = document.getElementById('color');
+        if (!color.value.trim()) {
+            markInvalid(color, 'Please provide a color.');
+            valid = false;
+        } else {
+            markValid(color);
+        }
+
+        // Fabric
+        const fabric = document.getElementById('fabric');
+        if (!fabric.value.trim()) {
+            markInvalid(fabric, 'Please provide fabric information.');
+            valid = false;
+        } else {
+            markValid(fabric);
+        }
+
+        // Brand (Required, min 2 chars)
+        const brand = document.getElementById('brand');
+        if (!brand.value.trim()) {
+            markInvalid(brand, 'Please provide a brand.');
+            valid = false;
+        } else if (brand.value.trim().length < 2) {
+            markInvalid(brand, 'Brand must be at least 2 characters.');
+            valid = false;
+        } else {
+            markValid(brand);
+        }
+
+        // SKU (Required, min 3 chars, alphanumeric/-,_)
+        const sku = document.getElementById('sku');
+        if (!sku.value.trim()) {
+            markInvalid(sku, 'Please provide a SKU.');
+            valid = false;
+        } else if (sku.value.trim().length < 3) {
+            markInvalid(sku, 'SKU must be at least 3 characters.');
+            valid = false;
+        } else if (!/^[a-zA-Z0-9-_]+$/.test(sku.value.trim())) {
+            markInvalid(sku, 'SKU can only contain letters, numbers, - and _.');
+            valid = false;
+        } else {
+            markValid(sku);
+        }
+
+        // Offer (number)
+        const offer = document.getElementById('offer');
+        if (offer.value && (offer.value < 0 || offer.value > 100)) {
+            markInvalid(offer, 'Offer must be between 0 and 100.');
+            valid = false;
+        } else {
+            markValid(offer);
+        }
+
+        // Tags (Required, only comma-separated words)
+        const tags = document.getElementById('tags');
+        if (!tags.value.trim()) {
+            markInvalid(tags, 'Please provide at least one tag.');
+            valid = false;
+        } else if (!/^([a-zA-Z0-9]+)(,\s*[a-zA-Z0-9]+)*$/.test(tags.value.trim())) {
+            markInvalid(tags, 'Tags must be comma-separated single words (no special characters).');
+            valid = false;
+        } else {
+            markValid(tags);
+        }
+
+        // Variants: at least one variant should have both positive price and quantity
+        const variantPriceInputs = form.querySelectorAll('input[name="varientPrice"]');
+        const variantQtyInputs = form.querySelectorAll('input[name="varientquatity"]');
+        let variantAtLeastOne = false;
+        for (let i = 0; i < variantPriceInputs.length; i++) {
+            const priceInput = variantPriceInputs[i];
+            const qtyInput = variantQtyInputs[i];
+            const price = priceInput.value;
+            const qty = qtyInput.value;
+            if ((price && price > 0) || (qty && qty > 0)) {
+                if (!(price > 0 && qty > 0)) {
+                    markInvalid(priceInput, 'Provide both price and quantity for this size.');
+                    markInvalid(qtyInput, 'Provide both price and quantity for this size.');
+                    valid = false;
+                } else {
+                    markValid(priceInput);
+                    markValid(qtyInput);
+                    variantAtLeastOne = true;
+                }
+            } else {
+                clearValidation(priceInput);
+                clearValidation(qtyInput);
+            }
+        }
+        if (!variantAtLeastOne) {
+            valid = false;
+            if (!document.getElementById('variantErrorMsg')) {
+                const errorMsg = document.createElement('div');
+                errorMsg.className = 'invalid-feedback d-block';
+                errorMsg.id = 'variantErrorMsg';
+                errorMsg.textContent = 'At least one variant with price and quantity required.';
+                variantPriceInputs[0].parentNode.parentNode.parentNode.appendChild(errorMsg);
+            }
+        } else {
+            const existingMsg = document.getElementById('variantErrorMsg');
+            if (existingMsg) existingMsg.remove();
+        }
+
+        // Images: minimum 3 files, all must be images
+        const imagesInput = document.getElementById('productImages');
+        removeGlobalError(imagesInput);
+        if (!imagesInput.files || imagesInput.files.length < 3) {
+            markInvalid(imagesInput, 'Please upload at least 3 images.');
+            valid = false;
+        } else {
+            let imagesValid = true;
+            for (let i = 0; i < imagesInput.files.length; i++) {
+                if (!imagesInput.files[i].type.startsWith('image/')) {
+                    imagesValid = false;
+                }
+            }
+            if (!imagesValid) {
+                markInvalid(imagesInput, 'All uploaded files must be images.');
+                valid = false;
+            } else {
+                markValid(imagesInput);
+            }
+        }
+
+        // Prevent submit
+        if (!valid) {
+            event.preventDefault();
+            event.stopPropagation();
+            form.classList.add('was-validated');
+        }
     });
-</script>
 
-<%- include('./partials/footer') %>
+    function markInvalid(input, message) {
+        input.classList.add('is-invalid');
+        input.classList.remove('is-valid');
+        const feedback = input.parentNode.querySelector('.invalid-feedback');
+        if (feedback) feedback.textContent = message;
+    }
+
+    function markValid(input) {
+        input.classList.remove('is-invalid');
+        input.classList.add('is-valid');
+        const feedback = input.parentNode.querySelector('.invalid-feedback');
+        if (feedback) feedback.textContent = '';
+    }
+
+    function clearValidation(input) {
+        input.classList.remove('is-invalid');
+        input.classList.remove('is-valid');
+        const feedback = input.parentNode.querySelector('.invalid-feedback');
+        if (feedback) feedback.textContent = '';
+    }
+
+    function removeGlobalError(input) {
+        const parent = input.parentNode;
+        const existing = parent.querySelector('[data-variant-error="true"]');
+        if (existing) parent.removeChild(existing);
+    }
+}
+
+        </script>
+
+        <%- include('./partials/footer') %>

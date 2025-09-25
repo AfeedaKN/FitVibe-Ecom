@@ -86,7 +86,7 @@
                                 </div>
                                 <div class="col-md-6">
                                     <label for="category" class="form-label fw-medium">Category *</label>
-                                    <select class="form-select form-select-modern" id="category" name="category" required>
+                                    <select class="form-select form-select-modern" id="category" name="category" >
                                         <option value="">Select Category</option>
                                         <% categories.forEach(category => { %>
                                             <option value="<%= category._id %>" 
@@ -106,7 +106,7 @@
                                               id="description" 
                                               name="description" 
                                               rows="4" 
-                                              required><%= product.description %></textarea>
+                                              ><%= product.description %></textarea>
                                     <div class="invalid-feedback">Please provide a description.</div>
                                 </div>
                             </div>
@@ -119,6 +119,7 @@
                                            id="brand" 
                                            name="brand" 
                                            value="<%= product.brand || '' %>">
+                                           <div class="invalid-feedback">Please provide a brand.</div>
                                 </div>
                                 <div class="col-md-4">
                                     <label for="color" class="form-label fw-medium">Color *</label>
@@ -127,7 +128,7 @@
                                            id="color" 
                                            name="color" 
                                            value="<%= product.color %>" 
-                                           required>
+                                           >
                                     <div class="invalid-feedback">Please provide a color.</div>
                                 </div>
                                 <div class="col-md-4">
@@ -137,6 +138,7 @@
                                            id="fabric" 
                                            name="fabric" 
                                            value="<%= product.fabric || '' %>">
+                                           <div class="invalid-feedback">Please provide fabric information.</div>
                                 </div>
                             </div>
 
@@ -148,6 +150,7 @@
                                            id="sku" 
                                            name="sku" 
                                            value="<%= product.sku || '' %>">
+                                           <div class="invalid-feedback">Please provide a SKU.</div>
                                 </div>
                                 <div class="col-md-6">
                                     <label for="offer" class="form-label fw-medium">Product Offer (%)</label>
@@ -296,8 +299,9 @@
                                        class="form-control form-control-modern" 
                                        id="productImages" 
                                        name="productImages" 
-                                       multiple 
-                                       accept="image/*">
+                                       multiple accept="image/*">
+                                    <div class="invalid-feedback">Please upload at least 3 images (jpeg, png, etc.).</div>
+                                
                                 <small class="text-muted-modern">
                                     <i class="fas fa-info-circle me-1"></i>
                                     Select multiple images to add to the product.
@@ -527,6 +531,19 @@
             height: 80px;
         }
     }
+    .invalid-feedback {
+    color: red !important; /* Force red color for error messages */
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+}
+
+.was-validated .form-control:invalid, 
+.form-control.is-invalid {
+  border-color: red !important;
+  box-shadow: 0 0 0 0.25rem rgba(255, 0, 0, 0.25) !important;
+}
+
+
 </style>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
@@ -534,6 +551,7 @@
 <script>
     // Array to track deleted image indices
     let deletedImages = [];
+    let croppedImages = []
 
     document.addEventListener('DOMContentLoaded', function() {
         initializeImageCropping();
@@ -723,6 +741,403 @@
             alert(message);
         }
     }
+
+
+
+   document.addEventListener('DOMContentLoaded', function () {
+    initializeFormValidation();
+});
+
+function initializeFormValidation() {
+    const form = document.getElementById('editProductForm');
+    const submitBtn = document.getElementById('submitBtn');
+
+    form.addEventListener('submit', function (event) {
+        // Preserve deleted images JSON
+        document.getElementById('deletedImagesInput').value = JSON.stringify(deletedImages);
+
+        let valid = true;
+
+        // Validate Product Name
+        const name = form.querySelector('#name');
+        if (!name.value.trim()) {
+            markInvalid(name, 'Please provide a product name.');
+            valid = false;
+        } else {
+            markValid(name);
+        }
+
+        // Validate Category
+        const category = form.querySelector('#category');
+        if (!category.value) {
+            markInvalid(category, 'Please select a category.');
+            valid = false;
+        } else {
+            markValid(category);
+        }
+
+        // Validate Description
+        const description = form.querySelector('#description');
+        if (!description.value.trim()) {
+            markInvalid(description, 'Please provide a description.');
+            valid = false;
+        } else {
+            markValid(description);
+        }
+
+        // Validate Color (Required)
+        const color = form.querySelector('#color');
+        if (!color.value.trim()) {
+            markInvalid(color, 'Please provide a color.');
+            valid = false;
+        } else {
+            markValid(color);
+        }
+
+        // Brand validation (required, min 2 chars)
+        const brand = form.querySelector('#brand');
+        if (!brand.value.trim() || brand.value.trim().length < 2) {
+            markInvalid(brand, 'Brand must be at least 2 characters.');
+            valid = false;
+        } else {
+            markValid(brand);
+        }
+
+         // Fabric validation (required)
+        const fabric = form.querySelector('#fabric');
+        if (!fabric.value.trim()) {
+            markInvalid(fabric, 'Please provide fabric information.');
+            valid = false;
+        } else {
+            markValid(fabric);
+        }
+
+
+         // SKU validation (required, pattern)
+        const sku = form.querySelector('#sku');
+        const skuPattern = /^[a-zA-Z0-9-_]{3,}$/;
+        if (!sku.value.trim()) {
+            markInvalid(sku, 'Please provide a SKU.');
+            valid = false;
+        } else if (!skuPattern.test(sku.value.trim())) {
+            markInvalid(sku, 'SKU must be 3+ characters and contain only letters, numbers, - or _.');
+            valid = false;
+        } else {
+            markValid(sku);
+        }
+
+        // Validate Offer (0-100)
+        const offer = form.querySelector('#offer');
+        if (offer.value && (offer.value < 0 || offer.value > 100)) {
+            markInvalid(offer, 'Offer must be between 0 and 100.');
+            valid = false;
+        } else {
+            markValid(offer);
+        }
+
+        // Validate Tags (Required, comma separated words)
+        const tags = form.querySelector('#tags');
+        if (tags.value.trim().length === 0) {
+            markInvalid(tags, 'Please provide at least one tag.');
+            valid = false;
+        } else if (!/^([a-zA-Z0-9]+)(,\s*[a-zA-Z0-9]+)*$/.test(tags.value.trim())) {
+            markInvalid(tags, 'Tags must be comma-separated words without special characters.');
+            valid = false;
+        } else {
+            markValid(tags);
+        }
+
+        // Validate Variants: at least one valid price & quantity pair
+        const variantPriceInputs = form.querySelectorAll('input[name^="varientPrice"]');
+        const variantQtyInputs = form.querySelectorAll('input[name^="sizes"]');
+        let variantAtLeastOne = false;
+        for (let i = 0; i < variantPriceInputs.length; i++) {
+            const priceInput = variantPriceInputs[i];
+            const qtyInput = variantQtyInputs[i];
+            const price = priceInput.value;
+            const qty = qtyInput.value;
+
+            if ((price && price > 0) || (qty && qty > 0)) {
+                if (!(price > 0 && qty > 0)) {
+                    markInvalid(priceInput, 'Provide both price and quantity for this size.');
+                    markInvalid(qtyInput, 'Provide both price and quantity for this size.');
+                    valid = false;
+                } else {
+                    markValid(priceInput);
+                    markValid(qtyInput);
+                    variantAtLeastOne = true;
+                }
+            } else {
+                clearValidation(priceInput);
+                clearValidation(qtyInput);
+            }
+        }
+        if (!variantAtLeastOne) {
+            valid = false;
+            if (!document.getElementById('variantErrorMsg')) {
+                const errorMsg = document.createElement('div');
+                errorMsg.className = 'invalid-feedback d-block';
+                errorMsg.id = 'variantErrorMsg';
+                errorMsg.textContent = 'At least one variant with price and quantity required.';
+                // Append near variants inputs container
+                variantPriceInputs[0].closest('.card-body-modern').appendChild(errorMsg);
+            }
+        } else {
+            const existingMsg = document.getElementById('variantErrorMsg');
+            if (existingMsg) existingMsg.remove();
+        }
+
+        // Prevent form submission if invalid, else show loading
+        if (!valid) {
+            event.preventDefault();
+            event.stopPropagation();
+            form.classList.add('was-validated');
+        } else {
+            submitBtn.classList.add('btn-loading');
+            submitBtn.disabled = true;
+        }
+    });
+
+    // Helper functions for marking validation
+    function markInvalid(input, message) {
+        input.classList.add('is-invalid');
+        input.classList.remove('is-valid');
+        let feedback = input.parentNode.querySelector('.invalid-feedback');
+        if (!feedback) {
+            feedback = document.createElement('div');
+            feedback.className = 'invalid-feedback';
+            input.parentNode.appendChild(feedback);
+        }
+        feedback.textContent = message;
+    }
+
+    function markValid(input) {
+        input.classList.remove('is-invalid');
+        input.classList.add('is-valid');
+        const feedback = input.parentNode.querySelector('.invalid-feedback');
+        if (feedback) feedback.textContent = '';
+    }
+
+    function clearValidation(input) {
+        input.classList.remove('is-invalid');
+        input.classList.remove('is-valid');
+        const feedback = input.parentNode.querySelector('.invalid-feedback');
+        if (feedback) feedback.textContent = '';
+    }
+}
+
+//image validation
+
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('editProductForm');
+    initializeImageCropping();
+    initializeFormValidation();
+});
+
+// Image Cropping + Preview
+function initializeImageCropping() {
+    const fileInput = document.getElementById('productImages');
+    const previewContainer = document.getElementById('imagePreviewContainer');
+
+    fileInput.addEventListener('change', function(e) {
+        const files = Array.from(e.target.files);
+        previewContainer.innerHTML = '';
+        croppedImages = [];
+
+        files.forEach((file) => {
+            if (!file.type.startsWith('image/')) return;
+
+            const reader = new FileReader();
+            reader.onload = function(ev) {
+                const currentIndex = croppedImages.length;
+                const previewDiv = document.createElement('div');
+                previewDiv.className = 'col-6 mb-2';
+                previewDiv.innerHTML = `
+                    <div class="image-item">
+                        <img src="${ev.target.result}" alt="Preview" class="img-fluid rounded-modern">
+                        <div class="image-overlay">
+                            <button type="button" class="btn btn-sm btn-primary-modern" onclick="cropImage(${currentIndex})">
+                                <i class="fas fa-crop"></i>
+                            </button>
+                            <button type="button" class="btn btn-sm btn-danger-modern" onclick="removePreviewImage(${currentIndex})">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+                previewContainer.appendChild(previewDiv);
+                croppedImages.push(ev.target.result);
+            };
+            reader.readAsDataURL(file);
+        });
+    });
+
+    window.cropImage = function(index) {
+        const modal = new bootstrap.Modal(document.getElementById('cropModal'));
+        const cropImageEl = document.getElementById('cropImage');
+        cropImageEl.src = croppedImages[index];
+        modal.show();
+
+        let cropperInstance;
+        document.getElementById('cropModal').addEventListener('shown.bs.modal', function() {
+            if (cropperInstance) cropperInstance.destroy();
+            cropperInstance = new Cropper(cropImageEl, {
+                aspectRatio: 1,
+                viewMode: 1,
+                autoCropArea: 0.8,
+                responsive: true,
+                background: false
+            });
+        });
+
+        document.getElementById('cropConfirm').onclick = function() {
+            if (cropperInstance) {
+                const canvas = cropperInstance.getCroppedCanvas({ width: 400, height: 400 });
+                const previewItems = document.querySelectorAll('#imagePreviewContainer img');
+                if (previewItems[index]) {
+                    previewItems[index].src = canvas.toDataURL();
+                    croppedImages[index] = canvas.toDataURL();
+                }
+                modal.hide();
+                showToast('Image cropped successfully', 'success');
+            }
+        };
+    };
+
+    window.removePreviewImage = function(index) {
+        const previewItems = document.querySelectorAll('#imagePreviewContainer .col-6');
+        if (previewItems[index]) {
+            previewItems[index].remove();
+            croppedImages.splice(index, 1);
+
+            // RE-INDEX buttons
+            const remainingItems = document.querySelectorAll('#imagePreviewContainer .col-6');
+            remainingItems.forEach((item, i) => {
+                const cropBtn = item.querySelector('.btn-primary-modern');
+                const deleteBtn = item.querySelector('.btn-danger-modern');
+                cropBtn.setAttribute('onclick', `cropImage(${i})`);
+                deleteBtn.setAttribute('onclick', `removePreviewImage(${i})`);
+            });
+        }
+    };
+}
+
+// Remove Existing Image
+function removeCurrentImage(index) {
+    Swal.fire({
+        title: 'Remove Image',
+        text: 'Are you sure you want to remove this image?',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#525252',
+        cancelButtonColor: '#a3a3a3',
+        confirmButtonText: 'Yes, remove it!',
+        background: '#ffffff',
+        color: '#171717'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            const imageItem = document.querySelector(`[data-image-index="${index}"]`);
+            if (imageItem) {
+                deletedImages.push(index);
+                imageItem.remove();
+                showToast('Image removed successfully', 'success');
+                updateNoImageMessage();
+            }
+        }
+    });
+}
+
+function updateNoImageMessage() {
+    const remainingImages = document.querySelectorAll('#currentImagesContainer [data-image-index]').length;
+    if (remainingImages === 0) {
+        document.getElementById('currentImagesContainer').innerHTML = `
+            <div class="col-12 text-center py-4">
+                <i class="fas fa-image text-muted-modern mb-2" style="font-size: 2rem;"></i>
+                <p class="text-muted-modern mb-0">No images available</p>
+            </div>
+        `;
+    }
+}
+
+// Form Validation
+function initializeFormValidation() {
+    const form = document.getElementById('editProductForm');
+    const submitBtn = document.getElementById('submitBtn');
+
+    form.addEventListener('submit', function(e) {
+        document.getElementById('deletedImagesInput').value = JSON.stringify(deletedImages);
+        let valid = validateImages();
+        if (!valid) {
+            e.preventDefault();
+            e.stopPropagation();
+            form.classList.add('was-validated');
+        } else {
+            submitBtn.classList.add('btn-loading');
+            submitBtn.disabled = true;
+        }
+    });
+}
+
+// Image Validation (min 3, max 3)
+function validateImages() {
+    const imagesInput = document.getElementById('productImages');
+    const existingImages = document.querySelectorAll('#currentImagesContainer [data-image-index]').length;
+    const newFilesCount = croppedImages.length;
+    const totalImages = existingImages + newFilesCount;
+
+    console.log(`Validation: existing=${existingImages}, new=${newFilesCount}, total=${totalImages}`);
+
+    if (totalImages < 3) {
+        markInvalid(imagesInput, `Please upload at least 3 images. Currently available: ${totalImages}`);
+        return false;
+    }
+
+    if (totalImages > 3) {
+        markInvalid(imagesInput, `You can upload maximum 3 images. Currently selected: ${totalImages}`);
+        return false;
+    }
+
+    // MIME type check
+    for (let i = 0; i < imagesInput.files.length; i++) {
+        const type = imagesInput.files[i].type;
+        if (!['image/jpeg','image/jpg','image/png'].includes(type)) {
+            markInvalid(imagesInput, 'Only JPEG, JPG, PNG files are allowed.');
+            return false;
+        }
+    }
+
+    markValid(imagesInput);
+    return true;
+}
+
+// Helper functions
+function markInvalid(input, message) {
+    input.classList.add('is-invalid');
+    input.classList.remove('is-valid');
+    let feedback = input.parentNode.querySelector('.invalid-feedback');
+    if (!feedback) {
+        feedback = document.createElement('div');
+        feedback.className = 'invalid-feedback';
+        input.parentNode.appendChild(feedback);
+    }
+    feedback.textContent = message;
+}
+
+function markValid(input) {
+    input.classList.remove('is-invalid');
+    input.classList.add('is-valid');
+    const feedback = input.parentNode.querySelector('.invalid-feedback');
+    if (feedback) feedback.textContent = '';
+}
+
+function showToast(message, type='success') {
+    if (typeof window.showToast === 'function') {
+        window.showToast(message, type);
+    } else {
+        alert(message);
+    }
+}
+
 </script>
 
 <%- include('./partials/footer') %>

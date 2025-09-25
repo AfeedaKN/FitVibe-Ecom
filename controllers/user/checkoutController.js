@@ -120,25 +120,27 @@ const placeOrder = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Cart is empty' });
     }
 
-    cart.items.forEach(item => {
+    
+    for (const item of cart.items) {
       const product = item.productId;
       const matchedVariant = product.variants.find(variant => 
         variant._id.toString() === item.variantId.toString()
       );
-      item.variantId = matchedVariant;
-    });
+      item.variant = matchedVariant; 
+    }
 
     const outOfStock = cart.items.some(item => {
-      if (!item.variantId) {
-        console.error(`Variant not found for item: ${item.productId._id}, variantId: ${item.variantId}`);
+      if (!item.variant) {
+        console.error(`Variant not found for item: ${item.productId._id}, variantId: ${item.variantId.toString()}`);
         return true;
       }
-      return item.variantId.varientquatity < item.quantity;
+      return item.variant.varientquatity < item.quantity;
     });
 
     if (outOfStock) {
       return res.status(400).json({ success: false, message: 'Some items are out of stock' });
     }
+
 
     const address = await Address.findOne({ _id: addressId, user: userId });
     if (!address) {
@@ -147,7 +149,7 @@ const placeOrder = async (req, res) => {
 
     const subtotal = cart.items.reduce((sum, item) => {
       if (!item.variantId) return sum;
-      return sum + (item.variant.salePrice * item.quantity);
+      return sum + (item.variant?.salePrice || 0) * item.quantity;
     }, 0);
 
     const taxAmount = 0;
@@ -228,9 +230,9 @@ const placeOrder = async (req, res) => {
       return {
         product: item.productId._id,
         variant: {
-          size: item.variantId.size,
-          varientPrice: item.variantId.varientPrice,
-          salePrice: item.variantId.salePrice,
+          size: item.variant.size,
+          varientPrice: item.variant.varientPrice,
+          salePrice: item.variant.salePrice,
         },
         quantity: item.quantity,
         status: 'pending'
@@ -271,7 +273,7 @@ const placeOrder = async (req, res) => {
         if (!item.variant) continue;
         
         const product = item.productId;
-        const variantToUpdate = product.variants.find(v => v._id.toString() === item.variantId.toString());
+        const variantToUpdate = product.variants.find(v => v._id.toString() === item.variant._id.toString());
         if (variantToUpdate) {
           variantToUpdate.varientquatity -= item.quantity;
           await product.save();
@@ -339,7 +341,7 @@ const placeOrder = async (req, res) => {
           if (!item.variant) continue;
           
           const product = item.productId;
-          const variantToUpdate = product.variants.find(v => v._id.toString() === item.variantId.toString());
+          const variantToUpdate = product.variants.find(v => v._id.toString() === item.variant._id.toString());
           if (variantToUpdate) {
             variantToUpdate.varientquatity -= item.quantity;
             await product.save();

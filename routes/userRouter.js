@@ -2,7 +2,7 @@ const express=require("express")
 const router=express.Router()
 const { userAuth, adminAuth } = require("../middlewares/auth");
 
-const upload = require('../middlewares/uploadMiddleware');
+const {upload} = require('../middlewares/uploadMiddleware');
 
 const userController=require("../controllers/user/userController")
 const cartController=require("../controllers/user/cartController")

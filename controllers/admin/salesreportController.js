@@ -7,7 +7,7 @@ const excel = require('exceljs');
 const salesreport = async (req, res) => {
     try {
         const { startDate, endDate, status, period } = req.query;
-        const page = parseInt(req.query.page) || 1;
+        const page = parseInt(req.query.page) || 1;                     
         const limit = 10;
         const skip = (page - 1) * limit;
 

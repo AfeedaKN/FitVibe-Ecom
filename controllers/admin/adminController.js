@@ -72,7 +72,7 @@ const loadAdminDashboard = async (req, res) => {
         const recentOrders = await Order.find({})
             .populate('user')
             .sort({ createdAt: -1 })
-            .limit(3)
+            .limit(14)
             .lean();
 
         
@@ -91,6 +91,37 @@ const loadAdminDashboard = async (req, res) => {
             { $project: { _id: 0, name: '$product.name', quantity: 1, revenue: 1 } }
         ]);
 
+        const topCategoriesAgg = await Order.aggregate([
+            { $match: { orderStatus: { $nin: ['cancelled', 'payment-failed'] } } },
+            { $unwind: '$products' },
+            { $match: { 
+                'products.status': { $nin: ['cancelled', 'return pending', 'returned'] } 
+            }},
+            { $lookup: {
+                from: 'products',
+                localField: 'products.product',
+                foreignField: '_id',
+                as: 'productInfo'
+            }},
+            { $unwind: '$productInfo' },
+            { $group: {
+                _id: '$productInfo.categoryId',
+                totalRevenue: { $sum: { $multiply: ['$products.variant.salePrice', '$products.quantity'] } },
+                totalSold: { $sum: '$products.quantity' }
+            }},
+            { $sort: { totalRevenue: -1 } },
+            { $limit: 5 },
+            { $lookup: {
+                from: 'categories',
+                localField: '_id',
+                foreignField: '_id',
+                as: 'categoryInfo'
+            }},
+            { $unwind: '$categoryInfo' },
+            { $project: {
+                _id: 0, name: '$categoryInfo.name', totalRevenue: 1, totalSold: 1
+            }}
+        ]);
         res.render("admin-dashboard", {
             admin: req.session.admin,
             totalUsers,
@@ -101,6 +132,7 @@ const loadAdminDashboard = async (req, res) => {
             statusPercents,
             recentOrders,
             topProducts: topProductsAgg,
+            topCategories: topCategoriesAgg,
             message: null
         });
     } catch (error) {
