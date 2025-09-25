@@ -553,11 +553,7 @@
     let deletedImages = [];
     let croppedImages = []
 
-    document.addEventListener('DOMContentLoaded', function() {
-        initializeImageCropping();
-        initializeFormValidation();
-        initializeTooltips();
-    });
+ 
 
     function initializeTooltips() {
         var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
@@ -607,41 +603,7 @@
         });
     }
 
-    function initializeImageCropping() {
-        const fileInput = document.getElementById('productImages');
-        const previewContainer = document.getElementById('imagePreviewContainer');
-        let cropper;
 
-        fileInput.addEventListener('change', function(e) {
-            const files = Array.from(e.target.files);
-            previewContainer.innerHTML = '';
-
-            files.forEach((file, index) => {
-                if (file.type.startsWith('image/')) {
-                    const reader = new FileReader();
-                    reader.onload = function(e) {
-                        const previewDiv = document.createElement('div');
-                        previewDiv.className = 'col-6 mb-2';
-                        previewDiv.innerHTML = `
-                            <div class="image-item">
-                                <img src="${e.target.result}" alt="Preview" class="img-fluid rounded-modern">
-                                <div class="image-overlay">
-                                    <button type="button" class="btn btn-sm btn-primary-modern" onclick="cropImage(${index}, '${e.target.result}')">
-                                        <i class="fas fa-crop"></i>
-                                    </button>
-                                    <button type="button" class="btn btn-sm btn-danger-modern" onclick="removePreviewImage(${index})">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </div>
-                            </div>
-                        `;
-                        previewContainer.appendChild(previewDiv);
-                    };
-                    reader.readAsDataURL(file);
-                }
-            });
-        });
-    }
 
     function removeCurrentImage(index) {
         Swal.fire({
