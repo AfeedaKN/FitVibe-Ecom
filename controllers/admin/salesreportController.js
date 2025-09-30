@@ -67,13 +67,14 @@ const salesreport = async (req, res) => {
         path: "products.product",
         select: "name"  
     })
-    .populate("user");
+    .populate("user")
+    .lean();
 
 
         
         if (status) {
                     allFilteredOrders = allFilteredOrders.map(order => {
-            const obj = order.toObject();
+            const obj = order
             obj.products = Array.isArray(obj.products) ? obj.products : [];
             if (status) {
                 obj.products = obj.products.filter(p => p.status === status);
@@ -113,13 +114,14 @@ const salesreport = async (req, res) => {
 
 
 
+
         
         const allProducts = allFilteredOrders.flatMap((order) => order.products.map(p => ({ ...p, order })));
         const totalPages = Math.ceil(allProducts.length / limit);
                         const salesData = allFilteredOrders
                 .flatMap(order =>
                     order.products.map(p => ({
-                    ...p.toObject(),            
+                    ...p,            
                     productData: p.product,   
                     order
                     }))

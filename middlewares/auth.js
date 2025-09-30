@@ -18,7 +18,7 @@ const userAuth = async (req, res, next) => {
         if (!user || user.isAdmin || user.isBlocked) {
             req.session.destroy((err) => {
                 if (err) console.error("Session destroy error:", err);
-                // For AJAX requests, return JSON response
+                
                 if (req.xhr || req.headers.accept?.indexOf('json') > -1) {
                     return res.status(401).json({
                         success: false,
@@ -34,7 +34,7 @@ const userAuth = async (req, res, next) => {
         next();
     } catch (error) {
         console.error("User authentication error:", error);
-        // For AJAX requests, return JSON response
+        
         if (req.xhr || req.headers.accept?.indexOf('json') > -1) {
             return res.status(500).json({
                 success: false,

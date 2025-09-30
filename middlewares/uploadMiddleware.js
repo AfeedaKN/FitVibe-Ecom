@@ -3,24 +3,24 @@ const { CloudinaryStorage } = require('multer-storage-cloudinary');
 const cloudinary = require('cloudinary').v2;
 require('dotenv').config();
 
-// 🔧 Cloudinary Config
+
 cloudinary.config({
   cloud_name: process.env.CLOUD_NAME,
   api_key: process.env.CLOUD_API_KEY,
   api_secret: process.env.CLOUD_API_SECERET,
 });
 
-// 📁 Cloudinary Storage
+
 const storage = new CloudinaryStorage({
   cloudinary: cloudinary,
   params: {
-    folder: 'FitVibe-Products', // Folder in Cloudinary
+    folder: 'FitVibe-Products', 
     allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
     transformation: [{ width: 500, height: 500, crop: 'limit' }],
   },
 });
 
-// 📸 File filter
+
 const fileFilter = (req, file, cb) => {
   const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
   if (allowedTypes.includes(file.mimetype)) {
@@ -30,10 +30,10 @@ const fileFilter = (req, file, cb) => {
   }
 };
 
-// 📤 Upload middleware
+
 const upload = multer({
   storage: storage,
-  limits: { fileSize: 5 * 1024 * 1024, files: 4 }, // max 4 images
+  limits: { fileSize: 5 * 1024 * 1024, files: 4 }, 
   fileFilter: fileFilter,
 });
 
