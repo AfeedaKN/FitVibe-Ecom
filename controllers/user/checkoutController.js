@@ -33,18 +33,26 @@ const getCheckout = async (req, res) => {
         total: 0, 
         defaultAddress: null,
         walletBalance: walletBalance,
-        flashMessages: req.flash('info')
+        toastMessages: [] // Changed from flashMessages to toastMessages
       });
     }
 
     const originalItemCount = cart.items.length;
     const validItems = [];
-    const removalMessages = [];
+    const toastMessages = [];
 
     for (const item of cart.items) {
       const product = item.productId;
+
+      // Validate product existence and listing status
       if (!product || product.isDeleted || !product.isListed) {
-        removalMessages.push(`An item was removed because it's no longer available.`);
+        toastMessages.push(`Product '${product?.name || 'Unknown'}' was unlisted by admin, so removing it from cart.`);
+        continue;
+      }
+
+      // Validate quantity
+      if (!Number.isInteger(item.quantity) || item.quantity <= 0) {
+        toastMessages.push(`Product '${product.name}' was removed due to invalid or missing quantity.`);
         continue;
       }
 
@@ -52,13 +60,15 @@ const getCheckout = async (req, res) => {
         variant._id.toString() === item.variantId.toString()
       );
 
+      // Validate variant existence and stock
       if (!matchedVariant || matchedVariant.varientquatity <= 0) {
-        removalMessages.push(`'${product.name} - ${matchedVariant?.size || 'Variant'}' was removed as it is now out of stock.`);
+        toastMessages.push(`Product '${product.name} - ${matchedVariant?.size || 'Variant'}' was removed as it is now out of stock.`);
         continue;
       }
 
+      // Adjust quantity if it exceeds available stock
       if (matchedVariant.varientquatity < item.quantity) {
-        removalMessages.push(`Quantity for '${product.name} - ${matchedVariant.size}' was updated to ${matchedVariant.varientquatity} due to low stock.`);
+        toastMessages.push(`Quantity for '${product.name} - ${matchedVariant.size}' was updated to ${matchedVariant.varientquatity} due to low stock.`);
         item.quantity = matchedVariant.varientquatity;
       }
 
@@ -66,22 +76,20 @@ const getCheckout = async (req, res) => {
       validItems.push(item);
     }
 
+    // Update cart if items were removed
     if (validItems.length < originalItemCount) {
       cart.items = validItems;
       await cart.save();
-      req.flash('info', removalMessages);
-      
-      return res.redirect('/checkout');
     }
 
-    const subtotal = cart.items.reduce((sum, item) => {
+    // Calculate totals only for valid items
+    const subtotal = validItems.reduce((sum, item) => {
       return sum + (item.variant?.salePrice || 0) * item.quantity;
     }, 0);
 
-
     const tax = 0; 
     const discount = 0; 
-    const shipping = 100;
+    const shipping = validItems.length > 0 ? 100 : 0; // No shipping if cart is empty
     const total = subtotal + shipping;
 
     const defaultAddress = addresses.find(addr => addr.isDefault);
@@ -89,7 +97,7 @@ const getCheckout = async (req, res) => {
     res.render('checkout', {
       addresses,
       user,
-      cart,
+      cart: { items: validItems }, // Pass updated cart with valid items
       subtotal,
       tax,
       discount,
@@ -97,56 +105,125 @@ const getCheckout = async (req, res) => {
       total,
       defaultAddress: defaultAddress ? defaultAddress._id : null,
       walletBalance: walletBalance,
-      flashMessages: req.flash('info')
+      toastMessages // Pass toast messages to frontend
     });
 
   } catch (error) {
-    console.error(error);
+    console.error('Checkout error:', error.message, error.stack);
     res.status(500).send('Server Error');
   }
 };
 
 
-
 const placeOrder = async (req, res) => {
   try {
     const { paymentMethod, addressId, couponCode, couponDiscount } = req.body;
-    
     const userId = req.user._id;
     const user = await User.findById(userId);
     const cart = await Cart.findOne({ userId }).populate('items.productId');
 
-    if (!cart || cart.items.length === 0) {
-      return res.status(400).json({ success: false, message: 'Cart is empty' });
+    
+    const toastMessages = [];
+    const validItems = [];
+
+   
+    if (!cart || !cart.items || cart.items.length === 0) {
+      toastMessages.push('Your cart is empty. Please add items to proceed.');
+      console.log('Cart is empty or missing');
+      
+      req.session.toastMessages = toastMessages;
+      return res.status(400).json({
+        success: false,
+        message: 'This item is currently unavailable',
+        redirect: '/user/cart',
+      });
     }
 
     
+    const originalItemCount = cart.items.length;
     for (const item of cart.items) {
       const product = item.productId;
-      const matchedVariant = product.variants.find(variant => 
-        variant._id.toString() === item.variantId.toString()
-      );
-      item.variant = matchedVariant; 
-    }
 
-    const outOfStock = cart.items.some(item => {
-      if (!item.variant) {
-        console.error(`Variant not found for item: ${item.productId._id}, variantId: ${item.variantId.toString()}`);
-        return true;
+      
+      if (!product || product.isDeleted || !product.isListed) {
+        toastMessages.push(
+          `Product '${product?.name || "Unknown"}' was unlisted by admin, so removing it from cart.`
+        );
+        console.log(`Removing unlisted/deleted product: ${product?.name || "Unknown"}`);
+        continue;
       }
-      return item.variant.varientquatity < item.quantity;
-    });
 
-    if (outOfStock) {
-      return res.status(400).json({ success: false, message: 'Some items are out of stock' });
+      
+      if (!item.quantity || item.quantity <= 0) {
+        toastMessages.push(
+          `Product '${product.name}' was removed due to invalid or missing quantity.`
+        );
+        console.log(`Removing product with invalid quantity: ${product.name}`);
+        continue;
+      }
+
+      
+      const matchedVariant = product.variants.find(
+        (variant) => variant._id.toString() === item.variantId.toString()
+      );
+
+      if (!matchedVariant) {
+        toastMessages.push(
+          `Product '${product.name}' was removed due to invalid variant.`
+        );
+        console.log(`Removing product with invalid variant: ${product.name}`);
+        continue;
+      }
+
+      
+      if (matchedVariant.varientquatity <= 0) {
+        toastMessages.push(
+          `Product '${product.name} - ${matchedVariant.size}' was removed as it is now out of stock.`
+        );
+        console.log(`Removing out-of-stock product: ${product.name} - ${matchedVariant.size}`);
+        continue;
+      }
+
+      
+      if (matchedVariant.varientquatity < item.quantity) {
+        toastMessages.push(
+          `Quantity for '${product.name} - ${matchedVariant.size}' was updated to ${matchedVariant.varientquatity} due to low stock.`
+        );
+        console.log(
+          `Adjusting quantity for ${product.name} - ${matchedVariant.size} from ${item.quantity} to ${matchedVariant.varientquatity}`
+        );
+        item.quantity = matchedVariant.varientquatity;
+      }
+
+      
+      item.variant = matchedVariant;
+      validItems.push(item);
     }
 
+    
+    if (validItems.length < originalItemCount || toastMessages.length > 0) {
+      cart.items = validItems;
+      await cart.save();
+      console.log('Cart updated after validation:', cart.items);
+      
+      req.session.toastMessages = toastMessages;
+      return res.status(400).json({
+        success: false,
+        message: 'This item is currently unavailable',
+        redirect: '/user/cart',
+      });
+    }
 
+    
     const address = await Address.findOne({ _id: addressId, user: userId });
     if (!address) {
-      return res.status(400).json({ success: false, message: 'Invalid or missing address' });
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid or missing address',
+      });
     }
 
+    
     const subtotal = cart.items.reduce((sum, item) => {
       if (!item.variantId) return sum;
       return sum + (item.variant?.salePrice || 0) * item.quantity;
@@ -156,77 +233,94 @@ const placeOrder = async (req, res) => {
     const discount = 0;
     const shippingCharge = 100;
     const totalAmount = subtotal;
+
     
     let couponDiscountAmount = 0;
     let appliedCoupon = null;
-    
+
     if (couponCode && couponDiscount) {
-      
-      const coupon = await Coupon.findOne({ 
+      const coupon = await Coupon.findOne({
         name: couponCode.toUpperCase(),
         isList: true,
-        isActive: true
+        isActive: true,
       });
-      
-      if (coupon && coupon.expireOn >= new Date() && subtotal >= coupon.minimumPrice) {
+
+      if (
+        coupon &&
+        coupon.expireOn >= new Date() &&
+        subtotal >= coupon.minimumPrice
+      ) {
         const existingOrder = await Order.findOne({
           user: userId,
           'coupon.couponId': coupon._id,
-          orderStatus: { $ne: 'payment-failed' }
+          orderStatus: { $ne: 'payment-failed' },
         });
-        
-        
+
         if (!existingOrder) {
           if (coupon.discountType === 'percentage') {
             couponDiscountAmount = (subtotal * coupon.discountValue) / 100;
-            if (coupon.maxDiscountAmount && couponDiscountAmount > coupon.maxDiscountAmount) {
+            if (
+              coupon.maxDiscountAmount &&
+              couponDiscountAmount > coupon.maxDiscountAmount
+            ) {
               couponDiscountAmount = coupon.maxDiscountAmount;
             }
           } else {
             couponDiscountAmount = Math.min(coupon.discountValue, subtotal);
           }
-          
-          couponDiscountAmount = Math.min(couponDiscountAmount, subtotal, parseFloat(couponDiscount));
-          
+
+          couponDiscountAmount = Math.min(
+            couponDiscountAmount,
+            subtotal,
+            parseFloat(couponDiscount)
+          );
+
           appliedCoupon = {
             couponId: coupon._id,
             code: coupon.name,
-            discountAmount: couponDiscountAmount
+            discountAmount: couponDiscountAmount,
           };
         }
       }
     }
-    
+
     const finalAmount = totalAmount - couponDiscountAmount + shippingCharge;
 
+    
     if (paymentMethod === 'Wallet' || paymentMethod === 'wallet') {
       const wallet = await Wallet.findOne({ userId });
       const walletBalance = wallet ? wallet.balance : 0;
-      
+
       if (walletBalance < finalAmount) {
-        return res.status(400).json({ 
-          success: false, 
-          message: `Insufficient wallet balance. Available: ₹${walletBalance.toFixed(2)}, Required: ₹${finalAmount.toFixed(2)}` 
+        return res.status(400).json({
+          success: false,
+          message: `Insufficient wallet balance. Available: ₹${walletBalance.toFixed(
+            2
+          )}, Required: ₹${finalAmount.toFixed(2)}`,
         });
       }
     }
 
+    
     const generateOrderID = () => {
       const date = new Date();
       const year = date.getFullYear().toString().slice(-2);
-      const month = ("0" + (date.getMonth() + 1)).slice(-2);
-      const day = ("0" + date.getDate()).toString().padStart(2, "0");
-      const random = Math.floor(Math.random() * 10000).toString().padStart(4, "0");
+      const month = ('0' + (date.getMonth() + 1)).slice(-2);
+      const day = ('0' + date.getDate()).toString().padStart(2, '0');
+      const random = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
       return `ORD${year}${month}${day}${random}`;
     };
 
     const orderID = generateOrderID();
 
-    const products = cart.items.map(item => {
+    
+    const products = cart.items.map((item) => {
       if (!item.variant) {
-        throw new Error(`Variant not found for product: ${item.productId._id}, variantId: ${item.variantId}`);
+        throw new Error(
+          `Variant not found for product: ${item.productId._id}, variantId: ${item.variantId}`
+        );
       }
-      
+
       return {
         product: item.productId._id,
         variant: {
@@ -235,10 +329,11 @@ const placeOrder = async (req, res) => {
           salePrice: item.variant.salePrice,
         },
         quantity: item.quantity,
-        status: 'pending'
+        status: 'pending',
       };
     });
 
+    
     const order = new Order({
       user: userId,
       orderID: orderID,
@@ -251,7 +346,7 @@ const placeOrder = async (req, res) => {
         state: address.state,
         zipCode: address.zipCode,
         country: address.country,
-        phone: address.phone
+        phone: address.phone,
       },
       totalAmount,
       discount,
@@ -262,18 +357,21 @@ const placeOrder = async (req, res) => {
       coupon: appliedCoupon,
       paymentMethod,
       orderStatus: 'pending',
-      paymentStatus: 'pending'
+      paymentStatus: 'pending',
     });
 
     await order.save();
-    console.log("Order saved successfully with ID:", order.orderID);
+    console.log('Order saved successfully with ID:', order.orderID);
 
+    
     if (paymentMethod === 'COD') {
       for (const item of cart.items) {
         if (!item.variant) continue;
-        
+
         const product = item.productId;
-        const variantToUpdate = product.variants.find(v => v._id.toString() === item.variant._id.toString());
+        const variantToUpdate = product.variants.find(
+          (v) => v._id.toString() === item.variant._id.toString()
+        );
         if (variantToUpdate) {
           variantToUpdate.varientquatity -= item.quantity;
           await product.save();
@@ -283,46 +381,49 @@ const placeOrder = async (req, res) => {
       cart.items = [];
       await cart.save();
 
-      return res.json({ 
-        success: true, 
+      return res.json({
+        success: true,
         orderId: order._id,
         orderNumber: order.orderID,
-        paymentMethod: 'COD'
+        paymentMethod: 'COD',
       });
     }
 
+    
     if (paymentMethod === 'Wallet' || paymentMethod === 'wallet') {
       try {
         let wallet = await findOrCreateWallet(userId);
-        
+
         if (wallet.balance < finalAmount) {
-          return res.status(400).json({ 
-            success: false, 
-            message: `Insufficient wallet balance. Available: ₹${wallet.balance.toFixed(2)}, Required: ₹${finalAmount.toFixed(2)}` 
+          return res.status(400).json({
+            success: false,
+            message: `Insufficient wallet balance. Available: ₹${wallet.balance.toFixed(
+              2
+            )}, Required: ₹${finalAmount.toFixed(2)}`,
           });
         }
 
         const transaction = createTransaction(wallet, {
-          type: "debit",
+          type: 'debit',
           amount: finalAmount,
           description: `Payment for order ${orderID}`,
           orderId: order._id,
-          status: "completed",
-          source: "order_payment", 
+          status: 'completed',
+          source: 'order_payment',
           metadata: {
             orderNumber: orderID,
-            paymentMethod: 'Wallet'
-          }
+            paymentMethod: 'Wallet',
+          },
         });
 
-        wallet.transactions = wallet.transactions.map(t => ({
+        wallet.transactions = wallet.transactions.map((t) => ({
           ...t,
-          source: t.source === 'legacy' ? 'cashback' : t.source 
+          source: t.source === 'legacy' ? 'cashback' : t.source,
         }));
 
         wallet.transactions.unshift(transaction);
         wallet.balance -= finalAmount;
-        await wallet.save({ validateModifiedOnly: true }); 
+        await wallet.save({ validateModifiedOnly: true });
 
         order.paymentStatus = 'completed';
         order.orderStatus = 'processing';
@@ -332,16 +433,18 @@ const placeOrder = async (req, res) => {
           status: 'completed',
           createdAt: new Date(),
           amount: finalAmount,
-          transactionId: transaction.transactionId
+          transactionId: transaction.transactionId,
         };
 
         await order.save();
 
         for (const item of cart.items) {
           if (!item.variant) continue;
-          
+
           const product = item.productId;
-          const variantToUpdate = product.variants.find(v => v._id.toString() === item.variant._id.toString());
+          const variantToUpdate = product.variants.find(
+            (v) => v._id.toString() === item.variant._id.toString()
+          );
           if (variantToUpdate) {
             variantToUpdate.varientquatity -= item.quantity;
             await product.save();
@@ -351,36 +454,36 @@ const placeOrder = async (req, res) => {
         cart.items = [];
         await cart.save();
 
-        return res.json({ 
-          success: true, 
+        return res.json({
+          success: true,
           orderId: order._id,
           orderNumber: order.orderID,
           paymentMethod: 'Wallet',
           transactionId: transaction.transactionId,
-          message: `Payment of ₹${finalAmount.toFixed(2)} deducted from wallet successfully`
+          message: `Payment of ₹${finalAmount.toFixed(2)} deducted from wallet successfully`,
         });
-
       } catch (error) {
         console.error('Error processing wallet payment:', error);
-        return res.status(500).json({ 
-          success: false, 
-          message: 'Error processing wallet payment: ' + error.message 
+        return res.status(500).json({
+          success: false,
+          message: 'Error processing wallet payment: ' + error.message,
         });
       }
     }
 
+    
     if (paymentMethod === 'Online') {
       const Razorpay = require('razorpay');
       const instance = new Razorpay({
         key_id: process.env.RAZORPAY_KEY,
-        key_secret: process.env.RAZORPAY_SECRET
+        key_secret: process.env.RAZORPAY_SECRET,
       });
 
       const razorpayOptions = {
         amount: Math.round(finalAmount * 100),
         currency: 'INR',
         receipt: order.orderID,
-        payment_capture: 1
+        payment_capture: 1,
       };
 
       const razorpayOrder = await instance.orders.create(razorpayOptions);
@@ -400,16 +503,17 @@ const placeOrder = async (req, res) => {
         user: {
           name: user.name,
           email: user.email,
-          phone: user.phone || address.phone
-        }
+          phone: user.phone || address.phone,
+        },
       });
     }
-
   } catch (error) {
     console.error('Error in placeOrder:', error);
     res.status(500).json({ success: false, message: 'Server Error: ' + error.message });
   }
-};
+};;
+
+
 const getOrderSuccess = async (req, res) => {
   try {
     const { orderId } = req.params;

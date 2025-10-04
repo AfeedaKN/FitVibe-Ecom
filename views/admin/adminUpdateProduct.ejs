@@ -1050,7 +1050,7 @@ function validateImages() {
     console.log(`Validation: existing=${existingImages}, new=${newFilesCount}, total=${totalImages}`);
 
     if (totalImages < 3) {
-        markInvalid(imagesInput, `Please upload at least 3 images. Currently available: ${totalImages}`);
+        markInvalid(imagesInput, `Please upload at least 3 images should be  JPEG, JPG, PNG files. Currently available: ${totalImages}`);
         return false;
     }
 

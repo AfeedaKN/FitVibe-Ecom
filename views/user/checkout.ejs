@@ -342,9 +342,14 @@
     }
 
     .coupon-input-group {
-      display: flex;
+      display: grid;
+      grid-template-columns: 1fr auto auto;
+      align-items: center;
       gap: 0.75rem;
-      margin-bottom: 1rem;
+    }
+
+    .coupon-input-group .apply-coupon-btn {
+      min-width: 120px;
     }
 
     .coupon-input-group input {
@@ -390,6 +395,22 @@
       background: #9ca3af;
       cursor: not-allowed;
       transform: none;
+    }
+
+    .apply-coupon-btn.btn-info {
+      background: linear-gradient(135deg, #06b6d4 0%, #0ea5e9 100%);
+    }
+
+    .apply-coupon-btn.btn-info:hover {
+      box-shadow: 0 10px 15px -3px rgba(14, 165, 233, 0.4);
+    }
+
+    .apply-coupon-btn.btn-secondary {
+      background: #6b7280;
+    }
+
+    .apply-coupon-btn.btn-secondary:hover {
+      box-shadow: 0 10px 15px -3px rgba(107, 114, 128, 0.4);
     }
 
     .coupon-message {
@@ -725,10 +746,19 @@
       }
 
       .coupon-input-group {
-        flex-direction: column;
+        grid-template-columns: 1fr;
       }
 
-      .apply-coupon-btn {
+      .coupon-input-group .apply-coupon-btn {
+        width: 100%;
+      }
+
+      .coupons-list .coupon-item {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .coupon-item .btn-apply-coupon {
         width: 100%;
         justify-content: center;
       }
@@ -784,49 +814,122 @@
     .fade-in {
       animation: fadeIn 0.5s ease-out;
     }
-  /* Enhanced Coupon UI */
-    .coupon-section .coupon-input-group {
-      display: grid;
-      grid-template-columns: 1fr auto auto;
-      align-items: center;
-      gap: 0.75rem;
-    }
-    .coupon-input-group .apply-coupon-btn { min-width: 120px; }
-    .apply-coupon-btn.btn-info {
-      background: linear-gradient(135deg, #06b6d4 0%, #0ea5e9 100%);
-    }
-    .apply-coupon-btn.btn-info:hover { box-shadow: 0 10px 15px -3px rgba(14,165,233,0.4); }
-    .apply-coupon-btn.btn-secondary { background: #6b7280; }
-    .apply-coupon-btn.btn-secondary:hover { box-shadow: 0 10px 15px -3px rgba(107,114,128,0.4); }
 
     /* Modal styles */
     #availableCouponsModal.modal-backdrop {
-      position: fixed; inset: 0; background: rgba(2,6,23,0.6); z-index: 9999; overflow: auto;
-      display: flex; align-items: center; justify-content: center; padding: 2rem 1rem;
+      position: fixed;
+      inset: 0;
+      background: rgba(2, 6, 23, 0.6);
+      z-index: 9999;
+      overflow: auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1rem;
     }
-    #availableCouponsModal .modal-dialog { max-width: 720px; width: 100%; margin: 0 auto; padding: 0 1rem; }
-    #availableCouponsModal .modal-content { background:#fff; border-radius:16px; overflow:hidden; box-shadow: 0 20px 40px rgba(0,0,0,0.2); }
-    #availableCouponsModal .modal-header { display:flex; justify-content:space-between; align-items:center; padding:1rem 1.5rem; background:#f8fafc; border-bottom:1px solid #e2e8f0; }
-    #availableCouponsModal .modal-title { margin:0; font-weight:600; color:#0f172a; }
-    #availableCouponsModal .modal-close { background:none; border:none; font-size:1.25rem; cursor:pointer; color:#64748b; }
-    #availableCouponsModal .modal-body { padding:1rem 1.5rem; max-height:60vh; overflow:auto; }
-    #availableCouponsModal .modal-footer { padding:1rem 1.5rem; background:#f8fafc; border-top:1px solid #e2e8f0; display:flex; justify-content:flex-end; gap:.5rem; }
+
+    #availableCouponsModal .modal-dialog {
+      max-width: 720px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 0 1rem;
+    }
+
+    #availableCouponsModal .modal-content {
+      background: #fff;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+    }
+
+    #availableCouponsModal .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 1.5rem;
+      background: #f8fafc;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    #availableCouponsModal .modal-title {
+      margin: 0;
+      font-weight: 600;
+      color: #0f172a;
+    }
+
+    #availableCouponsModal .modal-close {
+      background: none;
+      border: none;
+      font-size: 1.25rem;
+      cursor: pointer;
+      color: #64748b;
+    }
+
+    #availableCouponsModal .modal-body {
+      padding: 1rem 1.5rem;
+      max-height: 60vh;
+      overflow: auto;
+    }
+
+    #availableCouponsModal .modal-footer {
+      padding: 1rem 1.5rem;
+      background: #f8fafc;
+      border-top: 1px solid #e2e8f0;
+      display: flex;
+      justify-content: flex-end;
+      gap: .5rem;
+    }
 
     /* Coupon list */
-    .coupons-list .coupons-empty { text-align:center; color:#64748b; padding:1rem; }
-    .coupons-list .coupon-item { display:flex; gap:1rem; align-items:center; border:1px solid #e2e8f0; border-radius:12px; padding:1rem; margin-bottom:.75rem; background:#fff; }
-    .coupon-item-info { flex: 1; min-width: 0; }
-    .coupon-item-info .coupon-code { font-weight:700; color:#0f172a; letter-spacing: .5px; }
-    .coupon-item-info .coupon-desc { color:#64748b; font-size:.875rem; margin-top:.125rem; }
-    .coupon-item-info .coupon-savings { color:#059669; font-size:.875rem; margin-top:.25rem; font-weight:600; }
-    .coupon-item-info .coupon-meta { color:#64748b; font-size:.75rem; margin-top:.25rem; }
-    .coupon-item .btn-apply-coupon { white-space: nowrap; }
+    .coupons-list .coupons-empty {
+      text-align: center;
+      color: #64748b;
+      padding: 1rem;
+    }
 
-    @media (max-width: 768px) {
-      .coupon-section .coupon-input-group { grid-template-columns: 1fr; }
-      .coupon-section .coupon-input-group .apply-coupon-btn { width: 100%; }
-      .coupons-list .coupon-item { flex-direction: column; align-items: stretch; }
-      .coupon-item .btn-apply-coupon { width: 100%; justify-content: center; }
+    .coupons-list .coupon-item {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 1rem;
+      margin-bottom: .75rem;
+      background: #fff;
+    }
+
+    .coupon-item-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .coupon-item-info .coupon-code {
+      font-weight: 700;
+      color: #0f172a;
+      letter-spacing: .5px;
+    }
+
+    .coupon-item-info .coupon-desc {
+      color: #64748b;
+      font-size: .875rem;
+      margin-top: .125rem;
+    }
+
+    .coupon-item-info .coupon-savings {
+      color: #059669;
+      font-size: .875rem;
+      margin-top: .25rem;
+      font-weight: 600;
+    }
+
+    .coupon-item-info .coupon-meta {
+      color: #64748b;
+      font-size: .75rem;
+      margin-top: .25rem;
+    }
+
+    .coupon-item .btn-apply-coupon {
+      white-space: nowrap;
     }
 
     /* Error message styles */
@@ -836,9 +939,11 @@
       margin-top: 0.25rem;
       display: none;
     }
+
     .error-message.show {
       display: block;
     }
+
     .address-form input.error {
       border-color: #ef4444;
       box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
@@ -1001,43 +1106,42 @@
         </div>
 
         <div class="payment-methods">
-  <h3>Select Payment Method</h3>
+          <h3>Select Payment Method</h3>
 
-  <% if (total <= 1000) { %>
-    <label>
-      <input type="radio" name="paymentMethod" value="COD" checked>
-      <span>Cash on Delivery</span>
-      <i class="fas fa-money-bill-wave"></i>
-    </label>
-  <% } else { %>
-    <label class="disabled" title="COD available only for orders up to ₹1000">
-      <input type="radio" name="paymentMethod" value="COD" disabled>
-      <span>Cash on Delivery (Available only for orders ≤ ₹1000)</span>
-      <i class="fas fa-money-bill-wave"></i>
-    </label>
-  <% } %>
+          <% if (total <= 1000) { %>
+            <label>
+              <input type="radio" name="paymentMethod" value="COD" checked>
+              <span>Cash on Delivery</span>
+              <i class="fas fa-money-bill-wave"></i>
+            </label>
+          <% } else { %>
+            <label class="disabled" title="COD available only for orders up to ₹1000">
+              <input type="radio" name="paymentMethod" value="COD" disabled>
+              <span>Cash on Delivery (Available only for orders ≤ ₹1000)</span>
+              <i class="fas fa-money-bill-wave"></i>
+            </label>
+          <% } %>
 
-  <label>
-    <input type="radio" name="paymentMethod" value="Online" <%= total > 1000 ? "checked" : "" %>>
-    <span>Online Payment</span>
-    <i class="fas fa-credit-card"></i>
-  </label>
+          <label>
+            <input type="radio" name="paymentMethod" value="Online" <%= total > 1000 ? "checked" : "" %>>
+            <span>Online Payment</span>
+            <i class="fas fa-credit-card"></i>
+          </label>
 
-  <% if (walletBalance >= total) { %>
-    <label id="walletPaymentOption">
-      <input type="radio" name="paymentMethod" value="Wallet">
-      <span>Pay with Wallet</span>
-      <i class="fas fa-wallet"></i>
-    </label>
-  <% } else { %>
-    <label id="walletPaymentOption" class="disabled" title="Insufficient wallet balance">
-      <input type="radio" name="paymentMethod" value="Wallet" disabled>
-      <span>Pay with Wallet (Insufficient Balance)</span>
-      <i class="fas fa-wallet"></i>
-    </label>
-  <% } %>
+          <% if (walletBalance >= total) { %>
+            <label id="walletPaymentOption">
+              <input type="radio" name="paymentMethod" value="Wallet">
+              <span>Pay with Wallet</span>
+              <i class="fas fa-wallet"></i>
+            </label>
+          <% } else { %>
+            <label id="walletPaymentOption" class="disabled" title="Insufficient wallet balance">
+              <input type="radio" name="paymentMethod" value="Wallet" disabled>
+              <span>Pay with Wallet (Insufficient Balance)</span>
+              <i class="fas fa-wallet"></i>
+            </label>
+          <% } %>
         </div>
-
 
         <% const isOutOfStock = cart.items.some(item => 
           item.productId && 
@@ -1081,6 +1185,18 @@
       }
     });
 
+    // Display toast messages from server with delay between each
+    <% if (typeof toastMessages !== 'undefined' && toastMessages.length > 0) { %>
+      <% toastMessages.forEach((message, index) => { %>
+        setTimeout(() => {
+          Toast.fire({
+            icon: 'warning',
+            title: '<%= message %>'
+          });
+        }, <%= index * 4000 %>); // 4s delay between toasts
+      <% }); %>
+    <% } %>
+
     // Global variables for coupon management
     let appliedCouponData = null;
     let originalTotals = {
@@ -1088,7 +1204,7 @@
       tax: <%= tax %>,
       discount: <%= discount %>,
       shipping: <%= shipping %>,
-      total: <%= total %> 
+      total: <%= total %>
     };
 
     // Coupon functionality
@@ -1496,109 +1612,110 @@
     });
 
     // Save Address with Validation
-document.getElementById('addressForm').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const form = e.target;
-  const submitBtn = form.querySelector('button[type="submit"]');
-  const formData = new FormData(form);
-  const data = Object.fromEntries(formData);
+    document.getElementById('addressForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const form = e.target;
+      const submitBtn = form.querySelector('button[type="submit"]');
+      const formData = new FormData(form);
+      const data = Object.fromEntries(formData);
 
-  clearErrors();
+      clearErrors();
 
-  let isValid = true;
+      let isValid = true;
 
-  // Common regex for fields (must contain at least 1 letter, min 3 chars)
-  const textRegex = /^(?=.*[a-zA-Z])[a-zA-Z\s-]{3,}$/;
+      // Common regex for fields (must contain at least 1 letter, min 3 chars)
+      const textRegex = /^(?=.*[a-zA-Z])[a-zA-Z\s-]{3,}$/;
 
-  // Validate name
-  const name = data.name.trim();
-  if (!textRegex.test(name)) {
-    showError('name', 'Name must be at least 3 letters and contain only letters, spaces, and hyphens');
-    isValid = false;
-  }
+      // Validate name
+      const name = data.name.trim();
+      if (!textRegex.test(name)) {
+        showError('name', 'Name must be at least 3 letters and contain only letters, spaces, and hyphens');
+        isValid = false;
+      }
 
-  // Validate address (minimum 3 characters, must have a letter)
-  const address = data.address.trim();
-  if (!/^(?=.*[a-zA-Z]).{3,}$/.test(address)) {
-    showError('address', 'Address must be at least 3 characters and contain letters');
-    isValid = false;
-  }
+      // Validate address (minimum 3 characters, must have a letter)
+      const address = data.address.trim();
+      if (!/^(?=.*[a-zA-Z]).{3,}$/.test(address)) {
+        showError('address', 'Address must be at least 3 characters and contain letters');
+        isValid = false;
+      }
 
-  // Validate city
-  const city = data.city.trim();
-  if (!textRegex.test(city)) {
-    showError('city', 'City must be at least 3 letters and contain only letters, spaces, and hyphens');
-    isValid = false;
-  }
+      // Validate city
+      const city = data.city.trim();
+      if (!textRegex.test(city)) {
+        showError('city', 'City must be at least 3 letters and contain only letters, spaces, and hyphens');
+        isValid = false;
+      }
 
-  // Validate state
-  const state = data.state.trim();
-  if (!textRegex.test(state)) {
-    showError('state', 'State must be at least 3 letters and contain only letters, spaces, and hyphens');
-    isValid = false;
-  }
+      // Validate state
+      const state = data.state.trim();
+      if (!textRegex.test(state)) {
+        showError('state', 'State must be at least 3 letters and contain only letters, spaces, and hyphens');
+        isValid = false;
+      }
 
-  // Validate zipCode (exactly 6 digits)
-  const zipCode = data.zipCode.trim();
-  if (!/^\d{6}$/.test(zipCode)) {
-    showError('zipCode', 'Zip code must be exactly 6 digits');
-    isValid = false;
-  }
+      // Validate zipCode (exactly 6 digits)
+      const zipCode = data.zipCode.trim();
+      if (!/^\d{6}$/.test(zipCode)) {
+        showError('zipCode', 'Zip code must be exactly 6 digits');
+        isValid = false;
+      }
 
-  // Validate country
-  const country = data.country.trim();
-  if (!textRegex.test(country)) {
-    showError('country', 'Country must be at least 3 letters and contain only letters, spaces, and hyphens');
-    isValid = false;
-  }
+      // Validate country
+      const country = data.country.trim();
+      if (!textRegex.test(country)) {
+        showError('country', 'Country must be at least 3 letters and contain only letters, spaces, and hyphens');
+        isValid = false;
+      }
 
-  // Validate phone (Indian: 10 digits starting with 6-9)
-  const phone = data.phone.trim();
-  if (!/^[6-9]\d{9}$/.test(phone)) {
-    showError('phone', 'Phone number must be 10 digits and start with 6, 7, 8, or 9');
-    isValid = false;
-  }
+      // Validate phone (Indian: 10 digits starting with 6-9)
+      const phone = data.phone.trim();
+      if (!/^[6-9]\d{9}$/.test(phone)) {
+        showError('phone', 'Phone number must be 10 digits and start with 6, 7, 8, or 9');
+        isValid = false;
+      }
 
-  if (!isValid) {
-    return;
-  }
+      if (!isValid) {
+        return;
+      }
 
-  submitBtn.disabled = true;
-  submitBtn.innerHTML = '<span class="spinner"></span> Saving...';
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<span class="spinner"></span> Saving...';
 
-  try {
-    const response = await fetch('/save-address', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data)
+      try {
+        const response = await fetch('/save-address', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+
+        if (response.ok) {
+          Toast.fire({
+            icon: 'success',
+            title: 'Address saved successfully!'
+          });
+          setTimeout(() => {
+            window.location.reload();
+          }, 1000);
+        } else {
+          Toast.fire({
+            icon: 'error',
+            title: 'Failed to save address'
+          });
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = '<i class="fas fa-save"></i> Save Address';
+        }
+      } catch (error) {
+        Toast.fire({
+          icon: 'error',
+          title: 'Error saving address'
+        });
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i class="fas fa-save"></i> Save Address';
+      }
     });
 
-    if (response.ok) {
-      Toast.fire({
-        icon: 'success',
-        title: 'Address saved successfully!'
-      });
-      setTimeout(() => {
-        window.location.reload();
-      }, 1000);
-    } else {
-      Toast.fire({
-        icon: 'error',
-        title: 'Failed to save address'
-      });
-      submitBtn.disabled = false;
-      submitBtn.innerHTML = '<i class="fas fa-save"></i> Save Address';
-    }
-  } catch (error) {
-    Toast.fire({
-      icon: 'error',
-      title: 'Error saving address'
-    });
-    submitBtn.disabled = false;
-    submitBtn.innerHTML = '<i class="fas fa-save"></i> Save Address';
-  }
-});
-       // Handle address selection
+    // Handle address selection
     document.querySelectorAll('input[name="address"]').forEach(radio => {
       radio.addEventListener('change', () => {
         document.querySelectorAll('.address-card').forEach(card => {

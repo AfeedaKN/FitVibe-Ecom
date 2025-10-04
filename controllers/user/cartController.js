@@ -105,48 +105,68 @@ const getCart = async (req, res) => {
 
     const cart = await Cart.findOne({ userId: user._id }).populate('items.productId');
     if (!cart) {
-      return res.render('cart', { cart: null, cartItems: [], total: 0 });
+      return res.render('cart', { cart: null, cartItems: [], total: 0, removedItems: [] });
     }
 
     const cartItems = [];
     let total = 0;
+    let removedMessages = []; // 🔥 store removed product messages
+    let itemsToKeep = [];
 
     for (const item of cart.items) {
       if (item.productId) {
         const product = item.productId;
+
+        // find matching variant
         const variant = product.variants.find(
           (v) => v._id.toString() === item.variantId.toString()
         );
 
         if (variant) {
-           let isOutOfStock = false;
-          let availableQty = variant.stock;
+          const availableQty = variant.stock;
 
+          // ❌ If stock is 0 or less → remove and add message
           if (availableQty <= 0) {
-            isOutOfStock = true;
-          } else if (item.quantity > availableQty) {
-            item.quantity = availableQty; 
-            await cart.save(); 
+            removedMessages.push(
+              `${product.name} - removed because it is out of stock.`
+            );
+            continue;
           }
 
+          // ❌ If quantity > available stock → remove and add message
+          if (item.quantity > availableQty) {
+            removedMessages.push(
+              `${product.name} - removed because only ${availableQty} in stock.`
+            );
+            continue;
+          }
+
+          // ✅ If valid → keep the item
+          itemsToKeep.push(item);
           cartItems.push({
             product,
             variant,
             quantity: item.quantity,
-            isOutOfStock, 
+            isOutOfStock: false,
           });
 
-          if (!isOutOfStock) {
-            total += item.totalPrice;
-          }
+          total += item.totalPrice;
         }
       }
     }
+
+    // 🧹 Update DB to keep only valid items
+    cart.items = itemsToKeep;
+    await cart.save();
+
+    // 💾 Save removed messages in session for toast display
+    req.session.removedItems = removedMessages;
 
     res.render('cart', {
       cart,
       cartItems,
       total,
+      removedItems: removedMessages // 👈 pass to EJS directly if needed
     });
   } catch (error) {
     console.error("Get cart error:", error);
@@ -155,6 +175,8 @@ const getCart = async (req, res) => {
     });
   }
 };
+
+
 
 
 

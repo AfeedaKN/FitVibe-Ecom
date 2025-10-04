@@ -2,6 +2,7 @@ const Order = require("../../models/orderSchema");
 const mongoose = require('mongoose');
 const Product = require("../../models/productSchema")
 const Wallet = require("../../models/walletShema")
+const Coupon = require("../../models/couponSchema");
 
 const calculateItemFinalAmount = (item, order, productVariant) => {
   const itemSubtotal = productVariant.salePrice * item.quantity;
@@ -259,152 +260,175 @@ const approveReturn = async (req, res) => {
     const orderId = req.params.orderId;
 
     if (!mongoose.Types.ObjectId.isValid(orderId)) {
-      return res.status(400).json({ success: false, message: 'Invalid order ID' });
+      return res.status(400).json({ success: false, message: "Invalid order ID" });
     }
 
-    const order = await Order.findById(orderId).populate('products.product');
-    if (!order || order.orderStatus !== 'return pending') {
-      return res.status(400).json({ success: false, message: 'Order not in return pending status' });
+    const order = await Order.findById(orderId)
+      .populate("products.product")
+      .populate("coupon.couponId");
+
+    if (!order || order.orderStatus !== "return pending") {
+      return res.status(400).json({ success: false, message: "Order not in return pending status" });
     }
+
+    
+    const originalSubtotal = order.products.reduce(
+      (acc, p) => acc + p.variant.salePrice * p.quantity,
+      0
+    );
+
+    
+    let coupon = null;
+    if (order.coupon?.couponId) {
+      coupon = await Coupon.findById(order.coupon.couponId);
+    }
+    if (!coupon && order.coupon?.code) {
+      coupon = await Coupon.findOne({ name: order.coupon.code.toUpperCase() });
+    }
+
+    let totalCouponDiscount = 0;
+    if (order.couponDiscount && order.couponDiscount > 0) {
+      totalCouponDiscount = order.couponDiscount;
+    } else if (order.coupon?.discountAmount && order.coupon.discountAmount > 0) {
+      totalCouponDiscount = order.coupon.discountAmount;
+    }
+
+    
 
     let totalRefundAmount = 0;
     let processedItems = 0;
 
-    
     for (const item of order.products) {
-      if (item.status === 'return pending') {
+      if (item.status === "return pending") {
         const productId = item.product._id;
         const variantSize = item.variant.size;
-        const quantityToAdd = item.quantity;
 
         
         const product = await Product.findById(productId);
-        if (!product) {
-          console.error(`Product not found for ID: ${productId}`);
-          continue;
+        if (!product) continue;
+
+        const variant = product.variants.find((v) => v.size === variantSize);
+        if (!variant) continue;
+
+        variant.varientquatity += item.quantity;
+
+        const itemSubtotal = item.variant.salePrice * item.quantity;
+        const remainingSubtotal = originalSubtotal - itemSubtotal;
+
+        let refundAmount = itemSubtotal;
+        let note = "";
+
+        if (coupon && typeof coupon.minimumPrice === "number") {
+          if (remainingSubtotal >= coupon.minimumPrice) {
+            
+            const proportionalDiscount =
+              (itemSubtotal / originalSubtotal) * totalCouponDiscount;
+            refundAmount = itemSubtotal - proportionalDiscount;
+            note = `Coupon still valid. ₹${proportionalDiscount.toFixed(2)} discount deducted.`;
+          } else {
+            
+            refundAmount = itemSubtotal - totalCouponDiscount;
+            if (refundAmount < 0) refundAmount = 0;
+            note = `Coupon invalid after return. Full discount ₹${totalCouponDiscount.toFixed(
+              2
+            )} deducted.`;
+          }
+        } else {
+          note = "No coupon applied. Full product price refunded.";
         }
 
-        const variant = product.variants.find(v => v.size === variantSize);
-        if (!variant) {
-          console.error(`Variant not found for size: ${variantSize} in product: ${productId}`);
-          continue;
-        }
+        item.refundAmount = refundAmount;
+        item.refundStatus = "approved";
+        item.status = "returned";
 
-        
-        variant.varientquatity += quantityToAdd;
-
-        
-        const { itemSubtotal, itemCouponDiscount, itemFinalAmount } = calculateItemFinalAmount(item, order, variant);
-        item.refundAmount = itemFinalAmount;
-        totalRefundAmount += itemFinalAmount;
+        totalRefundAmount += refundAmount;
         processedItems++;
 
-        
-        item.status = 'returned';
-
-        
         order.statusHistory.push({
-          status: 'returned',
+          status: "returned",
           date: new Date(),
-          description: `Admin approved return for product ${product.name} (Size: ${variantSize}) - Balance Amount: ₹${itemFinalAmount.toFixed(2)}`,
+          description: `Admin approved return for ${item.product.name} (Size: ${variantSize}). ${note} Refund ₹${refundAmount.toFixed(
+            2
+          )} credited.`,
         });
 
         await product.save();
       }
     }
 
-    
     if (processedItems === 0) {
-      req.flash('error', 'No items found with return pending status');
-      return res.redirect('/admin/orders');
+      req.flash("error", "No items found with return pending status");
+      return res.redirect("/admin/orders");
     }
 
     
-    const allItemsReturned = order.products.every(p => p.status === 'returned');
+    const allReturned = order.products.every((p) => p.status === "returned");
     let shippingRefund = 0;
-    
-    if (allItemsReturned) {
-      
+
+    if (allReturned) {
       shippingRefund = order.shippingCharge || 0;
       totalRefundAmount += shippingRefund;
-      
-      order.orderStatus = 'returned';
-      order.paymentStatus = 'refunded';
+      order.orderStatus = "returned";
+      order.paymentStatus = "refunded";
+    } else if (order.products.some((p) => p.status === "return pending")) {
+      order.orderStatus = "return pending";
     } else {
-      const hasReturnPending = order.products.some(p => p.status === 'return pending');
-      if (hasReturnPending) {
-        order.orderStatus = 'return pending';
-      } else {
-        order.orderStatus = 'delivered';
-      }
+      order.orderStatus = "delivered";
     }
-
-    
-    order.refundAmount = (order.refundAmount || 0) + totalRefundAmount;
 
     
     const userId = order.user;
-    let refundDescription;
-    
-    if (allItemsReturned && shippingRefund > 0) {
-      refundDescription = processedItems === 1
-        ? `Refund for returned item in order ${order.orderID} - Balance Amount: ₹${(totalRefundAmount - shippingRefund).toFixed(2)} + Shipping: ₹${shippingRefund.toFixed(2)} = Total: ₹${totalRefundAmount.toFixed(2)}`
-        : `Refund for ${processedItems} returned items in order ${order.orderID} - Balance Amount: ₹${(totalRefundAmount - shippingRefund).toFixed(2)} + Shipping: ₹${shippingRefund.toFixed(2)} = Total: ₹${totalRefundAmount.toFixed(2)}`;
-    } else {
-      refundDescription = processedItems === 1
-        ? `Refund for returned item in order ${order.orderID} - Balance Amount: ₹${totalRefundAmount.toFixed(2)}`
-        : `Refund for ${processedItems} returned items in order ${order.orderID} - Balance Amount: ₹${totalRefundAmount.toFixed(2)}`;
-    }
-
     let wallet = await Wallet.findOne({ userId });
     if (!wallet) {
       wallet = new Wallet({
         userId,
-        balance: totalRefundAmount,
-        transactions: [{
-          type: 'credit',
-          amount: totalRefundAmount,
-          description: refundDescription,
-          status: 'completed',
-          source: 'return_refund',
-          balanceAfter: totalRefundAmount,
-        }],
-      });
-    } else {
-      wallet.balance = (wallet.balance || 0) + totalRefundAmount;
-      wallet.transactions.unshift({
-        type: 'credit',
-        amount: totalRefundAmount,
-        description: refundDescription,
-        status: 'completed',
-        source: 'return_refund',
-        balanceAfter: wallet.balance,
+        balance: 0,
+        transactions: [],
       });
     }
 
+    wallet.balance += totalRefundAmount;
+    wallet.transactions.unshift({
+      type: "credit",
+      amount: totalRefundAmount,
+      description: `Refund processed for ${processedItems} returned items from order ${order.orderID}`,
+      status: "completed",
+      source: "return_refund",
+      balanceAfter: wallet.balance,
+      date: new Date(),
+    });
     await wallet.save();
+
+    order.refundAmount = (order.refundAmount || 0) + totalRefundAmount;
     await order.save();
 
-    
-    const referer = req.get('Referer');
-    const successMessage = allItemsReturned && shippingRefund > 0
-      ? `Return request approved successfully. ₹${totalRefundAmount.toFixed(2)} (including ₹${shippingRefund.toFixed(2)} shipping) refunded to customer wallet.`
-      : `Return request approved successfully. ₹${totalRefundAmount.toFixed(2)} refunded to customer wallet.`;
-      
-    if (referer && referer.includes('/admin/return-requests')) {
-      req.flash('success', successMessage);
-      res.redirect('/admin/return-requests');
-    } else {
-      req.flash('success', successMessage);
-      res.redirect('/admin/orders');
-    }
+    const successMessage =
+      allReturned && shippingRefund > 0
+        ? `Return request approved. ₹${totalRefundAmount.toFixed(
+            2
+          )} (including ₹${shippingRefund.toFixed(
+            2
+          )} shipping) refunded to wallet.`
+        : `Return request approved. ₹${totalRefundAmount.toFixed(
+            2
+          )} refunded to wallet.`;
 
+    const referer = req.get("Referer");
+    if (referer && referer.includes("/admin/return-requests")) {
+      req.flash("success", successMessage);
+      res.redirect("/admin/return-requests");
+    } else {
+      req.flash("success", successMessage);
+      res.redirect("/admin/orders");
+    }
   } catch (error) {
-    console.error('Return approval error:', error);
-    req.flash('error', 'Error processing return approval');
-    res.redirect('/admin/orders');
+    console.error("❌ Approve return error:", error);
+    req.flash("error", "Error processing return approval");
+    res.redirect("/admin/orders");
   }
 };
+
+
 
 const rejectReturn = async (req, res) => {
   try {
@@ -449,135 +473,130 @@ const itemReturnApprove = async (req, res) => {
     const { orderId } = req.params;
     const { productId, variantSize } = req.body;
 
-    
     if (!mongoose.Types.ObjectId.isValid(orderId) || !mongoose.Types.ObjectId.isValid(productId)) {
       return res.status(400).json({ success: false, message: "Invalid order or product ID" });
     }
 
-    
-    const order = await Order.findById(orderId).populate('products.product');
+    const order = await Order.findById(orderId).populate("products.product");
     if (!order) return res.status(404).json({ success: false, message: "Order not found" });
 
-    
-    const item = order.products.find(p =>
-      p.product._id.toString() === productId &&
-      p.variant.size === variantSize &&
-      p.status === "return pending"
+    const item = order.products.find(
+      (p) =>
+        p.product._id.toString() === productId &&
+        p.variant.size === variantSize &&
+        p.status === "return pending"
     );
-    if (!item) return res.status(400).json({ success: false, message: "Item not found or not eligible for return" });
+    if (!item) {
+      return res.status(400).json({ success: false, message: "Item not found or not eligible for return" });
+    }
 
+    
     const product = await Product.findById(productId);
     if (!product) return res.status(404).json({ success: false, message: "Product not found" });
 
-    const variant = product.variants.find(v => v.size === variantSize);
+    const variant = product.variants.find((v) => v.size === variantSize);
     if (!variant) return res.status(400).json({ success: false, message: "Variant not found" });
-
-    
     variant.varientquatity += item.quantity;
 
-    
     item.status = "returned";
+    item.refundApprovedDate = new Date();
 
     
-    const { itemSubtotal, itemCouponDiscount, itemFinalAmount } = calculateItemFinalAmount(item, order, variant);
-
-    
-    const allItemsWillBeReturned = order.products.every(p => 
-      p.status === "returned" || 
-      (p.product._id.toString() === productId && p.variant.size === variantSize)
+    const originalSubtotal = order.products.reduce(
+      (acc, p) => acc + p.variant.salePrice * p.quantity,
+      0
     );
 
-    let totalRefundAmount = itemFinalAmount;
-    let shippingRefund = 0;
+    
+    const alreadyReturnedSubtotal = order.products
+      .filter(p => p.status === "returned" && p._id.toString() !== item._id.toString())
+      .reduce((acc, p) => acc + (p.refundAmount || p.variant.salePrice * p.quantity), 0);
+
+    const returnedItemSubtotal = item.variant.salePrice * item.quantity;
+    const remainingSubtotal = originalSubtotal - alreadyReturnedSubtotal - returnedItemSubtotal;
 
     
-    if (allItemsWillBeReturned) {
-      shippingRefund = order.shippingCharge || 0;
-      totalRefundAmount += shippingRefund;
+    let coupon = null;
+    if (order.coupon?.couponId) {
+      coupon = await Coupon.findById(order.coupon.couponId);
+    }
+    if (!coupon && order.coupon?.code) {
+      coupon = await Coupon.findOne({ name: order.coupon.code.toUpperCase() });
     }
 
-    
-    item.refundAmount = totalRefundAmount;
-    console.log(item.refundAmount,"refund amount with shipping if applicable");
+    let totalCouponDiscount = order.couponDiscount || (coupon?.discountAmount || 0);
 
-    let refundDescription;
-    if (allItemsWillBeReturned && shippingRefund > 0) {
-      refundDescription = itemCouponDiscount > 0
-        ? `Refund for ${product.name} (Size: ${variantSize}) - Balance: ₹${itemFinalAmount.toFixed(2)} (Subtotal: ₹${itemSubtotal.toFixed(2)} - Coupon: ₹${itemCouponDiscount.toFixed(2)}) + Shipping: ₹${shippingRefund.toFixed(2)} = Total: ₹${totalRefundAmount.toFixed(2)}`
-        : `Refund for ${product.name} (Size: ${variantSize}) - Balance: ₹${itemFinalAmount.toFixed(2)} + Shipping: ₹${shippingRefund.toFixed(2)} = Total: ₹${totalRefundAmount.toFixed(2)}`;
+    let refundAmount = returnedItemSubtotal;
+    let note = "";
+
+    if (coupon && typeof coupon.minimumPrice === "number") {
+      if (remainingSubtotal >= coupon.minimumPrice) {
+        
+        const proportionalDiscount = (returnedItemSubtotal / originalSubtotal) * totalCouponDiscount;
+        refundAmount = returnedItemSubtotal - proportionalDiscount;
+        note = `Coupon still valid. ₹${proportionalDiscount.toFixed(2)} discount deducted.`;
+      } else {
+        
+        refundAmount = returnedItemSubtotal;
+        note = `Coupon invalid after previous returns. Full item price refunded.`;
+      }
     } else {
-      refundDescription = itemCouponDiscount > 0
-        ? `Refund for ${product.name} (Size: ${variantSize}) - Balance: ₹${itemFinalAmount.toFixed(2)} (Subtotal: ₹${itemSubtotal.toFixed(2)} - Coupon: ₹${itemCouponDiscount.toFixed(2)})`
-        : `Refund for ${product.name} (Size: ${variantSize}) - Balance: ₹${itemFinalAmount.toFixed(2)}`;
+      note = "No coupon applied. Full product price refunded.";
     }
+
+    item.refundAmount = refundAmount;
+    item.refundStatus = "approved";
 
     
     let wallet = await Wallet.findOne({ userId: order.user });
-    console.log("Wallet before update:", wallet?.balance);
-
     if (!wallet) {
-      wallet = new Wallet({
-        userId: order.user,
-        balance: totalRefundAmount,
-        transactions: [{
-          type: "credit",
-          amount: totalRefundAmount,
-          description: refundDescription,
-          status: "completed",
-          source: "return_refund",
-          balanceAfter: totalRefundAmount
-        }]
-      });
-    } else {
-      wallet.balance = (wallet.balance || 0) + totalRefundAmount;
-      console.log("Wallet after update:", wallet.balance);
-
-      wallet.transactions.unshift({
-        type: "credit",
-        amount: totalRefundAmount,
-        description: refundDescription,
-        status: "completed",
-        source: "return_refund",
-        balanceAfter: wallet.balance
-      });
+      wallet = new Wallet({ userId: order.user, balance: 0, transactions: [] });
     }
 
-    
-    order.refundAmount = (order.refundAmount || 0) + totalRefundAmount;
+    wallet.balance += refundAmount;
+    wallet.transactions.unshift({
+      type: "credit",
+      amount: refundAmount,
+      description: `Refund for ${item.product.name} (Size: ${variantSize}) - ${note}`,
+      status: "completed",
+      source: "return_refund",
+      balanceAfter: wallet.balance,
+      date: new Date(),
+    });
+    await wallet.save();
 
-    
-    let historyDescription = `Admin approved return for product ${product.name} (Size: ${variantSize})`;
-    if (allItemsWillBeReturned && shippingRefund > 0) {
-      historyDescription += ` - Full order return includes shipping charge of ₹${shippingRefund.toFixed(2)}`;
-    }
-    
+    order.refundAmount = (order.refundAmount || 0) + refundAmount;
     order.statusHistory.push({
       status: "returned",
       date: new Date(),
-      description: historyDescription,
+      description: `Admin approved return for ${item.product.name} (Size: ${variantSize}). ${note} Refund ₹${refundAmount.toFixed(2)} credited to wallet.`,
     });
 
-    
-    const allItemsReturned = order.products.every(p => p.status === "returned");
-    order.orderStatus = allItemsReturned ? "returned" : (order.products.some(p => p.status === "return pending") ? "return pending" : "delivered");
-    if (allItemsReturned) order.paymentStatus = "refunded";
+    const allReturned = order.products.every((p) => p.status === "returned");
+    if (allReturned) {
+      order.orderStatus = "returned";
+      order.paymentStatus = "refunded";
+    } else if (order.products.some((p) => p.status === "return pending")) {
+      order.orderStatus = "return pending";
+    } else {
+      order.orderStatus = "delivered";
+    }
 
-    
     await product.save();
-    await wallet.save();
     await order.save();
 
-    const successMessage = allItemsWillBeReturned && shippingRefund > 0
-      ? `Product return approved. ₹${totalRefundAmount.toFixed(2)} (including ₹${shippingRefund.toFixed(2)} shipping) refunded to customer wallet.`
-      : "Product return approved";
-
-    return res.status(200).json({ success: true, message: successMessage });
-
+    return res.status(200).json({
+      success: true,
+      message: `Refund ₹${refundAmount.toFixed(2)} processed successfully and credited to wallet. ${note}`,
+      refundAmount,
+    });
   } catch (error) {
-    console.log("Item return approve error:", error);
+    console.error("❌ Item return approve error:", error);
     return res.status(500).json({ success: false, message: "Server error", error: error.message });
   }
 };
+
+
 
 
 const itemReturnReject = async (req, res) => {

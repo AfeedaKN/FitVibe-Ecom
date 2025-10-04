@@ -7,7 +7,6 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
   <style>
-    /* Professional Cart Page - Matching Home Page Theme */
     * {
       margin: 0;
       padding: 0;
@@ -32,7 +31,6 @@
       flex-shrink: 0;
     }
 
-    /* Cart Section */
     .cart-section {
       max-width: 1200px;
       margin: 0 auto;
@@ -61,7 +59,6 @@
       border-radius: 2px;
     }
 
-    /* Cart Items */
     .cart-items {
       display: flex;
       flex-direction: column;
@@ -157,7 +154,6 @@
       display: inline-block;
     }
 
-    /* Quantity Controls */
     .cart-item-quantity {
       display: flex;
       align-items: center;
@@ -207,7 +203,6 @@
       font-size: 0.875rem;
     }
 
-    /* Remove Button */
     .cart-item-remove {
       padding: 0.75rem 1.5rem;
       background: #ffffff;
@@ -227,7 +222,6 @@
       box-shadow: 0 10px 15px -3px rgba(239, 68, 68, 0.4);
     }
 
-    /* Cart Summary */
     .cart-summary {
       background: #ffffff;
       border: 1px solid #e2e8f0;
@@ -287,7 +281,6 @@
       box-shadow: none;
     }
 
-    /* Empty Cart */
     .empty-cart {
       text-align: center;
       padding: 4rem 2rem;
@@ -296,13 +289,12 @@
       box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
     }
 
-    .empty-cart {
+    .empty-cart p {
       font-size: 1.25rem;
       color: #64748b;
       margin-bottom: 2rem;
     }
 
-    /* Responsive Design */
     @media (max-width: 768px) {
       .cart-section {
         padding: 2rem 1rem;
@@ -370,7 +362,6 @@
       }
     }
 
-    /* Loading States */
     .loading {
       opacity: 0.6;
       pointer-events: none;
@@ -392,7 +383,6 @@
       }
     }
 
-    /* Animations */
     @keyframes fadeIn {
       from {
         opacity: 0;
@@ -480,13 +470,25 @@
       toast: true,
       position: 'top-end',
       showConfirmButton: false,
-      timer: 3000,
+      timer: 3500,
       timerProgressBar: true,
       didOpen: (toast) => {
         toast.addEventListener('mouseenter', Swal.stopTimer);
         toast.addEventListener('mouseleave', Swal.resumeTimer);
       }
     });
+
+    // Display toast messages from server with delay between each
+    <% if (typeof toastMessages !== 'undefined' && toastMessages.length > 0) { %>
+      <% toastMessages.forEach((message, index) => { %>
+        setTimeout(() => {
+          Toast.fire({
+            icon: 'warning',
+            title: '<%= message %>'
+          });
+        }, <%= index * 4000 %>); // 4s delay between toasts
+      <% }); %>
+    <% } %>
 
     // Function to update cart item quantity in DOM
     function updateCartItemQuantity(productId, variantId, newQuantity) {
@@ -496,7 +498,6 @@
       
       quantityInput.value = newQuantity;
       
-      // Update the price display (price per unit x quantity)
       const priceText = priceElement.textContent;
       const unitPrice = parseFloat(priceText.match(/₹([\d.]+)/)[1]);
       priceElement.innerHTML = `₹${unitPrice.toFixed(2)} x ${newQuantity}`;
@@ -516,10 +517,9 @@
         cartItem.remove();
         updateCartTotal();
         
-        // Check if cart is empty
         const remainingItems = document.querySelectorAll('.cart-item');
         if (remainingItems.length === 0) {
-          location.reload(); // Reload to show empty cart message
+          location.reload();
         }
       }, 300);
     }
@@ -551,7 +551,6 @@
         const currentQuantity = parseInt(quantityInput.value);
         const availableStock = parseInt(incrementBtn.getAttribute('data-available-stock'));
         
-        // Disable decrement button if quantity is 1 or less
         if (currentQuantity <= 1) {
           decrementBtn.disabled = true;
           decrementBtn.title = 'Minimum quantity is 1';
@@ -560,7 +559,6 @@
           decrementBtn.title = 'Decrease quantity';
         }
         
-        // Disable increment button if quantity equals or exceeds available stock
         if (currentQuantity >= availableStock || availableStock === 0) {
           incrementBtn.disabled = true;
           incrementBtn.title = 'No more stock available';
@@ -579,7 +577,6 @@
         const quantityInput = button.parentElement.querySelector('input[type="number"]');
         const currentQuantity = parseInt(quantityInput.value);
         
-        // Check if we can increment based on available stock
         if (currentQuantity >= availableStock) {
           Toast.fire({
             icon: 'warning',
@@ -601,7 +598,6 @@
           const data = await response.json();
           
           if (data.success) {
-            // Reload page to get updated stock information
             window.location.reload();
           } else {
             Toast.fire({
@@ -628,7 +624,6 @@
         const quantityInput = button.parentElement.querySelector('input[type="number"]');
         const currentQuantity = parseInt(quantityInput.value);
         
-        // Prevent decrementing if quantity is already 1
         if (currentQuantity <= 1) {
           Toast.fire({
             icon: 'warning',
@@ -677,7 +672,6 @@
         const productId = item.getAttribute('data-product-id');
         const variantId = item.getAttribute('data-variant-id');
 
-        // Show confirmation dialog
         const result = await Swal.fire({
           title: 'Remove Item?',
           text: 'Are you sure you want to remove this item from your cart?',
@@ -699,8 +693,6 @@
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ productId, variantId }) 
             });
-            window.location.reload()
-
             const data = await response.json();
             
             if (data.success) {
@@ -729,8 +721,7 @@
       });
     });
 
-    // Add fade-in animation on page load and initialize button states
-    document.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener('DOMContentLoaded', () => { 
       const elements = document.querySelectorAll('.fade-in');
       elements.forEach((el, index) => {
         setTimeout(() => {
@@ -739,7 +730,6 @@
         }, index * 100);
       });
       
-      // Initialize button states on page load
       updateButtonStates();
     });
   </script>

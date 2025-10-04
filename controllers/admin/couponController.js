@@ -5,22 +5,31 @@ const mongoose = require('mongoose');
 
 const loadCoupons = async (req, res) => {
   try {
-    
     const page = parseInt(req.query.page) || 1;
-    const limit = 6; 
+    const limit = 6;
     const skip = (page - 1) * limit;
 
+   
+    const filter = { isDeleted: { $ne: true } };
+    const searchQuery = req.query.search?.trim();
+    if (searchQuery) {
+      filter.$or = [
+        { name: { $regex: searchQuery, $options: 'i' } },
+        { description: { $regex: searchQuery, $options: 'i' } }
+      ];
+    }
+
     
-    const totalCoupons = await Coupon.countDocuments({ isDeleted: { $ne: true } });
+    const totalCoupons = await Coupon.countDocuments(filter);
+
     
-    const coupons = await Coupon.find({ isDeleted: { $ne: true } })
+    const coupons = await Coupon.find(filter)
       .sort({ createdOn: -1 })
       .skip(skip)
       .limit(limit)
-      .lean(); 
+      .lean();
 
-     
-
+    
     const processedCoupons = await Promise.all(coupons.map(async (coupon) => {
       const actualUsageCount = await Order.countDocuments({
         'coupon.couponId': coupon._id,
@@ -40,7 +49,7 @@ const loadCoupons = async (req, res) => {
         minimumPrice: coupon.minimumPrice || 0,
         maxDiscountAmount: coupon.maxDiscountAmount || null,
         usageLimit: coupon.usageLimit || null,
-        usedCount: actualUsageCount, 
+        usedCount: actualUsageCount,
         expireOn: coupon.expireOn || new Date(),
         isList: coupon.isList !== undefined ? coupon.isList : true,
         isActive: coupon.isActive !== undefined ? coupon.isActive : true,
@@ -51,26 +60,27 @@ const loadCoupons = async (req, res) => {
 
     const totalPages = Math.ceil(totalCoupons / limit);
 
-    
     res.render('coupons', {
       coupons: processedCoupons,
       currentPage: page,
       totalPages,
       totalCoupons,
-      limit
+      limit,
+      query: req.query 
     });
   } catch (error) {
     console.error('=== ERROR LOADING COUPONS ===');
     console.error('Error:', error.message);
     console.error('Stack:', error.stack);
-    
+
     try {
       res.render('coupons', {
         coupons: [],
         currentPage: 1,
         totalPages: 1,
         totalCoupons: 0,
-        limit: 6
+        limit: 6,
+        query: req.query
       });
     } catch (renderError) {
       console.error('Error rendering coupons page:', renderError);
