@@ -110,14 +110,14 @@ const getCart = async (req, res) => {
 
     const cartItems = [];
     let total = 0;
-    let removedMessages = []; // 🔥 store removed product messages
+    let removedMessages = []; 
     let itemsToKeep = [];
 
     for (const item of cart.items) {
       if (item.productId) {
         const product = item.productId;
 
-        // find matching variant
+        
         const variant = product.variants.find(
           (v) => v._id.toString() === item.variantId.toString()
         );
@@ -125,7 +125,7 @@ const getCart = async (req, res) => {
         if (variant) {
           const availableQty = variant.stock;
 
-          // ❌ If stock is 0 or less → remove and add message
+          
           if (availableQty <= 0) {
             removedMessages.push(
               `${product.name} - removed because it is out of stock.`
@@ -133,7 +133,7 @@ const getCart = async (req, res) => {
             continue;
           }
 
-          // ❌ If quantity > available stock → remove and add message
+          
           if (item.quantity > availableQty) {
             removedMessages.push(
               `${product.name} - removed because only ${availableQty} in stock.`
@@ -141,7 +141,7 @@ const getCart = async (req, res) => {
             continue;
           }
 
-          // ✅ If valid → keep the item
+          
           itemsToKeep.push(item);
           cartItems.push({
             product,
@@ -155,18 +155,18 @@ const getCart = async (req, res) => {
       }
     }
 
-    // 🧹 Update DB to keep only valid items
+   
     cart.items = itemsToKeep;
     await cart.save();
 
-    // 💾 Save removed messages in session for toast display
+    
     req.session.removedItems = removedMessages;
 
     res.render('cart', {
       cart,
       cartItems,
       total,
-      removedItems: removedMessages // 👈 pass to EJS directly if needed
+      removedItems: removedMessages 
     });
   } catch (error) {
     console.error("Get cart error:", error);

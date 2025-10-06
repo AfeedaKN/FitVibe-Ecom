@@ -14,14 +14,14 @@ const Wishlist = require('./models/wishlistSchema')
 db()
 
 
-app.use(express.json())
+app.use(express.json()) 
 app.use(express.urlencoded({ extended: true }))
 app.use(session({
     secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: true,
     cookie: {
-        secure: false,
+        secure: false, 
         httpOnly: true,
         maxAge: 72 * 60 * 60 * 1000
 
@@ -117,10 +117,11 @@ app.use((err, req, res, next) => {
 });
 
 
-const PORT = 3000 || process.env.PORT
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-    console.log("http://localhost:3000");
-})
+    console.log(`Server running on http://localhost:${PORT}`);
+});
+
 
 
 
