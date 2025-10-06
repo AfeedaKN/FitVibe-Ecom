@@ -1,5 +1,6 @@
+<!-- sidebar.ejs -->
 <div class="sidebar" id="sidebar">
-  <div class="sidebar-header">
+  <div class="sidebar-header-profile">
     <div class="user-info">
       <% if (user) { %>
         <div class="user-avatar">
@@ -16,15 +17,14 @@
   </div>
   <nav class="sidebar-nav">
     <a href="/" data-route="/"><i class="fas fa-home"></i> Home</a>
-    <a href="/user/account" data-route="/profile"><i class="fas fa-user"></i> Account</a>
+    <a href="/user/account" data-route="/user/account"><i class="fas fa-user-circle"></i> Account</a>
     <a href="/profile/orders" data-route="/profile/orders"><i class="fas fa-box"></i> Orders</a>
     <a href="/profile/addresses" data-route="/profile/addresses"><i class="fas fa-map-marker-alt"></i> Addresses</a>
     <a href="/profile/Wallet" data-route="/profile/Wallet"><i class="fas fa-wallet"></i> Wallet</a>
     <a href="/profile/referrals" data-route="/profile/referrals"><i class="fas fa-users"></i> Referrals</a>
     <a href="/profile/coupons" data-route="/profile/coupons"><i class="fas fa-ticket-alt"></i> Coupons</a>
-    <a href="/profile/change-password" data-route="/profile/change-password"><i class="fas fa-lock"></i> Change
-      Password</a>
-    <a href="/logout" data-route="/logout"><i class="fas fa-sign-out-alt"></i> Logout</a>
+    <a href="/profile/change-password" data-route="/profile/change-password"><i class="fas fa-lock"></i> Change Password</a>
+    <a href="/logout"><i class="fas fa-sign-out-alt"></i> Logout</a>
   </nav>
 </div>
 
@@ -34,7 +34,6 @@
     width: 280px;
     background: #ffffff;
     border-right: 1px solid #e2e8f0;
-    height: 100vh;
     padding: 1.5rem 0;
     position: fixed;
     top: 89px; /* Height of the sticky header */
@@ -46,13 +45,13 @@
     height: calc(100vh - 89px); /* Full height minus header */
   }
 
-  .sidebar-header {
+  .sidebar-header-profile {
     display: flex;
     flex-direction: column;
     align-items: center;
-    margin-bottom: 2rem;
     padding: 0 1.5rem 1.5rem;
     border-bottom: 1px solid #e2e8f0;
+    position: relative;
   }
 
   .user-info {
@@ -78,7 +77,7 @@
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
   }
 
-  .sidebar-header h3 {
+  .sidebar-header-profile h3 {
     font-size: 1rem;
     color: #0f172a;
     margin: 0;
@@ -113,20 +112,20 @@
   }
 
   .sidebar-nav a:hover {
-    background: #f8fafc;
-    color: #0f172a;
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+    color: #667eea;
     transform: translateX(4px);
   }
 
   .sidebar-nav a.active {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
     color: #ffffff;
     box-shadow: 0 4px 6px -1px rgba(102, 126, 234, 0.3);
   }
 
   .sidebar-nav a.active:hover {
     transform: translateX(4px);
-    color: #ffffff;
+    color: #ffffff !important;
   }
 
   .sidebar-nav a i {
@@ -138,22 +137,16 @@
 
   /* Logout Section */
   .sidebar-nav a[href="/logout"] {
-    margin-top: 1rem;
-    border-top: 1px solid #e2e8f0;
-    padding-top: 1rem;
     color: #ef4444;
   }
 
   .sidebar-nav a[href="/logout"]:hover {
-    background: #fef2f2;
-    color: #dc2626;
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(220, 38, 38, 0.1) 100%) !important;
+    color: #ef4444 !important;
   }
 
-  /* Hide this sidebar on tablets and mobile, the main header nav takes over */
-  @media (max-width: 1024px) {
-    .sidebar {
-      transform: translateX(-100%);
-    }
+  @media (max-width: 1023px) {
+    .sidebar { transform: translateX(-100%); }
   }
 
   /* Professional Scrollbar */
@@ -175,13 +168,15 @@
   }
 </style>
 
-
 <script>
   // Highlight active link
-  const currentPath = window.location.pathname;
-  document.querySelectorAll('.sidebar-nav a').forEach(link => {
-    if (link.getAttribute('data-route') === currentPath) {
-      link.classList.add('active');
-    }
+  document.addEventListener('DOMContentLoaded', function() {
+    const currentPath = window.location.pathname;
+    const sidebarLinks = document.querySelectorAll('.sidebar-nav a');
+    sidebarLinks.forEach(link => {
+      if (link.getAttribute('data-route') === currentPath) {
+        link.classList.add('active');
+      }
+    });
   });
 </script>

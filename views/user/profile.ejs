@@ -8,456 +8,274 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
   <style>
     /* Professional Profile Page Design */
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
+    * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       background: #f8fafc;
       color: #1e293b;
       line-height: 1.6;
-      margin-left: 280px;
     }
 
-    .profile-container {
-      padding: 2rem 1.5rem;
-      max-width: 1200px;
-      margin: 0 auto;
-    }
+    @media (min-width: 1024px) { body { margin-left: 280px; } }
 
-    /* Page Header */
-    .page-header {
-      margin-bottom: 2rem;
-      padding-bottom: 1rem;
-      border-bottom: 2px solid #e2e8f0;
-    }
+    .profile-container { padding: 2rem 1.5rem; max-width: 1200px; margin: 0 auto; }
 
-    .page-title {
-      font-size: 2.25rem;
-      font-weight: 700;
-      color: #0f172a;
-      margin: 0;
-      letter-spacing: -0.025em;
-    }
-
-    .page-subtitle {
-      font-size: 1rem;
-      color: #64748b;
-      margin-top: 0.5rem;
-    }
-
-    /* Profile Grid Layout */
-    .profile-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 2rem;
-      margin-bottom: 2rem;
-    }
-
-    /* Card Base Styles */
-    .card {
-      background: #ffffff;
-      border: 1px solid #e2e8f0;
-      border-radius: 16px;
-      padding: 2rem;
-      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
-      transition: all 0.3s ease;
-    }
-
-    .card:hover {
-      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-      transform: translateY(-2px);
-    }
-
-    /* Profile Card */
-    .profile-header {
-      display: flex;
-      align-items: center;
-      gap: 1.5rem;
-      margin-bottom: 2rem;
-    }
-
-    .profile-avatar {
-      width: 80px;
-      height: 80px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #ffffff;
-      font-size: 2rem;
-      font-weight: 700;
-      border: 4px solid #ffffff;
-      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-    }
-
-    .profile-info h2 {
-      font-size: 1.5rem;
-      font-weight: 600;
-      color: #0f172a;
-      margin: 0 0 0.5rem 0;
-    }
-
-    .user-role {
-      font-size: 0.875rem;
-      color: #6366f1;
-      background: #eef2ff;
-      padding: 0.25rem 0.75rem;
-      border-radius: 12px;
-      display: inline-block;
-      font-weight: 500;
-    }
-
-    /* Profile Details */
-    .profile-details {
-      display: grid;
-      gap: 1.25rem;
-    }
-
-    .detail-item {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-      padding: 1rem;
-      background: #f8fafc;
-      border-radius: 12px;
-      border: 1px solid #e2e8f0;
-    }
-
-    .detail-icon {
-      width: 48px;
-      height: 48px;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      border-radius: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #ffffff;
-      font-size: 1.125rem;
-    }
-
-    .detail-content {
-      flex: 1;
-    }
-
-    .detail-label {
-      font-size: 0.75rem;
-      font-weight: 600;
-      color: #64748b;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      margin-bottom: 0.25rem;
-    }
-
-    .detail-value {
-      font-size: 0.875rem;
-      font-weight: 500;
-      color: #0f172a;
-    }
-
-    /* Action Buttons */
-    .profile-actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.75rem;
-      margin-top: 2rem;
-      padding-top: 1.5rem;
-      border-top: 1px solid #e2e8f0;
-    }
-
-    .action-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-      padding: 0.75rem 1.25rem;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: #ffffff;
-      text-decoration: none;
-      border-radius: 12px;
-      font-size: 0.875rem;
-      font-weight: 500;
-      transition: all 0.3s ease;
-      border: none;
-      cursor: pointer;
-    }
-
-    .action-btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 10px 15px -3px rgba(102, 126, 234, 0.4);
-      color: #ffffff;
-    }
-
-    .action-btn.secondary {
-      background: #ffffff;
-      color: #6366f1;
-      border: 2px solid #6366f1;
-    }
-
-    .action-btn.secondary:hover {
+    /* Sidebar Toggle Button */
+    .sidebar-toggle-btn {
+      position: fixed;
+      top: 1rem;
+      left: 1rem;
+      z-index: 9999;
       background: #6366f1;
-      color: #ffffff;
-    }
-
-    /* Card Headers */
-    .card-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 1.5rem;
-      padding-bottom: 1rem;
-      border-bottom: 1px solid #e2e8f0;
-    }
-
-    .card-title {
-      font-size: 1.25rem;
-      font-weight: 600;
-      color: #0f172a;
-      margin: 0;
-    }
-
-    .card-action {
-      font-size: 0.875rem;
-      color: #6366f1;
-      text-decoration: none;
-      font-weight: 500;
-      transition: color 0.3s ease;
-    }
-
-    .card-action:hover {
-      color: #4f46e5;
-    }
-
-    /* Address Content */
-    .address-content {
-      color: #64748b;
-      line-height: 1.6;
-    }
-
-    .address-content p {
-      margin-bottom: 0.5rem;
-    }
-
-    .address-content strong {
-      color: #0f172a;
-      font-weight: 600;
-    }
-
-    .no-address {
-      text-align: center;
-      padding: 3rem 2rem;
-      color: #64748b;
-    }
-
-    .no-address i {
-      font-size: 3rem;
-      margin-bottom: 1rem;
-      color: #cbd5e1;
-    }
-
-    .no-address a {
-      color: #6366f1;
-      text-decoration: none;
-      font-weight: 500;
-    }
-
-    /* Orders Section */
-    .orders-section {
-      grid-column: 1 / -1;
-    }
-
-    .orders-table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 1rem;
-      background: #ffffff;
-      border-radius: 12px;
-      overflow: hidden;
-      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
-    }
-
-    .orders-table th {
-      background: #f8fafc;
-      color: #374151;
-      font-weight: 600;
-      font-size: 0.875rem;
-      text-align: left;
-      padding: 1rem 1.5rem;
-      border-bottom: 1px solid #e2e8f0;
-    }
-
-    .orders-table td {
-      padding: 1rem 1.5rem;
-      border-bottom: 1px solid #f1f5f9;
-      color: #374151;
-      font-size: 0.875rem;
-    }
-
-    .orders-table tbody tr:hover {
-      background: #f8fafc;
-    }
-
-    .orders-table tbody tr:last-child td {
-      border-bottom: none;
-    }
-
-    .order-link {
-      color: #6366f1;
-      text-decoration: none;
-      font-weight: 600;
-      transition: color 0.3s ease;
-    }
-
-    .order-link:hover {
-      color: #4f46e5;
-    }
-
-    /* Status Badges */
-    .status-badge {
-      display: inline-block;
-      padding: 0.375rem 0.75rem;
-      border-radius: 20px;
-      font-size: 0.75rem;
-      font-weight: 600;
-      text-transform: capitalize;
-    }
-
-    .status-pending {
-      background: #fef3c7;
-      color: #92400e;
-    }
-
-    .status-processing {
-      background: #dbeafe;
-      color: #1e40af;
-    }
-
-    .status-delivered {
-      background: #d1fae5;
-      color: #065f46;
-    }
-
-    .status-cancelled {
-      background: #fee2e2;
-      color: #991b1b;
-    }
-
-    /* Cancel Button */
-    .cancel-btn {
-      padding: 0.5rem 1rem;
-      background: #ef4444;
-      color: #ffffff;
+      color: #fff;
       border: none;
+      padding: 0.75rem 1rem;
       border-radius: 8px;
-      font-size: 0.75rem;
-      font-weight: 500;
+      display: none;
       cursor: pointer;
-      transition: all 0.3s ease;
+    }
+    .sidebar-toggle-btn i { font-size: 1.25rem; }
+
+    /* Sidebar Overlay */
+    #sidebar-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.4);
+      display: none;
+      z-index: 9997;
+    }
+    #sidebar-overlay.active { display: block; }
+
+    /* Cards & Layout */
+    .profile-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem; }
+    .card { background: #fff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 2rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); transition: all 0.3s ease; }
+    .card:hover { box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); transform: translateY(-2px); }
+
+    .page-header { margin-bottom: 2rem; padding-bottom: 1rem; border-bottom: 2px solid #e2e8f0; }
+    .page-title { font-size: 2.25rem; font-weight: 700; color: #0f172a; margin: 0; letter-spacing: -0.025em; }
+    .page-subtitle { font-size: 1rem; color: #64748b; margin-top: 0.5rem; }
+
+    .profile-header { display: flex; align-items: center; gap: 1.5rem; margin-bottom: 2rem; }
+    .profile-avatar {
+      width: 80px; height: 80px; border-radius: 50%;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      display: flex; align-items: center; justify-content: center;
+      color: #fff; font-size: 2rem; font-weight: 700;
+      border: 4px solid #fff; box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    .profile-info h2 { font-size: 1.5rem; font-weight: 600; color: #0f172a; margin: 0 0 0.5rem 0; }
+    .user-role {
+      font-size: 0.875rem; color: #6366f1; background: #eef2ff;
+      padding: 0.25rem 0.75rem; border-radius: 12px; display: inline-block; font-weight: 500;
     }
 
-    .cancel-btn:hover {
-      background: #dc2626;
-      transform: translateY(-1px);
+    .profile-details { display: grid; gap: 1.25rem; }
+    .detail-item { display: flex; align-items: center; gap: 1rem; padding: 1rem; background: #f8fafc; border-radius: 12px; border: 1px solid #e2e8f0; }
+    .detail-icon {
+      width: 48px; height: 48px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 1.125rem;
     }
+    .detail-content { flex: 1; }
+    .detail-label { font-size: 0.75rem; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.25rem; }
+    .detail-value { font-size: 0.875rem; font-weight: 500; color: #0f172a; }
 
-    .cancel-btn:disabled {
-      background: #d1d5db;
-      cursor: not-allowed;
-      transform: none;
+    .profile-actions { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid #e2e8f0; }
+    .action-btn {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      padding: 0.75rem 1.25rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: #fff; text-decoration: none; border-radius: 12px; font-size: 0.875rem; font-weight: 500; border: none; cursor: pointer; transition: all 0.3s ease;
     }
+    .action-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(102,126,234,0.4); color: #fff; }
+    .action-btn.secondary { background: #fff; color: #6366f1; border: 2px solid #6366f1; }
+    .action-btn.secondary:hover { background: #6366f1; color: #fff; }
 
-    /* No Orders State */
-    .no-orders {
-      text-align: center;
-      padding: 4rem 2rem;
-      color: #64748b;
-    }
+    .card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid #e2e8f0; }
+    .card-title { font-size: 1.25rem; font-weight: 600; color: #0f172a; margin: 0; }
+    .card-action { font-size: 0.875rem; color: #6366f1; text-decoration: none; font-weight: 500; transition: color 0.3s ease; }
+    .card-action:hover { color: #4f46e5; }
 
-    .no-orders i {
-      font-size: 4rem;
-      margin-bottom: 1rem;
-      color: #cbd5e1;
-    }
+    .address-content { color: #64748b; line-height: 1.6; }
+    .address-content p { margin-bottom: 0.5rem; }
+    .address-content strong { color: #0f172a; font-weight: 600; }
+    .no-address { text-align: center; padding: 3rem 2rem; color: #64748b; }
+    .no-address i { font-size: 3rem; margin-bottom: 1rem; color: #cbd5e1; }
+    .no-address a { color: #6366f1; text-decoration: none; font-weight: 500; }
 
-    .no-orders p {
-      font-size: 1.125rem;
-      margin-bottom: 1.5rem;
-    }
+    .orders-section { grid-column: 1 / -1; }
+    .orders-table { width: 100%; border-collapse: collapse; margin-top: 1rem; background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+    .orders-table th { background: #f8fafc; color: #374151; font-weight: 600; font-size: 0.875rem; text-align: left; padding: 1rem 1.5rem; border-bottom: 1px solid #e2e8f0; }
+    .orders-table td { padding: 1rem 1.5rem; border-bottom: 1px solid #f1f5f9; color: #374151; font-size: 0.875rem; }
+    .orders-table tbody tr:hover { background: #f8fafc; }
+    .orders-table tbody tr:last-child td { border-bottom: none; }
+    .order-link { color: #6366f1; text-decoration: none; font-weight: 600; transition: color 0.3s ease; }
+    .order-link:hover { color: #4f46e5; }
+    .status-badge { display: inline-block; padding: 0.375rem 0.75rem; border-radius: 20px; font-size: 0.75rem; font-weight: 600; text-transform: capitalize; }
+    .status-pending { background: #fef3c7; color: #92400e; }
+    .status-processing { background: #dbeafe; color: #1e40af; }
+    .status-delivered { background: #d1fae5; color: #065f46; }
+    .status-cancelled { background: #fee2e2; color: #991b1b; }
+    .cancel-btn { padding: 0.5rem 1rem; background: #ef4444; color: #fff; border: none; border-radius: 8px; font-size: 0.75rem; font-weight: 500; cursor: pointer; transition: all 0.3s ease; }
+    .cancel-btn:hover { background: #dc2626; transform: translateY(-1px); }
+    .cancel-btn:disabled { background: #d1d5db; cursor: not-allowed; transform: none; }
+
+    .no-orders { text-align: center; padding: 4rem 2rem; color: #64748b; }
+    .no-orders i { font-size: 4rem; margin-bottom: 1rem; color: #cbd5e1; }
+    .no-orders p { font-size: 1.125rem; margin-bottom: 1.5rem; }
 
     /* Responsive Design */
+    @media (max-width: 1023px) {
+      body { margin-left: 0; }
+      .profile-container { padding: 1rem; }
+
+      /* Sidebar */
+      #sidebar { position: fixed; top: 0; left: -280px; width: 280px; height: 100%; background: #fff; z-index: 9998; overflow-y: auto; transition: left 0.3s ease; box-shadow: 2px 0 6px rgba(0,0,0,0.1); }
+      #sidebar.active { left: 0; }
+      .sidebar-toggle-btn { display: block; }
+    }
+
     @media (max-width: 768px) {
-      body {
-        margin-left: 0;
-      }
-
-      .profile-container {
-        padding: 1rem;
-      }
-
-      .profile-grid {
-        grid-template-columns: 1fr;
-        gap: 1.5rem;
-      }
-
-      .profile-header {
-        flex-direction: column;
-        text-align: center;
-        gap: 1rem;
-      }
-
-      .profile-avatar {
-        width: 64px;
-        height: 64px;
-        font-size: 1.5rem;
-      }
-
-      .profile-actions {
-        flex-direction: column;
-      }
-
-      .action-btn {
-        justify-content: center;
-      }
-
-      .orders-table {
-        font-size: 0.75rem;
-      }
-
-      .orders-table th,
-      .orders-table td {
-        padding: 0.75rem;
-      }
-
-      .page-title {
-        font-size: 1.875rem;
-      }
+      .profile-grid { grid-template-columns: 1fr; gap: 1.5rem; }
+      .profile-header { flex-direction: column; text-align: center; gap: 1rem; }
+      .profile-avatar { width: 64px; height: 64px; font-size: 1.5rem; }
+      .profile-actions { flex-direction: column; }
+      .action-btn { justify-content: center; }
+      .orders-table { font-size: 0.75rem; }
+      .orders-table th, .orders-table td { padding: 0.75rem; }
+      .page-title { font-size: 1.875rem; }
     }
 
     @media (max-width: 480px) {
-      .card {
-        padding: 1.5rem;
-      }
-
-      .detail-item {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 0.75rem;
-        text-align: left;
-      }
-
-      .detail-icon {
-        width: 40px;
-        height: 40px;
-      }
+      .card { padding: 1.5rem; }
+      .detail-item { flex-direction: column; align-items: flex-start; gap: 0.75rem; text-align: left; }
+      .detail-icon { width: 40px; height: 40px; }
     }
+    /* Mobile Sidebar Button */
+.mobile-sidebar-btn {
+  position: fixed;
+  top: 1rem;
+  left: 1rem;
+  z-index: 1001;
+  background: #6366f1;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 0.5rem 0.75rem;
+  font-size: 1.25rem;
+  cursor: pointer;
+  display: none; /* show only on mobile */
+}
+
+@media (max-width: 1023px) {
+  .mobile-sidebar-btn {
+    display: block;
+  }
+}
+
+/* Sidebar Overlay */
+.sidebar-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.5);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease;
+  z-index: 1000;
+}
+
+.sidebar-overlay.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Sidebar Active State */
+#sidebar.active {
+  transform: translateX(0); /* slide in */
+}
+@media (max-width: 1023px) {
+  #sidebar {
+    position: fixed;
+    left: -280px; /* hide sidebar initially */
+    top: 0;
+    width: 280px;
+    height: 100%;
+    background: #fff;
+    transition: all 0.3s ease;
+    z-index: 1002;
+    overflow-y: auto;
+    box-shadow: 2px 0 12px rgba(0,0,0,0.1);
+  }
+  #sidebar.active {
+    left: 0;
+  }
+}
+/* Sidebar */
+#sidebar {
+      width:280px;
+      background:#ffffff;
+      border-right:1px solid #e2e8f0;
+      padding:1.5rem 0;
+      position:fixed;
+      top:0;
+      left:0;
+      height:100vh;
+      overflow-y:auto;
+      transition: all 0.3s ease;
+      z-index:900;
+      transform: translateX(-100%);
+    }
+
+#sidebar.active {
+  transform: translateX(0);
+}
+
+/* Overlay */
+#sidebar-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.5);
+  display: none;
+ z-index:800; display:none;
+}
+
+#sidebar-overlay.active { display:block; }
+
+/* Desktop / Laptop view */
+@media (min-width: 1024px) {
+  #sidebar {
+    transform: translateX(0); /* always visible */
+  }
+
+  #sidebar-overlay {
+    display: none; /* overlay never shows on desktop */
+  }
+}
+
+
+
   </style>
 </head>
 <body>
+
+<!-- Mobile Sidebar Toggle Button -->
+<button id="sidebar-toggle" class="mobile-sidebar-btn">
+  <i class="fas fa-bars"></i>
+</button>
+
+<!-- Sidebar Overlay -->
+<div id="sidebar-overlay" class="sidebar-overlay"></div>
+  <!-- Sidebar Partial -->
   <%- include('./partials/sidebar') %>
 
+  <!-- Profile Container -->
   <div class="profile-container">
     <!-- Page Header -->
     <div class="page-header">
@@ -467,12 +285,10 @@
 
     <!-- Profile Grid -->
     <div class="profile-grid">
-      <!-- Profile Information Card -->
+      <!-- Profile Card -->
       <div class="card">
         <div class="profile-header">
-          <div class="profile-avatar">
-            <%= user.name ? user.name.charAt(0).toUpperCase() : 'U' %>
-          </div>
+          <div class="profile-avatar"><%= user.name ? user.name.charAt(0).toUpperCase() : 'U' %></div>
           <div class="profile-info">
             <h2><%= user.name || 'User' %></h2>
             <span class="user-role">Premium Customer</span>
@@ -481,9 +297,7 @@
 
         <div class="profile-details">
           <div class="detail-item">
-            <div class="detail-icon">
-              <i class="fas fa-envelope"></i>
-            </div>
+            <div class="detail-icon"><i class="fas fa-envelope"></i></div>
             <div class="detail-content">
               <div class="detail-label">Email Address</div>
               <div class="detail-value"><%= user.email %></div>
@@ -491,9 +305,7 @@
           </div>
 
           <div class="detail-item">
-            <div class="detail-icon">
-              <i class="fas fa-phone"></i>
-            </div>
+            <div class="detail-icon"><i class="fas fa-phone"></i></div>
             <div class="detail-content">
               <div class="detail-label">Phone Number</div>
               <div class="detail-value"><%= user.phone || 'Not provided' %></div>
@@ -501,9 +313,7 @@
           </div>
 
           <div class="detail-item">
-            <div class="detail-icon">
-              <i class="fas fa-calendar"></i>
-            </div>
+            <div class="detail-icon"><i class="fas fa-calendar"></i></div>
             <div class="detail-content">
               <div class="detail-label">Member Since</div>
               <div class="detail-value"><%= new Date(user.createdAt || Date.now()).toLocaleDateString() %></div>
@@ -512,14 +322,8 @@
         </div>
 
         <div class="profile-actions">
-          <a href="/profile/edit" class="action-btn">
-            <i class="fas fa-edit"></i>
-            Edit Profile
-          </a>
-          <a href="/profile/change-password" class="action-btn secondary">
-            <i class="fas fa-lock"></i>
-            Change Password
-          </a>
+          <a href="/profile/edit" class="action-btn"><i class="fas fa-edit"></i> Edit Profile</a>
+          <a href="/profile/change-password" class="action-btn secondary"><i class="fas fa-lock"></i> Change Password</a>
         </div>
       </div>
 
@@ -568,27 +372,15 @@
             <tbody>
               <% orders.forEach(order => { %>
                 <tr>
-                  <td>
-                    <a href="/order/<%= order._id %>" class="order-link">
-                      #<%= order.orderID %>
-                    </a>
-                  </td>
+                  <td><a href="/order/<%= order._id %>" class="order-link">#<%= order.orderID %></a></td>
                   <td><%= new Date(order.createdAt).toLocaleDateString() %></td>
                   <td>₹<%= order.finalAmount.toFixed(2) %></td>
-                  <td>
-                    <span class="status-badge status-<%= order.orderStatus.toLowerCase() %>">
-                      <%= order.orderStatus %>
-                    </span>
-                  </td>
+                  <td><span class="status-badge status-<%= order.orderStatus.toLowerCase() %>"><%= order.orderStatus %></span></td>
                   <td>
                     <% if (order.orderStatus === 'pending') { %>
-                      <button class="cancel-btn" data-order-id="<%= order._id %>">
-                        Cancel
-                      </button>
+                      <button class="cancel-btn" data-order-id="<%= order._id %>">Cancel</button>
                     <% } else { %>
-                      <button class="cancel-btn" disabled>
-                        Cancel
-                      </button>
+                      <button class="cancel-btn" disabled>Cancel</button>
                     <% } %>
                   </td>
                 </tr>
@@ -599,65 +391,79 @@
           <div class="no-orders">
             <i class="fas fa-shopping-bag"></i>
             <p>No orders found</p>
-            <a href="/products" class="action-btn">
-              <i class="fas fa-shopping-cart"></i>
-              Start Shopping
-            </a>
+            <a href="/products" class="action-btn"><i class="fas fa-shopping-cart"></i> Start Shopping</a>
           </div>
         <% } %>
       </div>
     </div>
   </div>
 
-  <script>
-    // Enhanced order cancellation with better UX
-    document.addEventListener('DOMContentLoaded', function() {
-      document.querySelectorAll('.cancel-btn').forEach(button => {
-        button.addEventListener('click', async function() {
-          if (this.disabled) return;
-          
-          const orderId = this.getAttribute('data-order-id');
-          
-          // Show confirmation dialog
-          const confirmed = confirm('Are you sure you want to cancel this order? This action cannot be undone.');
-          
-          if (confirmed) {
-            // Disable button and show loading state
-            this.disabled = true;
-            this.textContent = 'Cancelling...';
-            this.style.background = '#9ca3af';
-            
-            try {
-              const response = await fetch(`/order/cancel/${orderId}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' }
-              });
-              
-              const result = await response.json();
-              
-              if (result.success) {
-                // Show success message
-                this.textContent = 'Cancelled';
-                this.style.background = '#10b981';
-                
-                // Reload page after short delay
-                setTimeout(() => {
-                  window.location.reload();
-                }, 1500);
-              } else {
-                throw new Error(result.message || 'Failed to cancel order.');
-              }
-            } catch (error) {
-              // Reset button state on error
-              this.disabled = false;
-              this.textContent = 'Cancel';
-              this.style.background = '#ef4444';
-              alert(error.message || 'Error cancelling order. Please try again.');
+ <script>
+
+
+
+  // Sidebar toggle for mobile/tablet
+  const sidebar = document.querySelector('#sidebar');
+  const sidebarToggle = document.querySelector('#sidebar-toggle');
+  const sidebarOverlay = document.querySelector('#sidebar-overlay');
+
+  // Open sidebar when toggle button clicked
+  sidebarToggle.addEventListener('click', () => {
+    sidebar.classList.add('active');
+    sidebarOverlay.classList.add('active');
+  });
+
+  // Close sidebar when overlay clicked
+  sidebarOverlay.addEventListener('click', () => {
+    sidebar.classList.remove('active');
+    sidebarOverlay.classList.remove('active');
+  });
+
+  // Optional: Close sidebar on window resize above 1024px
+  window.addEventListener('resize', () => {
+    if (window.innerWidth >= 1024) {
+      sidebar.classList.remove('active');
+      sidebarOverlay.classList.remove('active');
+    }
+  });
+
+  // Enhanced order cancellation with UX feedback
+  document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.cancel-btn').forEach(button => {
+      button.addEventListener('click', async function() {
+        if (this.disabled) return;
+
+        const orderId = this.getAttribute('data-order-id');
+        const confirmed = confirm('Are you sure you want to cancel this order? This action cannot be undone.');
+
+        if (confirmed) {
+          this.disabled = true;
+          this.textContent = 'Cancelling...';
+          this.style.background = '#9ca3af';
+
+          try {
+            const response = await fetch(`/order/cancel/${orderId}`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' }
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+              this.textContent = 'Cancelled';
+              this.style.background = '#10b981';
+              setTimeout(() => window.location.reload(), 1500);
+            } else {
+              throw new Error(result.message || 'Failed to cancel order.');
             }
+          } catch (error) {
+            this.disabled = false;
+            this.textContent = 'Cancel';
+            this.style.background = '#ef4444';
+            alert(error.message || 'Error cancelling order. Please try again.');
           }
-        });
+        }
       });
     });
-  </script>
-</body>
-</html>
+  });
+</script>

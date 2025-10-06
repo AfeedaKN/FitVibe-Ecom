@@ -6,9 +6,8 @@
     <title>FitVibe - My Coupons</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
     <style>
-        /* Professional Coupons Page - Matching Profile Theme */
         * {
             margin: 0;
             padding: 0;
@@ -20,16 +19,70 @@
             background: #f8fafc;
             color: #1e293b;
             line-height: 1.6;
-            margin-left: 280px;
+        }
+
+        /* Sidebar */
+        #sidebar {
+            width: 280px;
+            background: #ffffff;
+            border-right: 1px solid #e2e8f0;
+            padding: 1.5rem 0;
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            overflow-y: auto;
+            transition: all 0.3s ease;
+            z-index: 900;
+            transform: translateX(-100%);
+        }
+
+        #sidebar.active {
+            transform: translateX(0);
+        }
+
+        #sidebar-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            z-index: 800;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease;
+        }
+
+        #sidebar-overlay.active {
+            display: block;
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .mobile-sidebar-btn {
+            position: fixed;
+            top: 1rem;
+            left: 1rem;
+            z-index: 1001;
+            background: #6366f1;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            padding: 0.5rem 0.75rem;
+            font-size: 1.25rem;
+            cursor: pointer;
+            display: none;
         }
 
         .coupons-container {
             padding: 2rem 1.5rem;
             max-width: 1200px;
             margin: 0 auto;
+            margin-left: 280px;
         }
 
-        /* Page Header */
         .page-header {
             margin-bottom: 2rem;
             padding-bottom: 1rem;
@@ -50,7 +103,7 @@
             margin-top: 0.5rem;
         }
 
-        /* Search & Filter Section */
+        /* Improved Search & Filter Section */
         .search-section {
             background: #ffffff;
             border: 1px solid #e2e8f0;
@@ -58,22 +111,33 @@
             padding: 1.5rem;
             margin-bottom: 2rem;
             box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
         }
 
         .search-form {
             display: flex;
+            flex-wrap: wrap;
             gap: 1rem;
             align-items: center;
+            width: 100%;
+        }
+
+        .search-wrapper {
+            flex: 1;
+            min-width: 300px;
+            position: relative;
         }
 
         .search-input {
-            flex: 1;
-            padding: 0.75rem 1rem;
+            width: 100%;
+            padding: 0.75rem 1rem 0.75rem 2.5rem;
             border: 1px solid #e2e8f0;
-            border-radius: 12px 0 0 12px;
+            border-radius: 12px;
             font-size: 0.875rem;
-            transition: all 0.3s ease;
             background: #f8fafc;
+            transition: all 0.3s ease;
         }
 
         .search-input:focus {
@@ -83,34 +147,19 @@
             box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
         }
 
-        .search-btn {
-            padding: 0.75rem 1.5rem;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: #ffffff;
-            border: none;
-            border-radius: 0 12px 12px 0;
-            font-size: 0.875rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-        }
-
-        .search-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 15px -3px rgba(102, 126, 234, 0.4);
-        }
-
-        .filter-row {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            margin-top: 1rem;
+        .search-icon {
+            position: absolute;
+            left: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #64748b;
+            font-size: 1rem;
         }
 
         .filter-group {
             display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
             align-items: center;
         }
 
@@ -121,12 +170,33 @@
             font-size: 0.875rem;
             background: #f8fafc;
             transition: all 0.3s ease;
+            min-width: 150px;
         }
 
         .filter-select:focus {
             outline: none;
             border-color: #6366f1;
             box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        .filter-btn {
+            padding: 0.75rem 1.5rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #ffffff;
+            border: none;
+            border-radius: 12px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .filter-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(102, 126, 234, 0.4);
         }
 
         .clear-btn {
@@ -280,7 +350,6 @@
             line-height: 1.5;
         }
 
-        /* Empty State */
         .empty-coupons {
             text-align: center;
             padding: 4rem 2rem;
@@ -321,7 +390,6 @@
             color: #ffffff;
         }
 
-        /* Pagination */
         .pagination-wrapper {
             display: flex;
             justify-content: center;
@@ -363,7 +431,6 @@
             border-color: transparent;
         }
 
-        /* Alerts */
         .alert {
             border-radius: 12px;
             padding: 1rem 1.5rem;
@@ -384,12 +451,32 @@
             color: #991b1b;
         }
 
-        /* Responsive Design */
-        @media (max-width: 768px) {
-            body {
+        @media (max-width: 1023px) {
+            .coupons-container {
                 margin-left: 0;
+                padding: 1.5rem 1rem;
             }
+            .mobile-sidebar-btn {
+                display: block;
+            }
+            #sidebar {
+                left: -280px;
+            }
+            #sidebar.active {
+                left: 0;
+            }
+        }
 
+        @media (min-width: 1024px) {
+            #sidebar {
+                transform: translateX(0);
+            }
+            #sidebar-overlay {
+                display: none;
+            }
+        }
+
+        @media (max-width: 768px) {
             .coupons-container {
                 padding: 1rem;
             }
@@ -400,12 +487,20 @@
 
             .search-form {
                 flex-direction: column;
-                gap: 1rem;
+                align-items: stretch;
             }
 
-            .filter-row {
+            .search-wrapper {
+                min-width: 100%;
+            }
+
+            .filter-group {
                 flex-direction: column;
-                gap: 1rem;
+                align-items: stretch;
+            }
+
+            .filter-select {
+                width: 100%;
             }
 
             .page-title {
@@ -416,48 +511,62 @@
                 padding: 1rem;
             }
         }
+
+        .swal2-popup {
+            border-radius: 16px;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .swal2-title {
+            font-weight: 600;
+        }
+
+        .swal2-confirm {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+            border-radius: 8px !important;
+        }
     </style>
 </head>
 <body>
+    <button id="sidebar-toggle" class="mobile-sidebar-btn">
+        <i class="fas fa-bars"></i>
+    </button>
+
+    <div id="sidebar-overlay" class="sidebar-overlay"></div>
+
     <%- include('./partials/sidebar', { page: 'coupons' }) %>
 
     <div class="coupons-container">
-        <!-- Page Header -->
         <div class="page-header">
             <h1 class="page-title">My Coupons</h1>
             <p class="page-subtitle">Explore and apply your available coupons</p>
         </div>
 
-        <!-- Search & Filter Section -->
         <div class="search-section">
             <form action="/profile/coupons" method="GET" class="search-form">
-                <div class="filter-row">
-                    <div class="input-group">
-                        <input type="text" name="search" class="search-input" 
-                               placeholder="Search by code or description..." 
-                               value="<%= query || '' %>" 
-                               aria-label="Search coupons">
-                        <button type="submit" class="search-btn" aria-label="Search coupons">
-                            <i class="fas fa-search"></i>
-                        </button>
-                    </div>
-
-                    <div class="filter-group">
-                        <select name="status" class="filter-select" onchange="this.form.submit()">
-                            <option value="" <%= !filterStatus ? 'selected' : '' %>>All Status</option>
-                            <option value="active" <%= filterStatus === 'active' ? 'selected' : '' %>>Active</option>
-                            <option value="inactive" <%= filterStatus === 'inactive' ? 'selected' : '' %>>Inactive</option>
-                        </select>
-                    </div>
-
+                <div class="search-wrapper">
+                    <i class="fas fa-search search-icon"></i>
+                    <input type="text" name="search" class="search-input" 
+                           placeholder="Search by code or description..." 
+                           value="<%= query || '' %>" 
+                           aria-label="Search coupons">
+                </div>
+                <div class="filter-group">
+                    <select name="status" class="filter-select" onchange="this.form.submit()">
+                        <option value="" <%= !filterStatus ? 'selected' : '' %>>All Status</option>
+                        <option value="active" <%= filterStatus === 'active' ? 'selected' : '' %>>Active</option>
+                        <option value="inactive" <%= filterStatus === 'inactive' ? 'selected' : '' %>>Inactive</option>
+                    </select>
+                    <button type="submit" class="filter-btn">
+                        <i class="fas fa-filter"></i> Apply Filters
+                    </button>
                     <button type="button" class="clear-btn" onclick="window.location.href='/profile/coupons'">
-                        Clear Filters
+                        <i class="fas fa-times"></i> Clear
                     </button>
                 </div>
             </form>
         </div>
 
-        <!-- Alerts -->
         <% if (messages.error) { %>
             <div class="alert alert-danger" role="alert">
                 <i class="fas fa-exclamation-circle"></i> <%= messages.error %>
@@ -469,7 +578,6 @@
             </div>
         <% } %>
 
-        <!-- Coupons Content -->
         <% if (coupons.length > 0) { %>
             <div class="coupons-grid">
                 <% coupons.forEach(coupon => { %>
@@ -509,7 +617,7 @@
                         <div class="coupon-actions">
                             <% if (coupon.isActive && new Date(coupon.expireOn) >= new Date()) { %>
                                 <button class="apply-btn" onclick="applyCoupon('<%= coupon._id %>')">
-                                    <i class="fas fa-tag"></i> <%=coupon.status%>
+                                    <i class="fas fa-tag"></i> Apply Coupon
                                 </button>
                             <% } else { %>
                                 <span class="disabled-text">Cannot Apply</span>
@@ -522,7 +630,6 @@
                 <% }) %>
             </div>
             
-            <!-- Pagination -->
             <% if (totalPages > 1) { %>
                 <div class="pagination-wrapper">
                     <ul class="pagination">
@@ -547,8 +654,29 @@
         <% } %>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
-        // Apply coupon function (placeholder - implement backend logic)
+        const sidebar = document.querySelector('#sidebar');
+        const sidebarToggle = document.querySelector('#sidebar-toggle');
+        const sidebarOverlay = document.querySelector('#sidebar-overlay');
+
+        sidebarToggle.addEventListener('click', () => {
+            sidebar.classList.add('active');
+            sidebarOverlay.classList.add('active');
+        });
+
+        sidebarOverlay.addEventListener('click', () => {
+            sidebar.classList.remove('active');
+            sidebarOverlay.classList.remove('active');
+        });
+
+        window.addEventListener('resize', () => {
+            if (window.innerWidth >= 1024) {
+                sidebar.classList.remove('active');
+                sidebarOverlay.classList.remove('active');
+            }
+        });
+
         function applyCoupon(couponId) {
             Swal.fire({
                 title: 'Applying Coupon',
@@ -597,13 +725,11 @@
             });
         }
 
-        // Responsive enhancements
         const couponsGrid = document.querySelector('.coupons-grid');
         if (couponsGrid) {
             couponsGrid.addEventListener('click', (e) => {
                 const card = e.target.closest('.coupon-card');
                 if (card && !e.target.closest('.coupon-actions')) {
-                    // Expand card details (optional - implement toggle logic)
                     console.log('Coupon card clicked:', card.dataset.couponId);
                 }
             });

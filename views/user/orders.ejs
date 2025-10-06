@@ -24,6 +24,88 @@
       margin-left: 280px;
     }
 
+    /* Sidebar */
+    #sidebar {
+      width: 280px;
+      background: #ffffff;
+      border-right: 1px solid #e2e8f0;
+      padding: 1.5rem 0;
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 100vh;
+      overflow-y: auto;
+      transition: all 0.3s ease;
+      z-index: 900;
+      transform: translateX(-100%);
+    }
+
+    #sidebar.active {
+      transform: translateX(0);
+    }
+
+    /* Sidebar Overlay */
+    #sidebar-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.5);
+      display: none;
+      z-index: 800;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.3s ease;
+    }
+
+    #sidebar-overlay.active {
+      display: block;
+      opacity: 1;
+      visibility: visible;
+    }
+
+    /* Mobile Sidebar Button */
+    .mobile-sidebar-btn {
+      position: fixed;
+      top: 1rem;
+      left: 1rem;
+      z-index: 1001;
+      background: #6366f1;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 0.5rem 0.75rem;
+      font-size: 1.25rem;
+      cursor: pointer;
+      display: none;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 1023px) {
+      body {
+        margin-left: 0;
+      }
+      .mobile-sidebar-btn {
+        display: block;
+      }
+      #sidebar {
+        left: -280px;
+      }
+      #sidebar.active {
+        left: 0;
+      }
+    }
+
+    @media (min-width: 1024px) {
+      #sidebar {
+        transform: translateX(0);
+      }
+      #sidebar-overlay {
+        display: none;
+      }
+    }
+
     .orders-container {
       padding: 2rem 1.5rem;
       max-width: 1200px;
@@ -455,12 +537,8 @@
       font-weight: 500;
     }
 
-    /* Responsive Design */
+    /* Additional Responsive Design for Orders */
     @media (max-width: 768px) {
-      body {
-        margin-left: 0;
-      }
-
       .orders-container {
         padding: 1rem;
       }
@@ -489,6 +567,15 @@
   </style>
 </head>
 <body>
+  <!-- Mobile Sidebar Toggle Button -->
+  <button id="sidebar-toggle" class="mobile-sidebar-btn">
+    <i class="fas fa-bars"></i>
+  </button>
+
+  <!-- Sidebar Overlay -->
+  <div id="sidebar-overlay" class="sidebar-overlay"></div>
+
+  <!-- Sidebar Partial -->
   <%- include('./partials/sidebar') %>
 
   <div class="orders-container">
@@ -612,88 +699,105 @@
 
   <!-- Cancel Order Modal -->
   <div class="modal fade" id="cancelOrderModal" tabindex="-1" aria-labelledby="cancelOrderModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-    
-      <div class="modal-header">
-        <h5 class="modal-title" id="cancelOrderModalLabel">Cancel Order</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="cancelOrderModalLabel">Cancel Order</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <form id="cancelOrderForm" method="POST" novalidate>
+          <input type="hidden" name="orderId" id="cancelOrderId">
+          <div class="modal-body">
+            <p>Are you sure you want to cancel this order?</p>
+            <div class="mb-3">
+              <label for="cancelReasonSelect" class="form-label">Reason for Cancellation</label>
+              <select class="form-select" id="cancelReasonSelect" name="reason" onchange="handleCancelReason(this)">
+                <option value="" selected disabled>Select a reason</option>
+                <option value="Ordered by mistake">Ordered by mistake</option>
+                <option value="Found a better price">Found a better price</option>
+                <option value="Item not needed anymore">Item not needed anymore</option>
+                <option value="Delivery time is too long">Delivery time is too long</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+            <div class="mb-3" id="otherCancelReasonContainer" style="display: none;">
+              <label for="otherCancelReason" class="form-label">Please specify your reason</label>
+              <textarea class="form-control" id="otherCancelReason" name="otherReason" rows="4" maxlength="500" placeholder="Write your reason here..."></textarea>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            <button type="submit" class="btn btn-primary">Confirm Cancellation</button>
+          </div>
+        </form>
       </div>
-
-      <form id="cancelOrderForm" method="POST" novalidate>
-        <input type="hidden" name="orderId" id="cancelOrderId">
-
-        <div class="modal-body">
-          <p>Are you sure you want to cancel this order?</p>
-
-          <div class="mb-3">
-            <label for="cancelReasonSelect" class="form-label">Reason for Cancellation</label>
-            <select class="form-select" id="cancelReasonSelect" name="reason" onchange="handleCancelReason(this)">
-              <option value="" selected disabled>Select a reason</option>
-              <option value="Ordered by mistake">Ordered by mistake</option>
-              <option value="Found a better price">Found a better price</option>
-              <option value="Item not needed anymore">Item not needed anymore</option>
-              <option value="Delivery time is too long">Delivery time is too long</option>
-              <option value="Other">Other</option>
-            </select>
-          </div>
-
-          <div class="mb-3" id="otherCancelReasonContainer" style="display: none;">
-            <label for="otherCancelReason" class="form-label">Please specify your reason</label>
-            <textarea class="form-control" id="otherCancelReason" name="otherReason" rows="4" maxlength="500" placeholder="Write your reason here..."></textarea>
-          </div>
-        </div>
-
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-          <button type="submit" class="btn btn-primary">Confirm Cancellation</button>
-        </div>
-      </form>
-
     </div>
   </div>
-</div>
 
   <!-- Return Order Modal -->
-<div class="modal fade" id="returnOrderModal" tabindex="-1" aria-labelledby="returnOrderModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="returnOrderModalLabel">Request Return</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+  <div class="modal fade" id="returnOrderModal" tabindex="-1" aria-labelledby="returnOrderModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="returnOrderModalLabel">Request Return</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <form id="returnOrderForm" method="POST" novalidate>
+          <input type="hidden" name="orderId" id="returnOrderId">
+          <div class="modal-body">
+            <p>Please select a reason for returning this order:</p>
+            <div class="mb-3">
+              <label for="returnReasonSelect" class="form-label">Return Reason</label>
+              <select class="form-select" id="returnReasonSelect" name="reason" onchange="handleReturnReason(this)" novalidate>
+                <option value="" disabled selected>Select a reason</option>
+                <option value="Wrong item">Wrong item delivered</option>
+                <option value="Damaged">Damaged or defective product</option>
+                <option value="Not needed">Don't need the product</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+            <div class="mb-3" id="otherReturnReasonContainer" style="display: none;">
+              <label for="otherReason" class="form-label">Other Reason (required)</label>
+              <textarea class="form-control" id="otherReason" name="otherReason" rows="3" maxlength="500" placeholder="Specify your reason..."></textarea>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            <button type="submit" class="btn btn-primary">Submit Return Request</button>
+          </div>
+        </form>
       </div>
-      <form id="returnOrderForm" method="POST" novalidate>
-        <input type="hidden" name="orderId" id="returnOrderId">
-        <div class="modal-body">
-          <p>Please select a reason for returning this order:</p>
-          <div class="mb-3">
-            <label for="returnReasonSelect" class="form-label">Return Reason</label>
-            <select class="form-select" id="returnReasonSelect" name="reason" onchange="handleReturnReason(this)" novalidate>
-              <option value="" disabled selected>Select a reason</option>
-              <option value="Wrong item">Wrong item delivered</option>
-              <option value="Damaged">Damaged or defective product</option>
-              <option value="Not needed">Don't need the product</option>
-              <option value="Other">Other</option>
-            </select>
-          </div>
-
-          <div class="mb-3" id="otherReturnReasonContainer" style="display: none;">
-            <label for="otherReason" class="form-label">Other Reason (required)</label>
-            <textarea class="form-control" id="otherReason" name="otherReason" rows="3" maxlength="500" placeholder="Specify your reason..."></textarea>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-          <button type="submit" class="btn btn-primary">Submit Return Request</button>
-        </div>
-      </form>
     </div>
   </div>
-</div>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script>
+    // Sidebar toggle for mobile/tablet
+    const sidebar = document.querySelector('#sidebar');
+    const sidebarToggle = document.querySelector('#sidebar-toggle');
+    const sidebarOverlay = document.querySelector('#sidebar-overlay');
+
+    // Open sidebar when toggle button clicked
+    sidebarToggle.addEventListener('click', () => {
+      sidebar.classList.add('active');
+      sidebarOverlay.classList.add('active');
+    });
+
+    // Close sidebar when overlay clicked
+    sidebarOverlay.addEventListener('click', () => {
+      sidebar.classList.remove('active');
+      sidebarOverlay.classList.remove('active');
+    });
+
+    // Close sidebar on window resize above 1024px
+    window.addEventListener('resize', () => {
+      if (window.innerWidth >= 1024) {
+        sidebar.classList.remove('active');
+        sidebarOverlay.classList.remove('active');
+      }
+    });
+
     const Toast = Swal.mixin({
       toast: true,
       position: 'top-end',
@@ -706,12 +810,10 @@
       }
     });
 
-    // Handle payment failure and redirect to failure page - NO BACKGROUND TOAST
+    // Handle payment failure and redirect to failure page
     async function handlePaymentFailure(orderId, error) {
       try {
         console.log('Handling payment failure for order:', orderId, 'Error:', error);
-        
-        // Call the payment failure handler
         const response = await fetch('/order/payment-failed', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -725,7 +827,6 @@
         console.log('Payment failure handler response:', result);
 
         if (result.success) {
-          // Redirect to failure page immediately
           if (result.redirectUrl) {
             window.location.href = result.redirectUrl;
           } else {
@@ -740,7 +841,6 @@
         }
       } catch (error) {
         console.error('Error handling payment failure:', error);
-        // Direct redirect without toast
         window.location.href = `/order/failure/${orderId}`;
       }
     }
@@ -749,14 +849,11 @@
     async function retryPayment(orderId, amount) {
       try {
         console.log('Retrying payment for order:', orderId, 'Amount:', amount);
-        
-        // Show loading state
         Toast.fire({
           icon: 'info',
           title: 'Preparing payment...'
         });
 
-        // Create new Razorpay order for retry
         const response = await fetch('/order/retry-payment', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -774,7 +871,6 @@
           return;
         }
 
-        // Check if Razorpay is loaded
         if (typeof Razorpay === 'undefined') {
           Toast.fire({
             icon: 'error',
@@ -793,12 +889,11 @@
           handler: async function (response) {
             try {
               console.log('Payment successful:', response);
-              
               Toast.fire({
                 icon: 'info',
                 title: 'Verifying payment...'
               });
-              
+
               const verifyResponse = await fetch('/order/verify-payment', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -812,7 +907,7 @@
 
               const verifyResult = await verifyResponse.json();
               console.log('Verification result:', verifyResult);
-              
+
               if (verifyResult.success) {
                 Toast.fire({
                   icon: 'success',
@@ -855,19 +950,12 @@
         };
 
         console.log('Opening Razorpay for retry with options:', options);
-        
         const rzp = new Razorpay(options);
-        
-        // Enhanced payment failure handling for retry attempts - NO BACKGROUND TOAST
         rzp.on('payment.failed', function (response) {
           console.error('Payment retry failed:', response);
-          
-          // Handle payment failure by calling the failure handler and redirecting immediately
           handlePaymentFailure(orderId, response.error);
         });
-        
         rzp.open();
-        
       } catch (error) {
         console.error('Error retrying payment:', error);
         Toast.fire({
@@ -894,68 +982,56 @@
 
     // Form submission handlers
     ['cancelOrderForm', 'returnOrderForm'].forEach(formId => {
-    const form = document.getElementById(formId);
-    if (form) {
-    form.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const formData = new FormData(form);
-        const action = formId === 'cancelOrderForm' ? 'cancel' : 'return';
+      const form = document.getElementById(formId);
+      if (form) {
+        form.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const formData = new FormData(form);
+          const action = formId === 'cancelOrderForm' ? 'cancel' : 'return';
 
-        // SweetAlert2 Toast setup
-        const Toast = Swal.mixin({
-            toast: true,
-            position: 'top-end',
-            showConfirmButton: false,
-            timer: 3000,
-            timerProgressBar: true
-        });
-
-        // Validate reason for cancel
-        if (action === 'cancel' && !form.querySelector('#cancelReasonSelect').value.trim()) {
+          if (action === 'cancel' && !form.querySelector('#cancelReasonSelect').value.trim()) {
             Toast.fire({
-                icon: 'error',
-                title: 'Please select a reason for cancellation.'
+              icon: 'error',
+              title: 'Please select a reason for cancellation.'
             });
             return;
-        }
+          }
 
-        try {
+          try {
             const response = await fetch(`/order/${action}/${formData.get('orderId')}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(Object.fromEntries(formData))
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(Object.fromEntries(formData))
             });
 
             const result = await response.json();
 
             if (result.success) {
-                Toast.fire({
-                    icon: 'success',
-                    title: `Order ${action}ed successfully!`
-                });
-                setTimeout(() => window.location.reload(), 1000); // reload after toast
+              Toast.fire({
+                icon: 'success',
+                title: `Order ${action}ed successfully!`
+              });
+              setTimeout(() => window.location.reload(), 1000);
             } else {
-                Toast.fire({
-                    icon: 'error',
-                    title: `Failed to ${action} order: ${result.message}`
-                });
-            }
-        } catch (error) {
-            Toast.fire({
+              Toast.fire({
                 icon: 'error',
-                title: `Error ${action}ing order.`
+                title: `Failed to ${action} order: ${result.message}`
+              });
+            }
+          } catch (error) {
+            Toast.fire({
+              icon: 'error',
+              title: `Error ${action}ing order.`
             });
-        }
+          }
+        });
+      }
     });
-}
-
-});
 
     // Handle reason selection for cancel/return forms
     function handleCancelReason(select) {
       const otherContainer = document.getElementById('otherCancelReasonContainer');
       const otherTextarea = document.getElementById('otherCancelReason');
-      
       if (select.value === 'Other') {
         otherContainer.style.display = 'block';
         otherTextarea.required = true;
@@ -969,7 +1045,6 @@
     function handleReturnReason(select) {
       const otherContainer = document.getElementById('otherReturnReasonContainer');
       const otherTextarea = document.getElementById('otherReason');
-      
       if (select.value === 'Other') {
         otherContainer.style.display = 'block';
         otherTextarea.required = true;
