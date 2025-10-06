@@ -24,6 +24,18 @@
       min-height: 100vh;
     }
 
+    .wishlist-item.removing {
+      transition: opacity 0.5s ease, transform 0.5s ease, max-height 0.5s ease;
+      opacity: 0;
+      transform: scale(0.95);
+      max-height: 0 !important;
+      padding-top: 0 !important;
+      padding-bottom: 0 !important;
+      margin-bottom: 0 !important;
+      overflow: hidden;
+      border-width: 0;
+    }
+
     main {
       flex: 1 0 auto;
     }
@@ -35,7 +47,7 @@
     /* Wishlist Section */
     .wishlist-section {
       max-width: 1200px;
-      margin: 0 auto;
+      margin: 0 auto 4rem;
       padding: 4rem 1.5rem;
     }
 
@@ -463,7 +475,7 @@
         <div class="wishlist-items">
           <% wishlist.items.forEach(item => { %>
             <div class="wishlist-item fade-in">
-              <img src="<%= item.product.images && item.product.images.length > 0 ? item.product.images[0].url : '/path/to/default-image.jpg' %>" alt="<%= item.product.name %>" loading="lazy" />
+              <img src="<%= item.product.images && item.product.images.length > 0 ? item.product.images[0].url : '/images/no-image.png' %>" alt="<%= item.product.name %>" loading="lazy" />
               <div class="wishlist-item-details">
                 <h3><%= item.product.name %></h3>
                 
@@ -491,7 +503,7 @@
                               data-size="<%= variant.size %>"
                               data-price="<%= variant.salePrice %>"
                               data-stock="<%= variant.varientquatity %>"
-                              <%= !variant.isAvailable ? 'disabled' : '' %>
+                              <%= !variant.isAvailable ? 'disabled' : '' %> <%= item.selectedVariant._id.toString() === variant._id.toString() ? 'selected' : '' %>
                               onclick="selectSize(this)">
                         <%= variant.size %>
                       </button>
@@ -508,9 +520,9 @@
               <div class="wishlist-item-actions">
                 <button class="add-to-cart-btn" 
                         data-product-id="<%= item.product._id %>" 
-                        data-variant-id="" 
+                        data-variant-id="<%= item.selectedVariant._id %>" 
                         id="add-cart-btn-<%= item.product._id %>"
-                        disabled>
+                        >
                   <i class="fas fa-shopping-cart"></i>
                   Add to Cart
                 </button>
@@ -553,7 +565,11 @@
       }
     });
 
-    let selectedSizes = {}; // Track selected sizes for each product
+    // Initialize selected sizes from the initial data
+    let selectedSizes = <%- JSON.stringify(wishlist.items.reduce((acc, item) => {
+      acc[item.product._id] = { variantId: item.selectedVariant._id, size: item.selectedVariant.size, price: item.selectedVariant.salePrice, stock: item.selectedVariant.varientquatity };
+      return acc;
+    }, {})) %>;
 
     // Size selection function
     function selectSize(button) {
@@ -571,14 +587,8 @@
       // Add selection to clicked button
       button.classList.add('selected');
 
-      // Store selected size
-      selectedSizes[productId] = {
-        variantId: variantId,
-        size: size,
-        price: price,
-        stock: stock
-      };
-
+      // Update stored selected size
+      selectedSizes[productId] = { variantId, size, price, stock };
       // Update price display
       const priceElement = document.getElementById(`price-${productId}`);
       if (priceElement) {
@@ -601,12 +611,21 @@
       // Enable add to cart button
       const addToCartBtn = document.getElementById(`add-cart-btn-${productId}`);
       if (addToCartBtn) {
-        addToCartBtn.disabled = false;
         addToCartBtn.setAttribute('data-variant-id', variantId);
       }
     }
 
     document.addEventListener('DOMContentLoaded', () => {
+      // Pre-select the correct size and update info on load
+      document.querySelectorAll('.wishlist-item').forEach(item => {
+        const productId = item.querySelector('.add-to-cart-btn').dataset.productId;
+        const selectedVariant = selectedSizes[productId];
+        if (selectedVariant) {
+          const sizeInfo = document.getElementById(`size-info-${productId}`);
+          sizeInfo.textContent = `Selected: Size ${selectedVariant.size} (${selectedVariant.stock} available)`;
+          sizeInfo.classList.add('selected');
+        }
+      });
       // Add to cart from wishlist with size validation
       document.querySelectorAll('.add-to-cart-btn').forEach(button => {
         button.addEventListener('click', async () => {
@@ -630,7 +649,7 @@
           button.innerHTML = '<span class="spinner"></span> Adding...';
           
           try {
-            const response = await fetch('/wishlist/add-to-cart', {
+            const response = await fetch('/wishlist/add-to-cart', { // This endpoint is now in the diff for wishlistController.js
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ productId, variantId })
@@ -642,9 +661,10 @@
                 icon: 'success',
                 title: 'Product added to cart successfully!'
               });
-              setTimeout(() => {
-                window.location.reload();
-              }, 1000);
+              // Dynamically remove item from view
+              const wishlistItem = button.closest('.wishlist-item');
+              wishlistItem.classList.add('removing');
+              wishlistItem.addEventListener('transitionend', () => wishlistItem.remove());
             } else {
               Toast.fire({
                 icon: 'error',
@@ -670,6 +690,7 @@
         button.addEventListener('click', async () => {
           const productId = button.getAttribute('data-product-id');
           const variantId = button.getAttribute('data-variant-id');
+          const wishlistItem = button.closest('.wishlist-item');
           
           // Show confirmation dialog
           const result = await Swal.fire({
@@ -699,9 +720,10 @@
                   icon: 'success',
                   title: 'Product removed from wishlist successfully!'
                 });
-                setTimeout(() => {
-                  window.location.reload();
-                }, 1000);
+                // Dynamically remove item from view
+                wishlistItem.classList.add('removing');
+                wishlistItem.addEventListener('transitionend', () => wishlistItem.remove());
+
               } else {
                 Toast.fire({
                   icon: 'error',

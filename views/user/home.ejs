@@ -37,11 +37,22 @@
       position: relative;
     }
 
-    .carousel img {
+    .carousel-slide {
       width: 100%;
       height: 100%;
+      position: absolute;
+      top: 0;
+      left: 0;
+      opacity: 0;
+      transition: opacity 1s ease-in-out, transform 8s linear;
+      transform: scale(1);
+    }
+    .carousel-slide.active {
+      opacity: 1;
+      transform: scale(1.05);
+    }
+    .carousel-slide img {
       object-fit: cover;
-      display: block;
     }
 
     .banner-overlay {
@@ -172,6 +183,29 @@
       overflow: hidden;
     }
 
+    .product-image-container {
+      position: relative;
+      overflow: hidden;
+      border-radius: 12px;
+      margin-bottom: 1rem;
+    }
+
+    .product-image-container::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(to top, rgba(0, 0, 0, 0.4) 0%, transparent 50%);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .product-card:hover .product-image-container::after {
+      opacity: 1;
+    }
+
     .product-card::before {
       content: '';
       position: absolute;
@@ -197,8 +231,6 @@
       width: 100%;
       height: 250px;
       object-fit: cover;
-      border-radius: 12px;
-      margin-bottom: 1rem;
     }
 
     .product-card h3 {
@@ -231,6 +263,17 @@
       display: flex;
       gap: 0.75rem;
       align-items: center;
+    }
+
+    .product-card .view-btn {
+      position: relative;
+      z-index: 2;
+    }
+
+    .product-card:hover .view-btn {
+      background: linear-gradient(135deg, #7c8ff7 0%, #8a5fc8 100%);
+      box-shadow: 0 10px 15px -3px rgba(102, 126, 234, 0.4);
+      transform: translateY(-2px);
     }
 
     .view-btn {
@@ -422,11 +465,6 @@
         margin-bottom: 2rem;
       }
 
-      .products {
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-        gap: 1.5rem;
-      }
-
       .carousel-arrow {
         width: 40px;
         height: 40px;
@@ -446,8 +484,9 @@
         padding: 0 1rem;
       }
 
+      /* Let auto-fit handle tablet collections, but force 1-col on smaller devices */
       .collections {
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
       }
     }
 
@@ -463,6 +502,7 @@
 
       .products {
         grid-template-columns: 1fr;
+        gap: 1.5rem;
       }
 
       .product-card {
@@ -473,6 +513,10 @@
       .formal-banner-text {
         font-size: 1.5rem;
       }
+
+      .collections {
+        grid-template-columns: 1fr;
+      }
     }
   </style>
 </head>
@@ -482,7 +526,9 @@
   <!-- Hero Banner -->
   <div class="banner">
     <div class="carousel" id="carousel">
-      <img src="image/bannernew.jpg" alt="Premium Fashion Collection" loading="lazy">
+      <div class="carousel-slide active">
+        <img src="image/bannernew.jpg" alt="Premium Fashion Collection" loading="lazy">
+      </div>
     </div>
     <div class="banner-overlay"></div>
     <div class="banner-content">
@@ -506,11 +552,13 @@
     <div class="products">
       <% newArrivals.forEach(product => { %>
         <div class="product-card">
-          <% if (product.images && product.images.length > 0) { %>
-            <img src="<%= product.images[0].url %>" alt="<%= product.name %>" loading="lazy" />
-          <% } else { %>
-            <img src="/images/no-image.png" alt="No image available" loading="lazy" />
-          <% } %>
+          <div class="product-image-container">
+            <% if (product.images && product.images.length > 0) { %>
+              <img src="<%= product.images[0].url %>" alt="<%= product.name %>" loading="lazy" />
+            <% } else { %>
+              <img src="/images/no-image.png" alt="No image available" loading="lazy" />
+            <% } %>
+          </div>
 
           <h3><%= product.name %></h3>
 
@@ -563,11 +611,13 @@
     <div class="products">
       <% trending.forEach(product => { %>
         <div class="product-card">
-          <% if (product.images && product.images.length > 0) { %>
-            <img src="<%= product.images[0].url %>" alt="<%= product.name %>" loading="lazy" />
-          <% } else { %>
-            <img src="/images/no-image.png" alt="No image available" loading="lazy" />
-          <% } %>
+          <div class="product-image-container">
+            <% if (product.images && product.images.length > 0) { %>
+              <img src="<%= product.images[0].url %>" alt="<%= product.name %>" loading="lazy" />
+            <% } else { %>
+              <img src="/images/no-image.png" alt="No image available" loading="lazy" />
+            <% } %>
+          </div>
 
           <h3><%= product.name %></h3>
 
@@ -639,26 +689,33 @@
   <script>
     // Enhanced carousel functionality
     let currentSlide = 0;
-    const slides = document.querySelectorAll('.carousel img');
+    const slides = document.querySelectorAll('.carousel-slide');
+    const carouselContainer = document.getElementById('carousel');
     
     function moveCarousel(direction) {
       if (slides.length <= 1) return;
       
+      slides[currentSlide].classList.remove('active');
       currentSlide += direction;
+
       if (currentSlide >= slides.length) currentSlide = 0;
       if (currentSlide < 0) currentSlide = slides.length - 1;
       
-      slides.forEach((slide, index) => {
-        slide.style.display = index === currentSlide ? 'block' : 'none';
-      });
+      slides[currentSlide].classList.add('active');
     }
 
     // Auto-play carousel
-    setInterval(() => {
-      if (slides.length > 1) {
-        moveCarousel(1);
-      }
-    }, 5000);
+    let autoPlayInterval;
+    function startCarouselAutoPlay() {
+      stopCarouselAutoPlay(); // Prevent multiple intervals
+      autoPlayInterval = setInterval(() => moveCarousel(1), 5000);
+    }
+    function stopCarouselAutoPlay() {
+      clearInterval(autoPlayInterval);
+    }
+
+    if (carouselContainer) carouselContainer.addEventListener('mouseenter', stopCarouselAutoPlay);
+    if (carouselContainer) carouselContainer.addEventListener('mouseleave', startCarouselAutoPlay);
 
     // Wishlist functionality
 document.querySelectorAll('.wishlist-btn').forEach(btn => {
@@ -742,12 +799,8 @@ document.querySelectorAll('.wishlist-btn').forEach(btn => {
         }
       }
 
-      // Initialize carousel
-      if (slides.length > 1) {
-        slides.forEach((slide, index) => {
-          slide.style.display = index === 0 ? 'block' : 'none';
-        });
-      }
+      // Start carousel autoplay on load
+      startCarouselAutoPlay();
     });
 
     // Simple toast notification function

@@ -164,7 +164,7 @@ const addToCartFromWishlist = async (req, res) => {
 
     await Wishlist.updateOne(
       { user: userId },
-      { $pull: { items: { product: productId } } } 
+      { $pull: { items: { product: productId, variant: variantId } } } 
     );
 
     res.json({ success: true, message: 'Product added to cart successfully' });

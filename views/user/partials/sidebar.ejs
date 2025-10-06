@@ -1,6 +1,5 @@
 <div class="sidebar" id="sidebar">
   <div class="sidebar-header">
-    <button class="toggle-btn" id="toggleBtn"><i class="fas fa-bars"></i></button>
     <div class="user-info">
       <% if (user) { %>
         <div class="user-avatar">
@@ -38,13 +37,13 @@
     height: 100vh;
     padding: 1.5rem 0;
     position: fixed;
-    top: 0;
+    top: 89px; /* Height of the sticky header */
     left: 0;
     overflow-y: auto;
-    transition: transform 0.3s ease;
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-    z-index: 1000;
+    transition: all 0.3s ease;
+    z-index: 900; /* Below the header */
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    height: calc(100vh - 89px); /* Full height minus header */
   }
 
   .sidebar-header {
@@ -93,26 +92,6 @@
     padding: 0.25rem 0.75rem;
     border-radius: 12px;
     font-weight: 500;
-  }
-
-  .toggle-btn {
-    background: none;
-    border: none;
-    color: #64748b;
-    font-size: 1.125rem;
-    cursor: pointer;
-    display: none;
-    padding: 0.5rem;
-    border-radius: 8px;
-    transition: all 0.3s ease;
-    position: absolute;
-    top: 1rem;
-    right: 1rem;
-  }
-
-  .toggle-btn:hover {
-    background: #f1f5f9;
-    color: #0f172a;
   }
 
   .sidebar-nav {
@@ -170,33 +149,10 @@
     color: #dc2626;
   }
 
-  @media (max-width: 768px) {
+  /* Hide this sidebar on tablets and mobile, the main header nav takes over */
+  @media (max-width: 1024px) {
     .sidebar {
-      width: 280px;
       transform: translateX(-100%);
-    }
-
-    .sidebar.active {
-      transform: translateX(0);
-    }
-
-    .toggle-btn {
-      display: block;
-    }
-
-    body.sidebar-open {
-      overflow: hidden;
-    }
-
-    body.sidebar-open::after {
-      content: '';
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.5);
-      z-index: 999;
     }
   }
 
@@ -221,24 +177,6 @@
 
 
 <script>
-  // Sidebar toggle for mobile
-  const sidebar = document.getElementById('sidebar');
-  const toggleBtn = document.getElementById('toggleBtn');
-  toggleBtn.addEventListener('click', () => {
-    sidebar.classList.toggle('active');
-    document.body.classList.toggle('sidebar-open');
-  });
-
-  // Close sidebar when clicking outside on mobile
-  document.addEventListener('click', (e) => {
-    if (window.innerWidth <= 768) {
-      if (!sidebar.contains(e.target) && !toggleBtn.contains(e.target) && sidebar.classList.contains('active')) {
-        sidebar.classList.remove('active');
-        document.body.classList.remove('sidebar-open');
-      }
-    }
-  });
-
   // Highlight active link
   const currentPath = window.location.pathname;
   document.querySelectorAll('.sidebar-nav a').forEach(link => {

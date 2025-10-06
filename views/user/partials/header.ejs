@@ -156,14 +156,14 @@
   position: absolute;
   top: -6px;
   right: -6px;
-  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  background: linear-gradient(135deg, #f87171 0%, #ef4444 100%);
   color: #ffffff;
-  font-size: 0.75rem;              /* 🔼 Increased font size */
+  font-size: 0.8rem;
   font-weight: 700;
-  padding: 0.35rem 0.65rem;        /* 🔼 More padding */
+  padding: 0.25rem 0.5rem;
   border-radius: 999px;
-  min-width: 24px;                 /* 🔼 Wider badge */
-  height: 24px;                     /* 🔼 Taller badge */
+  min-width: 26px;
+  height: 26px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -480,35 +480,39 @@
     }
 
     /* Responsive Design */
-    @media (max-width: 768px) {
-      .sidebar-toggle {
-        display: flex;
-      }
-
+    @media (max-width: 1024px) {
       .main-nav {
         display: none;
       }
+      .header-left {
+        gap: 1.5rem;
+      }
+      .sidebar-toggle {
+        display: flex;
+      }
+    }
 
+    @media (max-width: 768px) {
       .user-info {
         display: none;
       }
 
       .header-content {
         padding: 0 1rem;
+        gap: 1rem;
       }
 
       .header-right {
         gap: 1rem;
       }
 
+      .header-actions {
+        gap: 0.5rem;
+      }
+
       .auth-section {
         margin-left: 0.75rem;
         padding-left: 0.75rem;
-      }
-
-      .auth-buttons {
-        flex-direction: column;
-        gap: 0.5rem;
       }
 
       .user-profile {
@@ -517,13 +521,18 @@
       }
 
       .brand-logo {
-        font-size: 1.75rem;
+        font-size: 1.6rem;
+      }
+
+      .auth-btn {
+        padding: 0.75rem 1.25rem;
+        font-size: 0.8rem;
       }
     }
 
     @media (max-width: 480px) {
       .brand-logo {
-        font-size: 1.5rem;
+        display: none; /* Hide logo text to save space, icon is enough */
       }
 
       .header-content {
@@ -532,7 +541,7 @@
 
       .auth-btn {
         padding: 0.75rem 1.25rem;
-        font-size: 0.75rem;
+        font-size: 0.75rem; /* Keep or adjust as needed */
       }
 
       .action-btn {
@@ -540,11 +549,7 @@
         height: 44px;
       }
 
-      .header-actions {
-        gap: 0.5rem;
-      }
-
-      .auth-buttons {
+      .header-right {
         gap: 0.5rem;
       }
     }
@@ -606,6 +611,45 @@
           <span class="badge bg-danger ms-auto"><%= cartCount %></span>
         <% } %>
       </a>
+      
+      <% if (user) { %>
+        <hr class="sidebar-divider" style="margin: 1rem 1.5rem; border-top: 1px solid #e2e8f0;">
+        <a href="/user/account" class="sidebar-link">
+          <i class="fas fa-user-circle"></i> Account
+        </a>
+        <a href="/profile/orders" class="sidebar-link">
+          <i class="fas fa-box"></i> My Orders
+        </a>
+        <a href="/profile/addresses" class="sidebar-link">
+          <i class="fas fa-map-marker-alt"></i> Addresses
+        </a>
+        <a href="/profile/Wallet" class="sidebar-link">
+          <i class="fas fa-wallet"></i> Wallet
+        </a>
+        <a href="/profile/referrals" class="sidebar-link">
+          <i class="fas fa-users"></i> Referrals
+        </a>
+        <a href="/profile/coupons" class="sidebar-link">
+          <i class="fas fa-ticket-alt"></i> Coupons
+        </a>
+        <a href="/profile/change-password" class="sidebar-link">
+          <i class="fas fa-user-circle"></i> Account
+        </a>
+        <a href="/profile/orders" class="sidebar-link">
+          <i class="fas fa-box"></i> My Orders
+        </a>
+        <a href="/profile/addresses" class="sidebar-link">
+          <i class="fas fa-map-marker-alt"></i> Addresses
+        </a>
+        <a href="/profile/Wallet" class="sidebar-link">
+          <i class="fas fa-wallet"></i> Wallet
+        </a>
+        <i class="fas fa-lock"></i> Change Password
+        <hr class="sidebar-divider" style="margin: 1rem 1.5rem; border-top: 1px solid #e2e8f0;">
+        <a href="/logout" class="sidebar-link logout-item">
+          <i class="fas fa-sign-out-alt"></i> Logout
+        </a>
+      <% } %>
     </nav>
   </div>
 
@@ -632,13 +676,14 @@
         <div class="header-actions">
           <a href="/user/wishlist" class="action-btn" title="Wishlist">
             <i class="fas fa-heart"></i>
-            <span class="wishlist-badge" id="wishlistBadge" style="display: <%= (typeof wishlistCount !== 'undefined' && wishlistCount > 0) ? 'flex' : 'none' %>;"><%= (typeof wishlistCount !== 'undefined' && wishlistCount > 0) ? wishlistCount : 0 %></span>
+            <% if (typeof wishlistCount !== 'undefined' && wishlistCount > 0) { %>
+          <span class="wishlist-badge" id="wishlistBadge"><%= wishlistCount %></span>
+            <% } %>
           </a>
-
           <a href="/user/cart" class="action-btn" title="Shopping Cart">
             <i class="fas fa-shopping-cart"></i>
-            <% if (typeof cartCount !== 'undefined'&& cartCount >0 ) { %>
-              <span class="cart-badge" id="cartBadge"><%= cartCount %></span>
+            <% if (typeof cartCount !== 'undefined' && cartCount > 0) { %>
+          <span class="cart-badge" id="cartBadge"><%= cartCount %></span>
             <% } %>
           </a>
         </div>
@@ -647,27 +692,26 @@
         <div class="auth-section">
           <% if (!user) { %>
             <div class="auth-buttons">
-              <a href="/login" class="auth-btn login-btn">
+          <a href="/login" class="auth-btn login-btn" title="Login">
                 <i class="fas fa-sign-in-alt"></i>
-                Login
+            <span class="auth-btn-text">Login</span>
               </a>
-              <a href="/signup" class="auth-btn signup-btn">
+          <a href="/signup" class="auth-btn signup-btn" title="Sign Up">
                 <i class="fas fa-user-plus"></i>
-                Sign Up
+            <span class="auth-btn-text">Sign Up</span>
               </a>
             </div>
           <% } else { %>
             <div class="dropdown">
-              <div class="user-profile" id="userProfileToggle">
+              <button class="user-profile" id="userProfileToggle" type="button" aria-expanded="false" aria-controls="userDropdownMenu">
                 <div class="user-avatar">
                   <%= user.fullname ? user.fullname.charAt(0).toUpperCase() : (user.username ? user.username.charAt(0).toUpperCase() : 'U') %>
                 </div>
                 <div class="user-info">
-                  <div class="user-name"><%= user.name || 'User' %></div>
-                  
+                  <div class="user-name"><%= user.fullname || user.username || 'User' %></div>
                 </div>
                 <i class="fas fa-chevron-down dropdown-arrow"></i>
-              </div>
+              </button>
               
               <div class="dropdown-menu-modern" id="userDropdownMenu">
                 <a class="dropdown-item-modern" href="/user/account">
@@ -734,10 +778,12 @@
           const isOpen = dropdownMenu.classList.contains('show');
           if (isOpen) {
             dropdownMenu.classList.remove('show');
+            dropdownToggle.setAttribute('aria-expanded', 'false');
             dropdownToggle.classList.remove('active');
           } else {
             dropdownMenu.classList.add('show');
             dropdownToggle.classList.add('active');
+            dropdownToggle.setAttribute('aria-expanded', 'true');
           }
         });
 
@@ -745,6 +791,7 @@
         document.addEventListener('click', function(e) {
           if (!dropdownToggle.contains(e.target) && !dropdownMenu.contains(e.target)) {
             dropdownMenu.classList.remove('show');
+            dropdownToggle.setAttribute('aria-expanded', 'false');
             dropdownToggle.classList.remove('active');
           }
         });
@@ -753,6 +800,7 @@
         dropdownMenu.querySelectorAll('.dropdown-item-modern').forEach(item => {
           item.addEventListener('click', function() {
             dropdownMenu.classList.remove('show');
+            dropdownToggle.setAttribute('aria-expanded', 'false');
             dropdownToggle.classList.remove('active');
           });
         });
