@@ -666,9 +666,9 @@
         <div class="header-actions">
           <a href="/user/wishlist" class="action-btn" title="Wishlist">
             <i class="fas fa-heart"></i>
-            <% if (typeof wishlistCount !== 'undefined' && wishlistCount > 0) { %>
-          <span class="wishlist-badge" id="wishlistBadge"><%= wishlistCount %></span>
-            <% } %>
+            <span class="wishlist-badge" id="wishlistBadge" style="display: <%= (typeof
+             wishlistCount !== 'undefined' && wishlistCount > 0) ? 'flex' : 'none' %>;"><%= (typeof 
+             wishlistCount !== 'undefined' && wishlistCount > 0) ? wishlistCount : 0 %></span>
           </a>
           <a href="/user/cart" class="action-btn" title="Shopping Cart">
             <i class="fas fa-shopping-cart"></i>
