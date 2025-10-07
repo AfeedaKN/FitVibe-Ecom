@@ -612,34 +612,7 @@
         <% } %>
       </a>
       
-      <% if (user) { %>
-        <hr class="sidebar-divider" style="margin: 1rem 1.5rem; border-top: 1px solid #e2e8f0;">
-        <a href="/user/account" class="sidebar-link">
-          <i class="fas fa-user-circle"></i> Account
-        </a>
-        <a href="/profile/orders" class="sidebar-link">
-          <i class="fas fa-box"></i> My Orders
-        </a>
-        <a href="/profile/addresses" class="sidebar-link">
-          <i class="fas fa-map-marker-alt"></i> Addresses
-        </a>
-        <a href="/profile/Wallet" class="sidebar-link">
-          <i class="fas fa-wallet"></i> Wallet
-        </a>
-        <a href="/profile/referrals" class="sidebar-link">
-          <i class="fas fa-users"></i> Referrals
-        </a>
-        <a href="/profile/coupons" class="sidebar-link">
-          <i class="fas fa-ticket-alt"></i> Coupons
-        </a>
-        <a href="/profile/change-password" class="sidebar-link">
-          <i class="fas fa-lock"></i> Change Password
-        </a>
-        <hr class="sidebar-divider" style="margin: 1rem 1.5rem; border-top: 1px solid #e2e8f0;">
-        <a href="/logout" class="sidebar-link logout-item">
-          <i class="fas fa-sign-out-alt"></i> Logout
-        </a>
-      <% } %>
+      
     </nav>
   </div>
 
@@ -667,13 +640,13 @@
           <a href="/user/wishlist" class="action-btn" title="Wishlist">
             <i class="fas fa-heart"></i>
             <span class="wishlist-badge" id="wishlistBadge" style="display: <%= (typeof
-             wishlistCount !== 'undefined' && wishlistCount > 0) ? 'flex' : 'none' %>;"><%= (typeof 
+             wishlistCount !== 'undefined' && wishlistCount > 0) ? 'flex' : 'none' %>"><%= (typeof 
              wishlistCount !== 'undefined' && wishlistCount > 0) ? wishlistCount : 0 %></span>
           </a>
           <a href="/user/cart" class="action-btn" title="Shopping Cart">
             <i class="fas fa-shopping-cart"></i>
-            <% if (typeof cartCount !== 'undefined' && cartCount > 0) { %>
-          <span class="cart-badge" id="cartBadge"><%= cartCount %></span>
+              <% if (typeof cartCount !== 'undefined'&& cartCount >0 ) { %>
+              <span class="cart-badge" id="cartBadge"><%= cartCount %></span>
             <% } %>
           </a>
         </div>
@@ -822,6 +795,12 @@
         }
       });
     }
+
+
+
+
+
+    
   </script><script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script src="/js/cart-utils.js"></script>
 </body>

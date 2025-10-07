@@ -701,6 +701,9 @@
                 icon: 'success',
                 title: 'Product removed successfully'
               });
+                setTimeout(() => {
+                   window.location.reload();
+                   }, 1000);
             } else {
               Toast.fire({
                 icon: 'error',

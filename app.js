@@ -71,6 +71,7 @@ app.use(async (req, res, next) => {
         res.locals.wishlistCount = 0;
         next();
     }
+    
 });
 
 

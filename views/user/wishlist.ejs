@@ -503,7 +503,7 @@
                               data-size="<%= variant.size %>"
                               data-price="<%= variant.salePrice %>"
                               data-stock="<%= variant.varientquatity %>"
-                              <%= !variant.isAvailable ? 'disabled' : '' %> <%= item.selectedVariant._id.toString() === variant._id.toString() ? 'selected' : '' %>
+                              <%= !variant.isAvailable ? 'disabled' : '' %> 
                               onclick="selectSize(this)">
                         <%= variant.size %>
                       </button>
@@ -520,7 +520,7 @@
               <div class="wishlist-item-actions">
                 <button class="add-to-cart-btn" 
                         data-product-id="<%= item.product._id %>" 
-                        data-variant-id="<%= item.selectedVariant._id %>" 
+                        data-variant-id="" 
                         id="add-cart-btn-<%= item.product._id %>"
                         >
                   <i class="fas fa-shopping-cart"></i>
@@ -662,9 +662,9 @@
                 title: 'Product added to cart successfully!'
               });
               // Dynamically remove item from view
-              const wishlistItem = button.closest('.wishlist-item');
-              wishlistItem.classList.add('removing');
-              wishlistItem.addEventListener('transitionend', () => wishlistItem.remove());
+              setTimeout(() => {
+                window.location.reload();
+              }, 1000);
             } else {
               Toast.fire({
                 icon: 'error',
@@ -690,7 +690,6 @@
         button.addEventListener('click', async () => {
           const productId = button.getAttribute('data-product-id');
           const variantId = button.getAttribute('data-variant-id');
-          const wishlistItem = button.closest('.wishlist-item');
           
           // Show confirmation dialog
           const result = await Swal.fire({
@@ -720,9 +719,9 @@
                   icon: 'success',
                   title: 'Product removed from wishlist successfully!'
                 });
-                // Dynamically remove item from view
-                wishlistItem.classList.add('removing');
-                wishlistItem.addEventListener('transitionend', () => wishlistItem.remove());
+                            setTimeout(() => {
+                  window.location.reload();
+                }, 1000);
 
               } else {
                 Toast.fire({
