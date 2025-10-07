@@ -16,7 +16,7 @@ passport.use(
       callbackURL: "https://www.fitvibe.world/google/auth/callback",
       passReqToCallback: true,
     },
-    async (accessToken, refreshToken, profile, done) => {
+    async (req, accessToken, refreshToken, profile, done) => {
       try {
         
         let user = await User.findOne({ googleId: profile.id });
