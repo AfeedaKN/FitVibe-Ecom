@@ -698,7 +698,7 @@
                   <%= user.fullname ? user.fullname.charAt(0).toUpperCase() : (user.username ? user.username.charAt(0).toUpperCase() : 'U') %>
                 </div>
                 <div class="user-info">
-                  <div class="user-name"><%= user.fullname || user.username || 'User' %></div>
+                  <div class="user-name"><%= user.name || user.username || 'User' %></div>
                 </div>
                 <i class="fas fa-chevron-down dropdown-arrow"></i>
               </button>
