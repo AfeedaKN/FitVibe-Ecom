@@ -259,170 +259,167 @@ const approveReturn = async (req, res) => {
   try {
     const orderId = req.params.orderId;
 
+    // 1️⃣ Validate orderId
     if (!mongoose.Types.ObjectId.isValid(orderId)) {
-      return res.status(400).json({ success: false, message: "Invalid order ID" });
+      req.flash("error", "Invalid order ID");
+      return res.redirect("/admin/orders");
     }
 
+    // 2️⃣ Find the order + populate products
     const order = await Order.findById(orderId)
       .populate("products.product")
       .populate("coupon.couponId");
 
-    if (!order || order.orderStatus !== "return pending") {
-      return res.status(400).json({ success: false, message: "Order not in return pending status" });
+    if (!order || !order.products.some(p => p.status === "return pending")) {
+      req.flash("error", "No items found with return pending status");
+      return res.redirect("/admin/orders");
     }
 
-    
+    // 3️⃣ Original subtotal before returns
     const originalSubtotal = order.products.reduce(
       (acc, p) => acc + p.variant.salePrice * p.quantity,
       0
     );
 
-    
+    // 4️⃣ Coupon details
     let coupon = null;
     if (order.coupon?.couponId) {
       coupon = await Coupon.findById(order.coupon.couponId);
-    }
-    if (!coupon && order.coupon?.code) {
+    } else if (order.coupon?.code) {
       coupon = await Coupon.findOne({ name: order.coupon.code.toUpperCase() });
     }
 
-    let totalCouponDiscount = 0;
-    if (order.couponDiscount && order.couponDiscount > 0) {
-      totalCouponDiscount = order.couponDiscount;
-    } else if (order.coupon?.discountAmount && order.coupon.discountAmount > 0) {
-      totalCouponDiscount = order.coupon.discountAmount;
-    }
-
-    
+    // 5️⃣ Total coupon discount (once)
+    let totalCouponDiscount = order.couponDiscount || (coupon?.discountAmount || 0);
 
     let totalRefundAmount = 0;
     let processedItems = 0;
+    let couponAlreadyRemoved = order.couponDiscount === 0; // ✅ track if coupon already removed
 
+    // 6️⃣ Loop through return pending items
     for (const item of order.products) {
       if (item.status === "return pending") {
         const productId = item.product._id;
         const variantSize = item.variant.size;
 
-        
+        // Product and variant
         const product = await Product.findById(productId);
         if (!product) continue;
 
-        const variant = product.variants.find((v) => v.size === variantSize);
+        const variant = product.variants.find(v => v.size === variantSize);
         if (!variant) continue;
 
-        variant.varientquatity += item.quantity;
+        // Update stock
+        variant.variantQuantity += item.quantity;
+        await product.save();
 
-        const itemSubtotal = item.variant.salePrice * item.quantity;
-        const remainingSubtotal = originalSubtotal - itemSubtotal;
+        // Mark as returned
+        item.status = "returned";
 
-        let refundAmount = itemSubtotal;
+        // Calculate subtotals
+        const returnedItemSubtotal = item.variant.salePrice * item.quantity;
+        const remainingSubtotal = order.products
+          .filter(p => p.status !== "returned" && p.status !== "return pending")
+          .reduce((acc, p) => acc + p.variant.salePrice * p.quantity, 0);
+
+        // 💰 Refund calculation
+        let refundAmount = returnedItemSubtotal;
         let note = "";
 
-        if (coupon && typeof coupon.minimumPrice === "number") {
+        if (coupon && typeof coupon.minimumPrice === "number" && !couponAlreadyRemoved) {
           if (remainingSubtotal >= coupon.minimumPrice) {
-            
-            const proportionalDiscount =
-              (itemSubtotal / originalSubtotal) * totalCouponDiscount;
-            refundAmount = itemSubtotal - proportionalDiscount;
+            // ✅ Coupon still valid → proportional deduction
+            const proportionalDiscount = (returnedItemSubtotal / originalSubtotal) * totalCouponDiscount;
+            refundAmount = returnedItemSubtotal - proportionalDiscount;
             note = `Coupon still valid. ₹${proportionalDiscount.toFixed(2)} discount deducted.`;
           } else {
-            
-            refundAmount = itemSubtotal - totalCouponDiscount;
+            // ❌ Coupon becomes invalid → only deduct once
+            refundAmount = returnedItemSubtotal - totalCouponDiscount;
             if (refundAmount < 0) refundAmount = 0;
-            note = `Coupon invalid after return. Full discount ₹${totalCouponDiscount.toFixed(
-              2
-            )} deducted.`;
+            note = `Coupon invalid after this return. ₹${totalCouponDiscount.toFixed(2)} total discount deducted once.`;
+
+            order.coupon = null;
+            order.couponDiscount = 0;
+            couponAlreadyRemoved = true; // ✅ don't deduct again next loop
           }
         } else {
-          note = "No coupon applied. Full product price refunded.";
+          note = "No coupon applied or already removed. Full amount refunded.";
         }
 
+        // Update item refund details
         item.refundAmount = refundAmount;
         item.refundStatus = "approved";
-        item.status = "returned";
 
         totalRefundAmount += refundAmount;
         processedItems++;
 
+        // Add to history
         order.statusHistory.push({
           status: "returned",
           date: new Date(),
-          description: `Admin approved return for ${item.product.name} (Size: ${variantSize}). ${note} Refund ₹${refundAmount.toFixed(
-            2
-          )} credited.`,
+          description: `Admin approved return for ${item.product.name} (Size: ${variantSize}). ${note} Refund ₹${refundAmount.toFixed(2)} credited.`,
         });
-
-        await product.save();
       }
     }
 
     if (processedItems === 0) {
-      req.flash("error", "No items found with return pending status");
+      req.flash("error", "No items processed for return");
       return res.redirect("/admin/orders");
     }
 
-    
-    const allReturned = order.products.every((p) => p.status === "returned");
-    let shippingRefund = 0;
-
+    // 7️⃣ Check order status
+    const allReturned = order.products.every(p => p.status === "returned");
     if (allReturned) {
-      shippingRefund = order.shippingCharge || 0;
-      totalRefundAmount += shippingRefund;
       order.orderStatus = "returned";
       order.paymentStatus = "refunded";
-    } else if (order.products.some((p) => p.status === "return pending")) {
+      totalRefundAmount += order.shippingCharge || 0; // add shipping if all returned
+    } else if (order.products.some(p => p.status === "return pending")) {
       order.orderStatus = "return pending";
     } else {
       order.orderStatus = "delivered";
     }
 
-    
+    // 8️⃣ Refund to wallet
     const userId = order.user;
     let wallet = await Wallet.findOne({ userId });
     if (!wallet) {
-      wallet = new Wallet({
-        userId,
-        balance: 0,
-        transactions: [],
-      });
+      wallet = new Wallet({ userId, balance: 0, transactions: [] });
     }
 
     wallet.balance += totalRefundAmount;
     wallet.transactions.unshift({
       type: "credit",
       amount: totalRefundAmount,
-      description: `Refund processed for ${processedItems} returned items from order ${order.orderID}`,
+      description: `Refund processed for ${processedItems} returned item(s) from order ${order.orderID}`,
       status: "completed",
       source: "return_refund",
       balanceAfter: wallet.balance,
       date: new Date(),
     });
+
     await wallet.save();
 
+    // 9️⃣ Update order refund
     order.refundAmount = (order.refundAmount || 0) + totalRefundAmount;
     await order.save();
 
-    const successMessage =
-      allReturned && shippingRefund > 0
-        ? `Return request approved. ₹${totalRefundAmount.toFixed(
-            2
-          )} (including ₹${shippingRefund.toFixed(
-            2
-          )} shipping) refunded to wallet.`
-        : `Return request approved. ₹${totalRefundAmount.toFixed(
-            2
-          )} refunded to wallet.`;
+    // 🔟 Success message
+    const successMessage = allReturned
+      ? `Return approved. ₹${totalRefundAmount.toFixed(2)} refunded (including shipping if applicable).`
+      : `Return approved. ₹${totalRefundAmount.toFixed(2)} refunded to wallet.`;
 
+    
     const referer = req.get("Referer");
     if (referer && referer.includes("/admin/return-requests")) {
       req.flash("success", successMessage);
-      res.redirect("/admin/return-requests");
+      return res.redirect("/admin/return-requests");
     } else {
       req.flash("success", successMessage);
-      res.redirect("/admin/orders");
+      return res.redirect("/admin/orders");
     }
   } catch (error) {
-    console.error("❌ Approve return error:", error);
+    console.error("❌ Approve return error:", error.message);
+    console.error(error.stack);
     req.flash("error", "Error processing return approval");
     res.redirect("/admin/orders");
   }
@@ -467,19 +464,21 @@ const rejectReturn = async (req, res) => {
     res.status(500).json({ success: false, message: "Server error rejecting return" });
   }
 };
-
 const itemReturnApprove = async (req, res) => {
   try {
     const { orderId } = req.params;
     const { productId, variantSize } = req.body;
 
+    // 🔍 1️⃣ Validate IDs
     if (!mongoose.Types.ObjectId.isValid(orderId) || !mongoose.Types.ObjectId.isValid(productId)) {
       return res.status(400).json({ success: false, message: "Invalid order or product ID" });
     }
 
+    // 📦 2️⃣ Find order and populate product details
     const order = await Order.findById(orderId).populate("products.product");
     if (!order) return res.status(404).json({ success: false, message: "Order not found" });
 
+    // 🔍 3️⃣ Find the specific item user is returning
     const item = order.products.find(
       (p) =>
         p.product._id.toString() === productId &&
@@ -490,7 +489,7 @@ const itemReturnApprove = async (req, res) => {
       return res.status(400).json({ success: false, message: "Item not found or not eligible for return" });
     }
 
-    
+    // 📦 4️⃣ Update product stock for returned item
     const product = await Product.findById(productId);
     if (!product) return res.status(404).json({ success: false, message: "Product not found" });
 
@@ -498,24 +497,22 @@ const itemReturnApprove = async (req, res) => {
     if (!variant) return res.status(400).json({ success: false, message: "Variant not found" });
     variant.varientquatity += item.quantity;
 
+    // 🏷️ Mark item as returned
     item.status = "returned";
     item.refundApprovedDate = new Date();
 
-    
+    // 💰 5️⃣ Calculate original order subtotal
     const originalSubtotal = order.products.reduce(
       (acc, p) => acc + p.variant.salePrice * p.quantity,
       0
     );
 
-    
-    const alreadyReturnedSubtotal = order.products
-      .filter(p => p.status === "returned" && p._id.toString() !== item._id.toString())
-      .reduce((acc, p) => acc + (p.refundAmount || p.variant.salePrice * p.quantity), 0);
+    // 📊 6️⃣ Calculate subtotal of NON-returned items (after this return)
+    const remainingSubtotal = order.products
+      .filter(p => p.status !== "returned" && p._id.toString() !== item._id.toString())
+      .reduce((acc, p) => acc + p.variant.salePrice * p.quantity, 0);
 
-    const returnedItemSubtotal = item.variant.salePrice * item.quantity;
-    const remainingSubtotal = originalSubtotal - alreadyReturnedSubtotal - returnedItemSubtotal;
-
-    
+    // 🎟️ 7️⃣ Get coupon details (if any)
     let coupon = null;
     if (order.coupon?.couponId) {
       coupon = await Coupon.findById(order.coupon.couponId);
@@ -524,21 +521,23 @@ const itemReturnApprove = async (req, res) => {
       coupon = await Coupon.findOne({ name: order.coupon.code.toUpperCase() });
     }
 
-    let totalCouponDiscount = order.couponDiscount || (coupon?.discountAmount || 0);
+     let totalCouponDiscount = order.couponDiscount || (coupon?.discountAmount || 0);
 
+     const returnedItemSubtotal = item.variant.salePrice * item.quantity;
     let refundAmount = returnedItemSubtotal;
     let note = "";
 
     if (coupon && typeof coupon.minimumPrice === "number") {
       if (remainingSubtotal >= coupon.minimumPrice) {
-        
-        const proportionalDiscount = (returnedItemSubtotal / originalSubtotal) * totalCouponDiscount;
+         const proportionalDiscount = (returnedItemSubtotal / originalSubtotal) * totalCouponDiscount;
         refundAmount = returnedItemSubtotal - proportionalDiscount;
         note = `Coupon still valid. ₹${proportionalDiscount.toFixed(2)} discount deducted.`;
       } else {
-        
-        refundAmount = returnedItemSubtotal;
-        note = `Coupon invalid after previous returns. Full item price refunded.`;
+        refundAmount = returnedItemSubtotal - totalCouponDiscount;
+        if (refundAmount < 0) refundAmount = 0;
+        note = `Coupon invalid after this return. ₹${totalCouponDiscount.toFixed(2)} total discount deducted.`;
+        order.coupon = null;
+        order.couponDiscount = 0;
       }
     } else {
       note = "No coupon applied. Full product price refunded.";
@@ -547,7 +546,6 @@ const itemReturnApprove = async (req, res) => {
     item.refundAmount = refundAmount;
     item.refundStatus = "approved";
 
-    
     let wallet = await Wallet.findOne({ userId: order.user });
     if (!wallet) {
       wallet = new Wallet({ userId: order.user, balance: 0, transactions: [] });
@@ -581,7 +579,6 @@ const itemReturnApprove = async (req, res) => {
     } else {
       order.orderStatus = "delivered";
     }
-
     await product.save();
     await order.save();
 
@@ -595,6 +592,7 @@ const itemReturnApprove = async (req, res) => {
     return res.status(500).json({ success: false, message: "Server error", error: error.message });
   }
 };
+
 
 
 
