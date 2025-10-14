@@ -79,6 +79,7 @@ const addToCart = async (req, res) => {
             cart.items.push({
                 productId,
                 variantId,
+                variantSize: variant.size,
                 quantity,
                 price: variant.varientPrice, 
                 totalPrice: variant.varientPrice * quantity,
@@ -98,8 +99,6 @@ const addToCart = async (req, res) => {
 
 const getCart = async (req, res) => {
   try {
-    
-
     const user = req.session.user;
     if (!user) {
       console.log("No user session found. Redirecting to login.");
@@ -114,10 +113,7 @@ const getCart = async (req, res) => {
 
     const cartItems = [];
     let total = 0;
-    let removedMessages = [];
-    let itemsToKeep = [];
-
-    
+    const toastMessages = [];
 
     for (const item of cart.items) {
       if (item.productId) {
@@ -128,48 +124,49 @@ const getCart = async (req, res) => {
         );
 
         if (variant) {
-          const availableQty = variant.varientquatity; 
+          const availableQty = variant.varientquatity;
 
-          
-          if (availableQty <= 0) {
-            removedMessages.push(`${product.name} - removed because it is out of stock.`);
-            console.log("Removed due to 0 stock:", product.name);
-            continue;
+          const isOutOfStock = availableQty <= 0;
+          const hasInsufficientStock = item.quantity > availableQty;
+
+          if (isOutOfStock) {
+            toastMessages.push(`${product.name} - currently out of stock.`);
+          } else if (hasInsufficientStock) {
+            toastMessages.push(`${product.name} - only ${availableQty} available for the selected size.`);
           }
 
-          
-          if (item.quantity > availableQty) {
-            removedMessages.push(`${product.name} - removed because only ${availableQty} in stock.`);
-            console.log("Removed due to insufficient stock:", product.name, "Available:", availableQty, "In Cart:", item.quantity);
-            continue;
-          }
-
-          
-          itemsToKeep.push(item);
           cartItems.push({
             product,
             variant,
             quantity: item.quantity,
-            isOutOfStock: false,
+            isOutOfStock,
+            hasInsufficientStock
           });
 
-          total += item.totalPrice;
+          if (!isOutOfStock && !hasInsufficientStock) {
+            total += (variant.salePrice ?? item.price) * item.quantity;
+          }
+        } else {
+          
+          cartItems.push({
+            product,
+            variant: { _id: item.variantId, size: item.variantSize || 'Unavailable', varientquatity: 0, salePrice: item.price },
+            quantity: item.quantity,
+            isOutOfStock: true,
+            hasInsufficientStock: false
+          });
+          toastMessages.push(`${product.name} - selected variant is unavailable.`);
         }
       }
     }
 
-    cart.items = itemsToKeep;
-    await cart.save();
-
-    req.session.removedItems = removedMessages;
-
-    res.render('cart', {
+    return res.render('cart', {
       cart,
       cartItems,
       total,
-      removedItems: removedMessages,
-      toastMessages: removedMessages,
-      cartCount: itemsToKeep.length
+      removedItems: [], 
+      toastMessages,
+      cartCount: cart.items.length
     });
   } catch (error) {
     console.error("Get cart error:", error);

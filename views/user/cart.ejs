@@ -414,9 +414,9 @@
                 <h3><%= item.product.name %></h3>
                 <p><strong>Size:</strong> <%= item.variant.size %></p>
                 <p class="price">₹<%= item.variant.salePrice.toFixed(2) %> x <%= item.quantity %></p>
-                <% if (item.variant.varientquatity === 0) { %>
+                <% if (item.isOutOfStock) { %>
                   <p class="cart-item-out-of-stock">Out of Stock</p>
-                <% } else if (item.quantity > item.variant.varientquatity) { %>
+                <% } else if (item.hasInsufficientStock) { %>
                   <p class="cart-item-out-of-stock">Quantity exceeds available stock (<%= item.variant.varientquatity %> available)</p>
                 <% } else if (item.quantity >= item.variant.varientquatity && item.variant.varientquatity > 0) { %>
                   <p class="stock-warning">Only <%= item.variant.varientquatity %> items available</p>
@@ -425,13 +425,13 @@
                   <button class="decrement-btn" 
                     data-product-id="<%= item.product._id %>" 
                     data-variant-id="<%= item.variant._id %>"
-                    <%= item.quantity <= 1 ? 'disabled title="Minimum quantity is 1"' : 'title="Decrease quantity"' %>>-</button>
+                    <%= (item.quantity <= 1 || item.isOutOfStock) ? 'disabled title="Minimum quantity is 1"' : 'title="Decrease quantity"' %>>-</button>
                   <input type="number" value="<%= item.quantity %>" readonly>
                   <button class="increment-btn"
                     data-product-id="<%= item.product._id %>"
                     data-variant-id="<%= item.variant._id %>"
                     data-available-stock="<%= item.variant.varientquatity %>"
-                    <%= (item.quantity >= item.variant.varientquatity || item.variant.varientquatity === 0) ? 'disabled title="No more stock available"' : 'title="Increase quantity"' %>>+</button>
+                    <%= (item.quantity >= item.variant.varientquatity || item.variant.varientquatity === 0 || item.isOutOfStock) ? 'disabled title="No more stock available"' : 'title="Increase quantity"' %>>+</button>
                 </div>
               </div>
               <button class="cart-item-remove"
@@ -443,8 +443,8 @@
           <% }) %>
         </div>
         <div class="cart-summary fade-in">
-          <p class="price">Total: ₹<%= cartItems.reduce((total, item) => total + (item.variant.salePrice * item.quantity), 0).toFixed(2) %></p>
-          <a href="/checkout" class="checkout-btn" <%= cartItems.some(item => item.variant.varientquatity === 0 || item.quantity > item.variant.varientquatity) ? 'disabled' : '' %>>
+          <p class="price">Total: ₹<%= cartItems.reduce((total, item) => item.isOutOfStock || item.hasInsufficientStock ? total : total + (item.variant.salePrice * item.quantity), 0).toFixed(2) %></p>
+          <a href="/checkout" class="checkout-btn" <%= cartItems.some(item => item.isOutOfStock || item.hasInsufficientStock) ? 'disabled' : '' %>>
             <i class="fas fa-shopping-bag"></i>
             Proceed to Checkout
           </a>
