@@ -4,7 +4,7 @@ const customerInfo = async (req, res) => {
     try {
         const search = req.query.search || "";
         const page = parseInt(req.query.page) || 1;
-        const limit = 3;
+        const limit = 5;
 
         const query = {
             isAdmin: false,

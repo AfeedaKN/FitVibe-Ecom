@@ -488,6 +488,15 @@
           });
         }, <%= index * 4000 %>); // 4s delay between toasts
       <% }); %>
+      // Immediately update the header cart count without reload
+      (function(){
+        try {
+          const count = <%= typeof cartCount !== 'undefined' ? cartCount : (cartItems ? cartItems.length : 0) %>;
+          if (typeof updateCartCount === 'function') {
+            updateCartCount(count);
+          }
+        } catch (e) { /* noop */ }
+      })();
     <% } %>
 
     // Function to update cart item quantity in DOM

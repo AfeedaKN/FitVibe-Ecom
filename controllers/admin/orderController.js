@@ -259,13 +259,13 @@ const approveReturn = async (req, res) => {
   try {
     const orderId = req.params.orderId;
 
-    // 1️⃣ Validate orderId
+    
     if (!mongoose.Types.ObjectId.isValid(orderId)) {
       req.flash("error", "Invalid order ID");
       return res.redirect("/admin/orders");
     }
 
-    // 2️⃣ Find the order + populate products
+    
     const order = await Order.findById(orderId)
       .populate("products.product")
       .populate("coupon.couponId");
@@ -275,13 +275,13 @@ const approveReturn = async (req, res) => {
       return res.redirect("/admin/orders");
     }
 
-    // 3️⃣ Original subtotal before returns
+    
     const originalSubtotal = order.products.reduce(
       (acc, p) => acc + p.variant.salePrice * p.quantity,
       0
     );
 
-    // 4️⃣ Coupon details
+    
     let coupon = null;
     if (order.coupon?.couponId) {
       coupon = await Coupon.findById(order.coupon.couponId);
@@ -289,71 +289,71 @@ const approveReturn = async (req, res) => {
       coupon = await Coupon.findOne({ name: order.coupon.code.toUpperCase() });
     }
 
-    // 5️⃣ Total coupon discount (once)
+    
     let totalCouponDiscount = order.couponDiscount || (coupon?.discountAmount || 0);
 
     let totalRefundAmount = 0;
     let processedItems = 0;
-    let couponAlreadyRemoved = order.couponDiscount === 0; // ✅ track if coupon already removed
+    let couponAlreadyRemoved = order.couponDiscount === 0; 
 
-    // 6️⃣ Loop through return pending items
+    
     for (const item of order.products) {
       if (item.status === "return pending") {
         const productId = item.product._id;
         const variantSize = item.variant.size;
 
-        // Product and variant
+       
         const product = await Product.findById(productId);
         if (!product) continue;
 
         const variant = product.variants.find(v => v.size === variantSize);
         if (!variant) continue;
 
-        // Update stock
+        
         variant.variantQuantity += item.quantity;
         await product.save();
 
-        // Mark as returned
+        
         item.status = "returned";
 
-        // Calculate subtotals
+        
         const returnedItemSubtotal = item.variant.salePrice * item.quantity;
         const remainingSubtotal = order.products
           .filter(p => p.status !== "returned" && p.status !== "return pending")
           .reduce((acc, p) => acc + p.variant.salePrice * p.quantity, 0);
 
-        // 💰 Refund calculation
+        
         let refundAmount = returnedItemSubtotal;
         let note = "";
 
         if (coupon && typeof coupon.minimumPrice === "number" && !couponAlreadyRemoved) {
           if (remainingSubtotal >= coupon.minimumPrice) {
-            // ✅ Coupon still valid → proportional deduction
+            
             const proportionalDiscount = (returnedItemSubtotal / originalSubtotal) * totalCouponDiscount;
             refundAmount = returnedItemSubtotal - proportionalDiscount;
             note = `Coupon still valid. ₹${proportionalDiscount.toFixed(2)} discount deducted.`;
           } else {
-            // ❌ Coupon becomes invalid → only deduct once
+            
             refundAmount = returnedItemSubtotal - totalCouponDiscount;
             if (refundAmount < 0) refundAmount = 0;
             note = `Coupon invalid after this return. ₹${totalCouponDiscount.toFixed(2)} total discount deducted once.`;
 
             order.coupon = null;
             order.couponDiscount = 0;
-            couponAlreadyRemoved = true; // ✅ don't deduct again next loop
+            couponAlreadyRemoved = true; 
           }
         } else {
           note = "No coupon applied or already removed. Full amount refunded.";
         }
 
-        // Update item refund details
+        
         item.refundAmount = refundAmount;
         item.refundStatus = "approved";
 
         totalRefundAmount += refundAmount;
         processedItems++;
 
-        // Add to history
+        
         order.statusHistory.push({
           status: "returned",
           date: new Date(),
@@ -367,19 +367,19 @@ const approveReturn = async (req, res) => {
       return res.redirect("/admin/orders");
     }
 
-    // 7️⃣ Check order status
+    
     const allReturned = order.products.every(p => p.status === "returned");
     if (allReturned) {
       order.orderStatus = "returned";
       order.paymentStatus = "refunded";
-      totalRefundAmount += order.shippingCharge || 0; // add shipping if all returned
+      totalRefundAmount += order.shippingCharge || 0;
     } else if (order.products.some(p => p.status === "return pending")) {
       order.orderStatus = "return pending";
     } else {
       order.orderStatus = "delivered";
     }
 
-    // 8️⃣ Refund to wallet
+    
     const userId = order.user;
     let wallet = await Wallet.findOne({ userId });
     if (!wallet) {
@@ -399,11 +399,11 @@ const approveReturn = async (req, res) => {
 
     await wallet.save();
 
-    // 9️⃣ Update order refund
+    
     order.refundAmount = (order.refundAmount || 0) + totalRefundAmount;
     await order.save();
 
-    // 🔟 Success message
+    
     const successMessage = allReturned
       ? `Return approved. ₹${totalRefundAmount.toFixed(2)} refunded (including shipping if applicable).`
       : `Return approved. ₹${totalRefundAmount.toFixed(2)} refunded to wallet.`;
@@ -418,7 +418,7 @@ const approveReturn = async (req, res) => {
       return res.redirect("/admin/orders");
     }
   } catch (error) {
-    console.error("❌ Approve return error:", error.message);
+    console.error(" Approve return error:", error.message);
     console.error(error.stack);
     req.flash("error", "Error processing return approval");
     res.redirect("/admin/orders");
@@ -469,16 +469,16 @@ const itemReturnApprove = async (req, res) => {
     const { orderId } = req.params;
     const { productId, variantSize } = req.body;
 
-    // 🔍 1️⃣ Validate IDs
+    
     if (!mongoose.Types.ObjectId.isValid(orderId) || !mongoose.Types.ObjectId.isValid(productId)) {
       return res.status(400).json({ success: false, message: "Invalid order or product ID" });
     }
 
-    // 📦 2️⃣ Find order and populate product details
+    
     const order = await Order.findById(orderId).populate("products.product");
     if (!order) return res.status(404).json({ success: false, message: "Order not found" });
 
-    // 🔍 3️⃣ Find the specific item user is returning
+    
     const item = order.products.find(
       (p) =>
         p.product._id.toString() === productId &&
@@ -489,7 +489,7 @@ const itemReturnApprove = async (req, res) => {
       return res.status(400).json({ success: false, message: "Item not found or not eligible for return" });
     }
 
-    // 📦 4️⃣ Update product stock for returned item
+    
     const product = await Product.findById(productId);
     if (!product) return res.status(404).json({ success: false, message: "Product not found" });
 
@@ -497,22 +497,22 @@ const itemReturnApprove = async (req, res) => {
     if (!variant) return res.status(400).json({ success: false, message: "Variant not found" });
     variant.varientquatity += item.quantity;
 
-    // 🏷️ Mark item as returned
+    
     item.status = "returned";
     item.refundApprovedDate = new Date();
 
-    // 💰 5️⃣ Calculate original order subtotal
+   
     const originalSubtotal = order.products.reduce(
       (acc, p) => acc + p.variant.salePrice * p.quantity,
       0
     );
 
-    // 📊 6️⃣ Calculate subtotal of NON-returned items (after this return)
+    
     const remainingSubtotal = order.products
       .filter(p => p.status !== "returned" && p._id.toString() !== item._id.toString())
       .reduce((acc, p) => acc + p.variant.salePrice * p.quantity, 0);
 
-    // 🎟️ 7️⃣ Get coupon details (if any)
+    
     let coupon = null;
     if (order.coupon?.couponId) {
       coupon = await Coupon.findById(order.coupon.couponId);
@@ -588,7 +588,7 @@ const itemReturnApprove = async (req, res) => {
       refundAmount,
     });
   } catch (error) {
-    console.error("❌ Item return approve error:", error);
+    console.error(" Item return approve error:", error);
     return res.status(500).json({ success: false, message: "Server error", error: error.message });
   }
 };

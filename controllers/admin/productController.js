@@ -399,26 +399,26 @@ const updateProduct = async (req, res) => {
     const existingProduct = await Product.findById(productObjectId);
     let images = existingProduct.images || [];
 
-    // Safely handle deletedImages
+    
     let deletedIndices = [];
     if (deletedImages) {
       if (typeof deletedImages === 'string') {
-        // Trim and parse JSON string if it exists
+        
         const trimmedImages = deletedImages.trim();
         if (trimmedImages) {
           try {
             deletedIndices = JSON.parse(trimmedImages);
           } catch (parseError) {
             console.error("Error parsing deletedImages JSON:", parseError);
-            deletedIndices = []; // Fallback to empty array on parse failure
+            deletedIndices = []; 
           }
         }
       } else if (Array.isArray(deletedImages)) {
-        // Already an array, use it directly (deduplicate for safety)
+        
         deletedIndices = [...new Set(deletedImages)];
       } else {
         console.warn("Unexpected deletedImages type:", typeof deletedImages);
-        deletedIndices = []; // Fallback for unexpected types
+        deletedIndices = []; 
       }
     }
 

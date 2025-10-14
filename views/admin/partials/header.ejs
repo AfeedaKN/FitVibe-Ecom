@@ -582,7 +582,57 @@
         .font-medium { font-weight: 500; }
         .font-semibold { font-weight: 600; }
         .font-bold { font-weight: 700; }
+
+        /* Global mobile sidebar toggle button */
+        .global-sidebar-toggle {
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            width: 44px;
+            height: 44px;
+            border: 2px solid var(--border-light);
+            border-radius: var(--radius-lg);
+            background: var(--bg-primary);
+            color: var(--text-secondary);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1100;
+            box-shadow: var(--shadow-sm);
+        }
+        .global-sidebar-toggle:hover {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+        @media (max-width: 768px) {
+            .global-sidebar-toggle { display: inline-flex; }
+        }
     </style>
 </head>
 <body>
+    <button id="globalSidebarToggle" class="global-sidebar-toggle" aria-label="Toggle sidebar" title="Menu">
+        <i class="fas fa-bars"></i>
+    </button>
+    <script>
+      (function(){
+        const btn = document.getElementById('globalSidebarToggle');
+        if (!btn) return;
+        btn.addEventListener('click', function(e){
+          e.preventDefault();
+          try {
+            if (typeof toggleSidebar === 'function') {
+              toggleSidebar();
+              return;
+            }
+          } catch (err) {}
+          const sidebar = document.querySelector('.sidebar');
+          const overlay = document.getElementById('sidebarOverlay');
+          if (sidebar) sidebar.classList.toggle('active');
+          if (overlay) overlay.classList.toggle('show');
+          if (window.innerWidth <= 768) {
+            document.body.style.overflow = (sidebar && sidebar.classList.contains('active')) ? 'hidden' : '';
+          }
+        });
+      })();
+    </script>
     <div class="admin-layout">

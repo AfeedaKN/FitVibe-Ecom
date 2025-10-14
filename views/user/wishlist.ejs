@@ -565,13 +565,13 @@
       }
     });
 
-    // Initialize selected sizes from the initial data
+    
     let selectedSizes = <%- JSON.stringify(wishlist.items.reduce((acc, item) => {
       acc[item.product._id] = { variantId: item.selectedVariant._id, size: item.selectedVariant.size, price: item.selectedVariant.salePrice, stock: item.selectedVariant.varientquatity };
       return acc;
     }, {})) %>;
 
-    // Size selection function
+    
     function selectSize(button) {
       const productId = button.getAttribute('data-product-id');
       const variantId = button.getAttribute('data-variant-id');
@@ -579,7 +579,7 @@
       const price = button.getAttribute('data-price');
       const stock = parseInt(button.getAttribute('data-stock'));
 
-      // Remove selection from other size buttons for this product
+      
       document.querySelectorAll(`[data-product-id="${productId}"].size-btn`).forEach(btn => {
         btn.classList.remove('selected');
       });

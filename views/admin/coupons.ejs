@@ -497,11 +497,37 @@
                 min-width: 800px;
             }
         }
+    /* Mobile sidebar toggle button (742px and below) */
+        .global-sidebar-toggle {
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            width: 44px;
+            height: 44px;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            background: #ffffff;
+            color: #64748b;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1100;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        .global-sidebar-toggle:hover {
+            background: #f8fafc;
+            color: #0f172a;
+        }
+        @media (max-width: 742px) {
+            .global-sidebar-toggle { display: inline-flex; }
+        }
     </style>
 </head>
 <body>
     <%- include('./partials/sidebar', { page: 'coupons' }) %>
-    
+    <button class="global-sidebar-toggle" aria-label="Toggle sidebar" title="Menu" onclick="toggleSidebar()">
+        <i class="fas fa-bars"></i>
+    </button>
     <div class="main-content">
         <div class="page-header">
             <h1 class="page-title">

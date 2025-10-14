@@ -564,20 +564,20 @@ const returnOrderItem = async (req, res) => {
       return res.status(400).json({ success: false, message: "Item already returned or pending" });
     }
 
-    // ✅ Calculate only (don’t apply stock/wallet yet)
+    
     const { itemFinalAmount } = calculateItemFinalAmount(item, order);
 
-    // ✅ Mark item as return pending
+    
     item.status = "return pending";
     item.returnReason = reason;
     item.returnRequestDate = new Date();
     item.refundAmount = itemFinalAmount;
     item.refundStatus = "pending";
 
-    // ✅ Order status -> return pending
+    
     order.orderStatus = "return pending";
 
-    // ✅ Add history
+    
     order.statusHistory.push({
       status: "return pending",
       date: new Date(),

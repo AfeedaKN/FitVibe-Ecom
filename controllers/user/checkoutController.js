@@ -33,7 +33,7 @@ const getCheckout = async (req, res) => {
         total: 0, 
         defaultAddress: null,
         walletBalance: walletBalance,
-        toastMessages: [] // Changed from flashMessages to toastMessages
+        toastMessages: [] 
       });
     }
 
@@ -44,13 +44,13 @@ const getCheckout = async (req, res) => {
     for (const item of cart.items) {
       const product = item.productId;
 
-      // Validate product existence and listing status
+      
       if (!product || product.isDeleted || !product.isListed) {
         toastMessages.push(`Product '${product?.name || 'Unknown'}' was unlisted by admin, so removing it from cart.`);
         continue;
       }
 
-      // Validate quantity
+      
       if (!Number.isInteger(item.quantity) || item.quantity <= 0) {
         toastMessages.push(`Product '${product.name}' was removed due to invalid or missing quantity.`);
         continue;
@@ -60,13 +60,13 @@ const getCheckout = async (req, res) => {
         variant._id.toString() === item.variantId.toString()
       );
 
-      // Validate variant existence and stock
+      
       if (!matchedVariant || matchedVariant.varientquatity <= 0) {
         toastMessages.push(`Product '${product.name} - ${matchedVariant?.size || 'Variant'}' was removed as it is now out of stock.`);
         continue;
       }
 
-      // Adjust quantity if it exceeds available stock
+      
       if (matchedVariant.varientquatity < item.quantity) {
         toastMessages.push(`Quantity for '${product.name} - ${matchedVariant.size}' was updated to ${matchedVariant.varientquatity} due to low stock.`);
         item.quantity = matchedVariant.varientquatity;
@@ -76,20 +76,20 @@ const getCheckout = async (req, res) => {
       validItems.push(item);
     }
 
-    // Update cart if items were removed
+    
     if (validItems.length < originalItemCount) {
       cart.items = validItems;
       await cart.save();
     }
 
-    // Calculate totals only for valid items
+    
     const subtotal = validItems.reduce((sum, item) => {
       return sum + (item.variant?.salePrice || 0) * item.quantity;
     }, 0);
 
     const tax = 0; 
     const discount = 0; 
-    const shipping = validItems.length > 0 ? 100 : 0; // No shipping if cart is empty
+    const shipping = validItems.length > 0 ? 100 : 0; 
     const total = subtotal + shipping;
 
     const defaultAddress = addresses.find(addr => addr.isDefault);
@@ -97,7 +97,7 @@ const getCheckout = async (req, res) => {
     res.render('checkout', {
       addresses,
       user,
-      cart: { items: validItems }, // Pass updated cart with valid items
+      cart: { items: validItems }, 
       subtotal,
       tax,
       discount,
@@ -105,7 +105,7 @@ const getCheckout = async (req, res) => {
       total,
       defaultAddress: defaultAddress ? defaultAddress._id : null,
       walletBalance: walletBalance,
-      toastMessages // Pass toast messages to frontend
+      toastMessages 
     });
 
   } catch (error) {

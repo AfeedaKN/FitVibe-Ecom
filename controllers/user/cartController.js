@@ -98,46 +98,49 @@ const addToCart = async (req, res) => {
 
 const getCart = async (req, res) => {
   try {
+    
+
     const user = req.session.user;
     if (!user) {
+      console.log("No user session found. Redirecting to login.");
       return res.redirect('/login');
     }
 
     const cart = await Cart.findOne({ userId: user._id }).populate('items.productId');
     if (!cart) {
-      return res.render('cart', { cart: null, cartItems: [], total: 0, removedItems: [] });
+      console.log("No cart found for user:", user._id);
+      return res.render('cart', { cart: null, cartItems: [], total: 0, removedItems: [], toastMessages: [], cartCount: 0 });
     }
 
     const cartItems = [];
     let total = 0;
-    let removedMessages = []; 
+    let removedMessages = [];
     let itemsToKeep = [];
+
+    
 
     for (const item of cart.items) {
       if (item.productId) {
         const product = item.productId;
 
-        
         const variant = product.variants.find(
           (v) => v._id.toString() === item.variantId.toString()
         );
 
         if (variant) {
-          const availableQty = variant.stock;
+          const availableQty = variant.varientquatity; 
 
           
           if (availableQty <= 0) {
-            removedMessages.push(
-              `${product.name} - removed because it is out of stock.`
-            );
+            removedMessages.push(`${product.name} - removed because it is out of stock.`);
+            console.log("Removed due to 0 stock:", product.name);
             continue;
           }
 
           
           if (item.quantity > availableQty) {
-            removedMessages.push(
-              `${product.name} - removed because only ${availableQty} in stock.`
-            );
+            removedMessages.push(`${product.name} - removed because only ${availableQty} in stock.`);
+            console.log("Removed due to insufficient stock:", product.name, "Available:", availableQty, "In Cart:", item.quantity);
             continue;
           }
 
@@ -155,18 +158,18 @@ const getCart = async (req, res) => {
       }
     }
 
-   
     cart.items = itemsToKeep;
     await cart.save();
 
-    
     req.session.removedItems = removedMessages;
 
     res.render('cart', {
       cart,
       cartItems,
       total,
-      removedItems: removedMessages 
+      removedItems: removedMessages,
+      toastMessages: removedMessages,
+      cartCount: itemsToKeep.length
     });
   } catch (error) {
     console.error("Get cart error:", error);
@@ -175,6 +178,7 @@ const getCart = async (req, res) => {
     });
   }
 };
+
 
 
 
