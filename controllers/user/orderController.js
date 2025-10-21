@@ -4,6 +4,7 @@ const Product = require('../../models/productSchema');
 const Wallet = require('../../models/walletShema');
 const PDFDocument = require('pdfkit');
 const fs = require("fs");
+const path = require("path");
 const mongoose = require('mongoose');
 
 const calculateItemFinalAmount = (item, order) => {
@@ -600,98 +601,149 @@ const returnOrderItem = async (req, res) => {
 
 
 
+
 const downloadInvoice = async (req, res) => {
   try {
     const orderId = req.params.id;
     const order = await Order.findById(orderId)
-      .populate('products.product')
-      .populate('address');
+      .populate("products.product")
+      .populate("address");
 
     if (!order) {
-      return res.status(404).render('pageNotFound', { message: 'Order not found' });
+      return res.status(404).render("pageNotFound", { message: "Order not found" });
     }
 
     const doc = new PDFDocument({ margin: 50 });
     const fileName = `invoice-${order.orderID}.pdf`;
 
-    res.setHeader('Content-disposition', `attachment; filename=${fileName}`);
-    res.setHeader('Content-type', 'application/pdf');
+    res.setHeader("Content-disposition", `attachment; filename=${fileName}`);
+    res.setHeader("Content-type", "application/pdf");
 
     doc.pipe(res);
 
-    doc.fontSize(20).text('FitVibe', { align: 'center' });
-    doc.fontSize(16).text('Invoice', { align: 'center' });
-    doc.moveDown();
+    
+    doc.font("Helvetica-Bold").fontSize(22).text("FitVibe Pvt. Ltd.", 50, 50);
+    doc.fontSize(10).font("Helvetica")
+      .text("123 Fashion Street, Kochi, Kerala, India", 50, 75)
+      .text("Email: support@fitvibe.com | Phone: +91 9876543210", 50, 90)
+      .text("GSTIN: 32ABCDE1234F1ZB", 50, 105);
 
-    doc.fontSize(12).text(`Order #${order.orderID}`, { align: 'left' });
-    doc.text(`Order Date: ${order.orderDate.toLocaleDateString()}`, { align: 'left' });
-    doc.text(`Status: ${order.orderStatus}`, { align: 'left' });
-    doc.text(`Payment Method: ${order.paymentMethod}`, { align: 'left' });
-    doc.text(`Payment Status: ${order.paymentStatus || 'Unknown'}`, { align: 'left' });
-    doc.moveDown();
+    
+    doc.fontSize(18).font("Helvetica-Bold").text("INVOICE", 450, 50);
 
+    doc.moveTo(50, 125).lineTo(550, 125).strokeColor("#00A859").stroke();
+    doc.moveDown(1.5);
+
+    
+    doc.fontSize(12).font("Helvetica-Bold").text("Invoice Details", 50, 140);
+    doc.font("Helvetica").fontSize(10)
+      .text(`Invoice Number: ${order.orderID}`, 50, 160)
+      .text(`Order Date: ${order.orderDate.toLocaleDateString()}`, 50, 175)
+      .text(`Due Date: ${order.orderDate.toLocaleDateString()}`, 50, 190);
+
+    
+    const addressY = 140;
+    doc.fontSize(12).font("Helvetica-Bold").text("Bill To:", 300, addressY);
+    doc.font("Helvetica").fontSize(10)
+      .text(order.user?.name || "Customer", 300, addressY + 20)
+      .text(order.user?.email || "Email not available", 300, addressY + 35);
+
+    doc.fontSize(12).font("Helvetica-Bold").text("Ship To:", 450, addressY);
     if (order.addressDetails) {
-      doc.fontSize(14).text('Shipping Address:', { align: 'left' });
-      doc.fontSize(12)
-        .text(`${order.addressDetails.name}`)
-        .text(`${order.addressDetails.address}, ${order.addressDetails.city}, ${order.addressDetails.state} - ${order.addressDetails.zipCode}`)
-        .text(`${order.addressDetails.country}`)
-        .text(`Phone: ${order.addressDetails.phone}`);
-      doc.moveDown();
+      const addr = order.addressDetails;
+      doc.font("Helvetica").fontSize(10)
+        .text(addr.name, 450, addressY + 20)
+        .text(`${addr.address}`, 450, addressY + 35)
+        .text(`${addr.city}, ${addr.state} - ${addr.zipCode}`, 450, addressY + 50)
+        .text(addr.country, 450, addressY + 65)
+        .text(`Phone: ${addr.phone}`, 450, addressY + 80);
     } else {
-      doc.fontSize(14).text('Shipping Address: Not available', { align: 'left' });
-      doc.moveDown();
+      doc.font("Helvetica").fontSize(10)
+        .text("Address not available", 450, addressY + 20);
     }
 
-    doc.fontSize(14).text('Order Items:', { align: 'left' });
-    doc.moveDown(0.5);
+    
+    const tableTop = 260;
+    doc.moveTo(50, tableTop - 5).lineTo(550, tableTop - 5).strokeColor("#000").stroke();
+    doc.font("Helvetica-Bold").fontSize(10);
+    doc.text("#", 55, tableTop);
+    doc.text("Product", 80, tableTop);
+    doc.text("Quantity", 300, tableTop, { width: 90, align: "right" });
+    doc.text("Unit Price", 380, tableTop, { width: 80, align: "right" });
+    doc.text("Total", 470, tableTop, { width: 80, align: "right" });
+    doc.moveTo(50, tableTop + 12).lineTo(550, tableTop + 12).stroke();
 
-    const tableTop = doc.y;
-    const itemWidth = 100;
-    const priceWidth = 80;
-    const qtyWidth = 60;
-    const totalWidth = 80;
-
-    doc.fontSize(10).font('Helvetica-Bold')
-      .text('Product', 50, tableTop, { width: itemWidth })
-      .text('Variant', 150, tableTop, { width: itemWidth })
-      .text('Price', 250, tableTop, { width: priceWidth, align: 'right' })
-      .text('Quantity', 330, tableTop, { width: qtyWidth, align: 'right' })
-      .text('Total', 390, tableTop, { width: totalWidth, align: 'right' });
-
-    doc.moveTo(50, tableTop + 15).lineTo(470, tableTop + 15).stroke();
+    
     let y = tableTop + 25;
+    let index = 1;
 
-    order.products.forEach(item => {
-      doc.font('Helvetica')
-        .text(item.product.name, 50, y, { width: itemWidth })
-        .text(item.variant.size, 150, y, { width: itemWidth })
-        .text(`₹${item.variant.salePrice.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`, 250, y, { width: priceWidth, align: 'right' })
-        .text(item.quantity, 330, y, { width: qtyWidth, align: 'right' })
-        .text(`₹${(item.variant.salePrice * item.quantity).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`, 390, y, { width: totalWidth, align: 'right' });
+    order.products.forEach((item) => {
+      const totalPrice = item.variant.salePrice * item.quantity;
+      doc.font("Helvetica").fontSize(10)
+        .text(index, 55, y)
+        .text(item.product.name, 80, y)
+        .text(item.quantity, 300, y, { width: 90, align: "right" })
+        .text(`${item.variant.salePrice.toFixed(2)}`, 380, y, { width: 80, align: "right" })
+        .text(`${totalPrice.toFixed(2)}`, 470, y, { width: 80, align: "right" });
       y += 20;
+      index++;
     });
 
-    doc.moveDown(2);
-    doc.fontSize(12).font('Helvetica')
-      .text(`Subtotal: ₹${order.totalAmount.toFixed(2)}`, { align: 'right' });
-    if (order.couponDiscount > 0) {
-      doc.text(`Coupon Discount: -₹${order.couponDiscount.toFixed(2)}`, { align: 'right' });
-    }
-    doc.text(`Shipping: ₹${order.shippingCharge.toFixed(2)}`, { align: 'right' })
-      .font('Helvetica-Bold')
-      .text(`Total: ₹${order.finalAmount.toFixed(2)}`, { align: 'right' });
+    
+    doc.moveTo(50, y + 5).lineTo(550, y + 5).stroke();
 
-    doc.moveDown(2);
-    doc.fontSize(10).font('Helvetica')
-      .text('Thank you for shopping with FitVibe!', { align: 'center' });
+    
+    y += 20;
+    doc.font("Helvetica-Bold").text("Payment Method:", 50, y);
+    doc.font("Helvetica").text(order.paymentMethod, 150, y);
+    doc.font("Helvetica-Bold").text("Payment Status:", 300, y);
+    doc.font("Helvetica").text(order.paymentStatus || "Pending", 410, y);
+
+    
+    y += 40;
+    doc.moveTo(320, y - 10).lineTo(550, y - 10).strokeColor("#ccc").stroke();
+
+    doc.font("Helvetica").fontSize(11)
+      .text(`Subtotal:`, 380, y, { width: 100, align: "right" })
+      .text(`${order.totalAmount.toFixed(2)}`, 470, y, { width: 80, align: "right" });
+
+    y += 15;
+    if (order.couponDiscount > 0) {
+      doc.text(`Discount:`, 380, y, { width: 100, align: "right" })
+        .text(`-${order.couponDiscount.toFixed(2)}`, 470, y, { width: 80, align: "right" });
+      y += 15;
+    }
+
+    doc.text(`Shipping:`, 380, y, { width: 100, align: "right" })
+      .text(`${order.shippingCharge.toFixed(2)}`, 470, y, { width: 80, align: "right" });
+    y += 15;
+
+    doc.text(`Tax (10%):`, 380, y, { width: 100, align: "right" })
+      .text(`${(order.finalAmount - order.totalAmount).toFixed(2)}`, 470, y, { width: 80, align: "right" });
+    y += 15;
+
+    
+    doc.moveTo(320, y + 5).lineTo(550, y + 5).strokeColor("#00A859").stroke();
+    doc.font("Helvetica-Bold").fontSize(12)
+      .fillColor("#00A859")
+      .text(`Total Amount:`, 380, y + 10, { width: 100, align: "right" })
+      .text(`${order.finalAmount.toFixed(2)}`, 470, y + 10, { width: 80, align: "right" });
+    doc.fillColor("black");
+
+    
+    doc.moveDown(3);
+    doc.font("Helvetica").fontSize(9)
+      .text("Thank you for shopping with FitVibe!", { align: "center" })
+      .text("For support, contact support@fitvibe.com", { align: "center" });
+    doc.moveDown(0.5);
+    doc.fontSize(8).text("© 2025 FitVibe Pvt. Ltd. All rights reserved.", { align: "center" });
 
     doc.end();
   } catch (error) {
-    console.error('Error generating invoice:', error);
-    res.status(500).send('Error generating invoice');
+    console.error("Error generating invoice:", error);
+    res.status(500).send("Error generating invoice");
   }
-};
+}
 
 const retryPayment = async (req, res) => {
   try {

@@ -485,6 +485,8 @@ const placeOrder = async (req, res) => {
         receipt: order.orderID,
         payment_capture: 1,
       };
+      console.log("hii working checkout");
+      
 
       const razorpayOrder = await instance.orders.create(razorpayOptions);
 
@@ -561,101 +563,6 @@ const getOrderFailure = async (req, res) => {
   }
 };
 
-const verifyPayment = async (req, res) => {
-  try {
-    
-    
-    const { orderId, razorpay_payment_id, razorpay_order_id, razorpay_signature } = req.body;
-
-    if (!orderId || !razorpay_payment_id || !razorpay_order_id || !razorpay_signature) {
-      console.log('Missing payment details:', {
-        orderId: !!orderId,
-        razorpay_payment_id: !!razorpay_payment_id,
-        razorpay_order_id: !!razorpay_order_id,
-        razorpay_signature: !!razorpay_signature
-      });
-      return res.status(400).json({ success: false, message: 'Missing payment details' });
-    }
-
-    const crypto = require('crypto');
-    const sign = `${razorpay_order_id}|${razorpay_payment_id}`;
-    const expectedSign = crypto
-      .createHmac('sha256', process.env.RAZORPAY_SECRET)
-      .update(sign)
-      .digest('hex');
-
-    console.log('Signature verification:', {
-      received_signature: razorpay_signature,
-      expected_signature: expectedSign,
-      sign_string: sign,
-      razorpay_secret: process.env.RAZORPAY_SECRET ? 'Present' : 'Missing'
-    });
-
-    if (razorpay_signature !== expectedSign) {
-      console.log(' Signature verification failed');
-      return res.status(400).json({ success: false, message: 'Invalid payment signature' });
-    }
-
-    console.log(' Signature verification successful');
-
-    console.log('Finding order with ID:', orderId);
-    const order = await Order.findById(orderId);
-    if (!order) {
-      console.log(' Order not found');
-      return res.status(404).json({ success: false, message: 'Order not found' });
-    }
-
-    console.log(' Order found:', order.orderID);
-
-    console.log('Updating order status...');
-    order.paymentStatus = 'Paid';
-    order.orderStatus = 'Confirmed';
-    order.paymentId = razorpay_payment_id;
-    order.paymentDetails = {
-      paymentId: razorpay_payment_id,
-      status: 'completed',
-      createdAt: new Date(),
-      razorpaySignature: razorpay_signature
-    };
-
-    await order.save();
-    console.log(' Order updated successfully');
-
-    const userId = req.user._id;
-    console.log('Finding cart for user:', userId);
-    const cart = await Cart.findOne({ userId }).populate('items.productId');
-
-    if (cart && cart.items.length > 0) {
-      console.log('Updating product stock for', cart.items.length, 'items');
-      
-      for (const item of cart.items) {
-        const product = item.productId;
-        const variantToUpdate = product.variants.find(v => v._id.toString() === item.variantId.toString());
-        if (variantToUpdate) {
-          const oldStock = variantToUpdate.varientquatity;
-          variantToUpdate.varientquatity -= item.quantity;
-          await product.save();
-          console.log(`Updated stock for ${product.name}: ${oldStock} -> ${variantToUpdate.varientquatity}`);
-        }
-      }
-
-      cart.items = [];
-      await cart.save();
-      console.log(' Cart cleared');
-    } else {
-      console.log('No cart found or cart is empty');
-    }
-
-    console.log('=== PAYMENT VERIFICATION SUCCESS ===');
-    res.json({ success: true, message: 'Payment verified and order confirmed' });
-
-  } catch (error) {
-    console.error('=== PAYMENT VERIFICATION ERROR ===');
-    console.error('Error details:', error);
-    console.error('Stack trace:', error.stack);
-    res.status(500).json({ success: false, message: 'Payment verification failed: ' + error.message });
-  }
-};
 
 const getOrderDetails = async (req, res) => {
   try {
@@ -679,7 +586,6 @@ const getOrderDetails = async (req, res) => {
 module.exports = {
   getCheckout,
   placeOrder,
-  verifyPayment,
   getOrderSuccess,
   getOrderFailure,
   getOrderDetails

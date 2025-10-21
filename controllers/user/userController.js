@@ -81,41 +81,49 @@ const signup = async (req, res) => {
     try {
         const { name, phone, email, password, confirmPassword, referralCode } = req.body;
 
+        
         if (password !== confirmPassword) {
-            return res.render("signup", { message: "Passwords do not match" });
+            return res.render("signUp", { 
+                error: "Passwords do not match", 
+                user: req.body 
+            });
         }
 
+        
         const findUser = await User.findOne({ email });
         if (findUser) {
-            return res.render("signup", { message: "User with this email already exists" });
+            return res.render("signUp", { 
+                error: "User with this email already exists", 
+                user: req.body 
+            });
         }
 
+        
         const otp = generateOtp();
 
-        const emailSent = await sendVerificationEmail(
-            email,
-            "Verify Your Account",
-            `Your OTP is ${otp}`
-        );
-
+        
+        const emailSent = await sendVerificationEmail(email, "Verify Your Account", `Your OTP is ${otp}`);
         if (!emailSent) {
-            return res.json("email-error");
+            return res.render("signUp", { 
+                error: "Failed to send verification email", 
+                user: req.body 
+            });
         }
 
-        req.session.userOtp = {
-            code: otp,
-            expiresAt: Date.now() + 30 * 1000 
-        };
-
+        
+        req.session.userOtp = { code: otp, expiresAt: Date.now() + 60 * 1000 };
         req.session.userData = { name, phone, email, password, referralCode };
 
+        
         res.render("verify-otp");
         console.log("OTP sent:", otp);
+
     } catch (error) {
         console.log("Sign up error:", error);
         res.redirect("/pageNotFound");
     }
 };
+
 
 const securePassword = async (password) => {
     try {
@@ -262,7 +270,7 @@ const resendOtp = async (req, res) => {
         
         req.session.userOtp = {
             code: otp,
-            expiresAt: Date.now() + 30 * 1000 
+            expiresAt: Date.now() + 60 * 1000 
         };
 
         

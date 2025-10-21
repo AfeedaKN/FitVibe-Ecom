@@ -340,6 +340,20 @@
     .strength-strong {
       color: #10b981;
     }
+
+    /* Backend Global Error (Email Exists, etc.) */
+.global-error {
+  color: #ff4d4d;
+  background: #ffe6e6;
+  border: 1px solid #ff4d4d;
+  padding: 10px;
+  margin-bottom: 15px;
+  text-align: center;
+  font-weight: bold;
+  font-size: 14px;
+  border-radius: 5px;
+}
+
   </style>
 </head>
 
@@ -354,6 +368,13 @@
 
     <!-- Body -->
     <div class="signup-body">
+
+
+      <!-- 🌟 GLOBAL ERROR FROM BACKEND (email exists, etc.) -->
+      <% if (error) { %>
+  <div class="global-error"><%= error %></div>
+<% } %>
+
       <!-- Signup Form -->
       <form id="signform" class="signup-form" action="/signup" method="POST">
         <div class="form-group">

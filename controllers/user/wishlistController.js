@@ -99,12 +99,13 @@ const addToCartFromWishlist = async (req, res) => {
     const { productId, variantId } = req.body;
 
     if (!productId || !variantId) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'Product ID and Variant ID are required' 
+      return res.status(400).json({
+        success: false,
+        message: 'Product ID and Variant ID are required'
       });
     }
 
+   
     const product = await Product.findById(productId);
     if (!product) {
       return res.status(404).json({ success: false, message: 'Product not found' });
@@ -115,40 +116,50 @@ const addToCartFromWishlist = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Selected size not found' });
     }
 
+    
     if (variant.varientquatity === 0) {
-      return res.status(400).json({ 
-        success: false, 
+      return res.status(400).json({
+        success: false,
         message: `Out of stock for size ${variant.size}`,
         stockStatus: 'out_of_stock'
       });
     }
 
+    
     let cart = await Cart.findOne({ userId });
     if (!cart) {
       cart = new Cart({ userId, items: [] });
     }
 
+    
     const existingItem = cart.items.find(
-      item => item.productId.toString() === productId && item.variantId.toString() === variantId
+      item =>
+        item.productId.toString() === productId.toString() &&
+        item.variantId.toString() === variantId.toString()
     );
 
     if (existingItem) {
+      
       if (existingItem.quantity + 1 > variant.varientquatity) {
-        return res.status(400).json({ 
-          success: false, 
+        return res.status(400).json({
+          success: false,
           message: `Cannot add more items. Only ${variant.varientquatity} items available for size ${variant.size}, and you already have ${existingItem.quantity} in your cart`,
           stockStatus: 'insufficient_stock'
         });
       }
 
+      
       if (existingItem.quantity >= 4) {
         return res.status(400).json({ success: false, message: 'Cart limit exceeded' });
       }
 
       existingItem.quantity += 1;
       existingItem.totalPrice = existingItem.price * existingItem.quantity;
+      
+      if (!existingItem.variantSize) existingItem.variantSize = variant.size;
 
     } else {
+      
       cart.items.push({
         productId: product._id,
         variantId: variant._id,
@@ -156,23 +167,30 @@ const addToCartFromWishlist = async (req, res) => {
         quantity: 1,
         totalPrice: variant.salePrice * 1,
         status: "placed",
-        cancellationReason: "none"
+        cancellationReason: "none",
+        variantSize: variant.size,          
+        
+        
+        
       });
     }
 
+    
     await cart.save();
 
+    
     await Wishlist.updateOne(
       { user: userId },
-      { $pull: { items: { product: productId } } } 
+      { $pull: { items: { product: productId } } }
     );
 
-    res.json({ success: true, message: 'Product added to cart successfully' });
+    return res.json({ success: true, message: 'Product added to cart successfully' });
   } catch (error) {
     console.error('Error adding to cart:', error);
-    res.status(500).json({ success: false, message: 'Server error' });
+    return res.status(500).json({ success: false, message: 'Server error' });
   }
 };
+
 
 
 

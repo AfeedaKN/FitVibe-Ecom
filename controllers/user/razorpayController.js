@@ -10,80 +10,8 @@ const instance = new Razorpay({
   key_secret: process.env.RAZORPAY_SECRET
 });
 
-const createOrder = async (req, res) => {
-  try {
-    const { amount, currency = 'INR', receipt } = req.body;
 
-    if (!amount) {
-      return res.status(400).json({
-        success: false,
-        message: 'Amount is required'
-      });
-    }
 
-    const options = {
-      amount: amount * 100, 
-      currency,
-      receipt: receipt || `receipt_${Date.now()}`,
-      payment_capture: 1 
-    };
-
-    const order = await instance.orders.create(options);
-
-    res.status(200).json({
-      success: true,
-      order,
-      key_id: process.env.RAZORPAY_KEY
-    });
-  } catch (error) {
-    console.error('Error creating Razorpay order:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Failed to create order',
-      error: error.message
-    });
-  }
-};
-
-const verifyPayment = async (req, res) => {
-  try {
-    const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
-
-    if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
-      return res.status(400).json({
-        success: false,
-        message: 'Missing payment details'
-      });
-    }
-
-    const sign = `${razorpay_order_id}|${razorpay_payment_id}`;
-    const expectedSign = crypto
-      .createHmac('sha256', process.env.RAZORPAY_SECRET)
-      .update(sign)
-      .digest('hex');
-
-    if (razorpay_signature === expectedSign) {
-      res.status(200).json({
-        success: true,
-        message: 'Payment verified successfully',
-        payment_id: razorpay_payment_id,
-        order_id: razorpay_order_id
-      });
-    } else {
-      res.status(400).json({
-        success: false,
-        message: 'Invalid signature'
-      });
-    }
-  } catch (error) {
-    console.error('Error verifying payment:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Payment verification failed',
-      error: error.message
-    });
-  }
-};
 
 const getPaymentDetails = async (req, res) => {
   try {
@@ -426,8 +354,6 @@ const verifyRazorpayPayment = async (req, res) => {
 
 module.exports = {
   instance,
-  createOrder,
-  verifyPayment,
   getPaymentDetails,
   verifyRazorpayPayment,
   handlePaymentFailure

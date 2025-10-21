@@ -519,13 +519,15 @@
       } else if (!regex.test(name)) {
         showError(nameError, 'Name can only contain letters and spaces');
         return false;
-      } else if (name.length > 50) {
-        showError(nameError, 'Name cannot exceed 50 characters');
+      } else if (name.length > 10) {
+        showError(nameError, 'Name cannot exceed 10 characters');
         return false;
       }
       hideError(nameError);
       return true;
+
     }
+    
 
     function validateEmail(email) {
       const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;

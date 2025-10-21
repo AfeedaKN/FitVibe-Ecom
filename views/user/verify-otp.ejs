@@ -343,7 +343,7 @@
     <!-- Timer Section -->
     <div class="timer-section">
       <div class="timer-text">
-        Time remaining: <span id="timer" class="timer-display">00:30</span>
+        Time remaining: <span id="timer" class="timer-display">00:60</span>
       </div>
       <button
         id="resendBtn"
@@ -365,7 +365,7 @@
   </div>
 
   <script>
-    let timeLeft = 30;
+    let timeLeft = 60;
     let countdown;
     const timerElement = document.getElementById('timer');
     const resendBtn = document.getElementById('resendBtn');
@@ -412,8 +412,8 @@
             });
           
             // Reset timer
-            timeLeft = 30;
-            timerElement.textContent = '00:30';
+            timeLeft = 60;
+            timerElement.textContent = '00:60';
             startCountdown();
           } else {
             Swal.fire({
