@@ -606,8 +606,10 @@ const downloadInvoice = async (req, res) => {
   try {
     const orderId = req.params.id;
     const order = await Order.findById(orderId)
-      .populate("products.product")
-      .populate("address");
+  .populate("user", "name email")    // ✅ now name & email will show
+  .populate("products.product")
+  .populate("address");
+
 
     if (!order) {
       return res.status(404).render("pageNotFound", { message: "Order not found" });
