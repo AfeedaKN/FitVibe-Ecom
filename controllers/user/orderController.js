@@ -606,7 +606,7 @@ const downloadInvoice = async (req, res) => {
   try {
     const orderId = req.params.id;
     const order = await Order.findById(orderId)
-  .populate("user", "name email")    // ✅ now name & email will show
+  .populate("user", "name email")    
   .populate("products.product")
   .populate("address");
 
@@ -733,12 +733,15 @@ const downloadInvoice = async (req, res) => {
     doc.fillColor("black");
 
     
-    doc.moveDown(3);
+   const pageHeight = doc.page.height;
+    const footerY = pageHeight - 90;
+
     doc.font("Helvetica").fontSize(9)
-      .text("Thank you for shopping with FitVibe!", { align: "center" })
-      .text("For support, contact support@fitvibe.com", { align: "center" });
-    doc.moveDown(0.5);
-    doc.fontSize(8).text("© 2025 FitVibe Pvt. Ltd. All rights reserved.", { align: "center" });
+      .text("Thank you for shopping with FitVibe!", 0, footerY, { align: "center", lineGap: 4 })
+      .text("For support, contact support@fitvibe.com", { align: "center", lineGap: 4 });
+
+    doc.fontSize(8)
+      .text("© 2025 FitVibe Pvt. Ltd. All rights reserved.", { align: "center" });
 
     doc.end();
   } catch (error) {
