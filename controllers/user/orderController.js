@@ -6,6 +6,7 @@ const PDFDocument = require('pdfkit');
 const fs = require("fs");
 const path = require("path");
 const mongoose = require('mongoose');
+const Coupon = require('../../models/couponSchema')
 
 const calculateItemFinalAmount = (item, order) => {
   const itemSubtotal = item.variant.salePrice * item.quantity;
@@ -565,24 +566,42 @@ const returnOrderItem = async (req, res) => {
       return res.status(400).json({ success: false, message: "Item already returned or pending" });
     }
 
-    
+    // Calculate item final amount (assuming calculateItemFinalAmount is defined)
     const { itemFinalAmount } = calculateItemFinalAmount(item, order);
 
-    
+    // Check if order used a coupon
+    let couponMinimumPrice = 0;
+    if (order.coupon && order.coupon.couponId) {
+      const coupon = await Coupon.findById(order.coupon.couponId);
+      if (coupon) {
+        couponMinimumPrice = coupon.minimumPrice;
+      }
+    }
+
+    // Calculate the new final amount if this item is returned
+    const newFinalAmount = order.finalAmount - itemFinalAmount;
+
+    // Check if the new final amount would be less than the coupon's minimum price
+    if (couponMinimumPrice > 0 && newFinalAmount < couponMinimumPrice) {
+      return res.status(400).json({
+        success: false,
+        message: `Cannot return item: Returning this item would make the order total (${newFinalAmount.toFixed(2)}) less than the coupon minimum amount (${couponMinimumPrice.toFixed(2)}).`,
+      });
+    }
+
+    // Proceed with return request
     item.status = "return pending";
     item.returnReason = reason;
     item.returnRequestDate = new Date();
     item.refundAmount = itemFinalAmount;
     item.refundStatus = "pending";
 
-    
     order.orderStatus = "return pending";
 
-    
     order.statusHistory.push({
       status: "return pending",
       date: new Date(),
-      description: `Return requested for ${item.product.name} (Size: ${variantSize}). Reason: ${reason}`
+      description: `Return requested for ${item.product.name} (Size: ${variantSize}). Reason: ${reason}`,
     });
 
     await order.save();
@@ -597,6 +616,7 @@ const returnOrderItem = async (req, res) => {
     return res.status(500).json({ success: false, message: "Server error", error: error.message });
   }
 };
+
 
 
 

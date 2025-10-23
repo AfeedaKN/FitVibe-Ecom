@@ -1109,7 +1109,6 @@
               let displayPaymentStatus = order.paymentStatus;
               let statusClass = order.paymentStatus.toLowerCase();
               
-              // Handle special cases for payment status display
               if (order.orderStatus === 'payment-failed') {
                 if (order.paymentStatus === 'cancelled') {
                   displayPaymentStatus = 'Cancelled';
@@ -1200,14 +1199,13 @@
               <th>Price</th>
               <th>Balance Amount</th>
               <th>Status</th>
-                <% if (order.products.some(item => ['pending', 'processing', 'delivered'].includes(item.status) && !['cancelled', 'returned', 'return pending'].includes(item.status))) { %>
+              <% if (order.products.some(item => ['pending', 'processing', 'delivered'].includes(item.status) && !['cancelled', 'returned', 'return pending'].includes(item.status))) { %>
                 <th>Action</th>
               <% } %>
             </tr>
           </thead>
           <tbody>
             <% 
-              // Calculate total coupon discount for proportional distribution
               let totalCouponDiscount = 0;
               if (order.couponDiscount && order.couponDiscount > 0) {
                 totalCouponDiscount = order.couponDiscount;
@@ -1215,23 +1213,19 @@
                 totalCouponDiscount = order.coupon.discountAmount;
               }
               
-              // Calculate total order subtotal for proportional calculation
               let orderSubtotal = 0;
               order.products.forEach(item => {
                 orderSubtotal += (item.variant.salePrice * item.quantity);
               });
             %>
             <% order.products.forEach(item => { 
-              // Calculate item subtotal
               const itemSubtotal = item.variant.salePrice * item.quantity;
               
-              // Calculate proportional coupon discount for this item
               let itemCouponDiscount = 0;
               if (totalCouponDiscount > 0 && orderSubtotal > 0) {
                 itemCouponDiscount = (itemSubtotal / orderSubtotal) * totalCouponDiscount;
               }
               
-              // Calculate final amount for this item after coupon discount
               const itemFinalAmount = itemSubtotal - itemCouponDiscount;
             %>
               <tr>
@@ -1314,7 +1308,8 @@
         </h2>
       </div>
       
-      <div class="summary-container"<div class="summary-grid">
+      <div class="summary-container">
+        <div class="summary-grid">
           <div class="summary-item">
             <span class="summary-label">
               <i class="fas fa-shopping-cart"></i>
@@ -1323,7 +1318,6 @@
             <span class="summary-value"><%= order.totalAmount.toFixed(2) %></span>
           </div>
           <% 
-            // Check both couponDiscount field and coupon.discountAmount field
             let couponDiscountAmount = 0;
             let couponCode = '';
             
@@ -1461,7 +1455,7 @@
           <div class="modal-body">
             <p style="margin-bottom: 1.5rem; color: #64748b;">Are you sure you want to cancel the entire order? This action cannot be undone.</p>
             <div class="mb-3">
-              <label for="cancelReason" class="form-label">Reason for Cancellation (Required)</label>
+              <label for="cancelReasonSelect" class="form-label">Reason for Cancellation (Required)</label>
               <select class="form-control" id="cancelReasonSelect" name="reasonType" required>
                 <option value="">Select a reason</option>
                 <option value="Changed my mind">Changed my mind</option>
@@ -1660,268 +1654,261 @@
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script>
-  const Toast = Swal.mixin({
-    toast: true,
-    position: 'top-end',
-    showConfirmButton: false,
-    timer: 3000,
-    timerProgressBar: true,
-    didOpen: (toast) => {
-      toast.addEventListener('mouseenter', Swal.stopTimer);
-      toast.addEventListener('mouseleave', Swal.resumeTimer);
-    }
-  });
-
-   document.querySelectorAll('.cancel-item-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.getElementById('cancelItemOrderId').value = btn.dataset.orderId;
-      document.getElementById('cancelItemProductId').value = btn.dataset.productId;
-      document.getElementById('cancelItemVariantSize').value = btn.dataset.variantSize;
+  <script>
+    const Toast = Swal.mixin({
+      toast: true,
+      position: 'top-end',
+      showConfirmButton: false,
+      timer: 3000,
+      timerProgressBar: true,
+      didOpen: (toast) => {
+        toast.addEventListener('mouseenter', Swal.stopTimer);
+        toast.addEventListener('mouseleave', Swal.resumeTimer);
+      }
     });
-  });
 
-  // 🔁 Return Item Modal Data Populate
-  document.querySelectorAll('.return-item-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.getElementById('returnItemOrderId').value = btn.dataset.orderId;
-      document.getElementById('returnItemProductId').value = btn.dataset.productId;
-      document.getElementById('returnItemVariantSize').value = btn.dataset.variantSize;
+    document.querySelectorAll('.cancel-item-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.getElementById('cancelItemOrderId').value = btn.dataset.orderId;
+        document.getElementById('cancelItemProductId').value = btn.dataset.productId;
+        document.getElementById('cancelItemVariantSize').value = btn.dataset.variantSize;
+      });
     });
-  });
 
-  // Handle Cancel/Return Form Submissions
-  ['cancelOrderForm', 'cancelItemForm', 'returnOrderForm', 'returnItemForm'].forEach(formId => {
-    const form = document.getElementById(formId);
-    if (form) {
-      form.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const formData = new FormData(form);
-        const data = Object.fromEntries(formData.entries());
-        const submitBtn = form.querySelector('button[type="submit"]');
-        const originalContent = submitBtn.innerHTML;
+    document.querySelectorAll('.return-item-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.getElementById('returnItemOrderId').value = btn.dataset.orderId;
+        document.getElementById('returnItemProductId').value = btn.dataset.productId;
+        document.getElementById('returnItemVariantSize').value = btn.dataset.variantSize;
+      });
+    });
 
-        // Validation and field shaping per form
-        if (formId === 'returnItemForm') {
-          const reasonSelect = form.querySelector('select[name="reasonType"]');
-          const customReasonTextarea = form.querySelector('textarea[name="customReason"]');
+    ['cancelOrderForm', 'cancelItemForm', 'returnOrderForm', 'returnItemForm'].forEach(formId => {
+      const form = document.getElementById(formId);
+      if (form) {
+        form.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const formData = new FormData(form);
+          const data = Object.fromEntries(formData.entries());
+          const submitBtn = form.querySelector('button[type="submit"]');
+          const originalContent = submitBtn.innerHTML;
 
-          if (!reasonSelect || !reasonSelect.value) {
-            Toast.fire({ icon: 'warning', title: 'Please select a reason for the return.' });
-            return;
+          // Validation and field shaping per form
+          if (formId === 'returnItemForm') {
+            const reasonSelect = form.querySelector('select[name="reasonType"]');
+            const customReasonTextarea = form.querySelector('textarea[name="customReason"]');
+
+            if (!reasonSelect || !reasonSelect.value) {
+              Toast.fire({ icon: 'warning', title: 'Please select a reason for the return.' });
+              return;
+            }
+
+            if (reasonSelect.value === 'Other' && (!customReasonTextarea || !customReasonTextarea.value.trim())) {
+              Toast.fire({ icon: 'warning', title: 'Please provide a detailed reason for the return.' });
+              return;
+            }
+
+            // Combine reason fields for return item into single reason
+            let combinedReason = '';
+            if (data.reasonType === 'Other') {
+              combinedReason = (data.customReason || '').trim();
+            } else {
+              combinedReason = (data.reasonType || '').trim();
+            }
+            if (data.additionalDetails && data.additionalDetails.trim()) {
+              combinedReason += (combinedReason ? ' - ' : '') + data.additionalDetails.trim();
+            }
+            data.reason = combinedReason;
+            delete data.reasonType;
+            delete data.customReason;
+            delete data.additionalDetails;
+          } else if (formId.includes('return')) {
+            const reasonSelect = form.querySelector('select[name="reasonType"]');
+            const customReasonTextarea = form.querySelector('textarea[name="customReason"]');
+            
+            if (!reasonSelect || !reasonSelect.value) {
+              reasonSelect.classList.add('is-invalid');
+              return;
+            }
+            
+            if (reasonSelect.value === 'Other' && (!customReasonTextarea || !customReasonTextarea.value.trim())) {
+              customReasonTextarea.classList.add('is-invalid');
+              return;
+            }
+            
+            let combinedReason = '';
+            if (data.reasonType === 'Other') {
+              combinedReason = data.customReason || '';
+            } else {
+              combinedReason = data.reasonType || '';
+            }
+            
+            if (data.additionalDetails && data.additionalDetails.trim()) {
+              combinedReason += (combinedReason ? ' - ' : '') + data.additionalDetails.trim();
+            }
+            
+            data.reason = combinedReason;
+            delete data.reasonType;
+            delete data.customReason;
+            delete data.additionalDetails;
+          } else if (formId === 'cancelItemForm') {
+            const reasonSelect = form.querySelector('select[name="reasonType"]');
+            const customReasonTextarea = form.querySelector('textarea[name="customReason"]');
+
+            if (!reasonSelect || !reasonSelect.value) {
+              Toast.fire({ icon: 'warning', title: 'Please select a reason for cancellation.' });
+              return;
+            }
+
+            if (reasonSelect.value === 'Other' && (!customReasonTextarea || !customReasonTextarea.value.trim())) {
+              Toast.fire({ icon: 'warning', title: 'Please provide a detailed reason for cancellation.' });
+              return;
+            }
+
+            let combinedReason = '';
+            if (data.reasonType === 'Other') {
+              combinedReason = (data.customReason || '').trim();
+            } else {
+              combinedReason = (data.reasonType || '').trim();
+            }
+            data.reason = combinedReason;
+            delete data.reasonType;
+            delete data.customReason;
           }
 
-          if (reasonSelect.value === 'Other' && (!customReasonTextarea || !customReasonTextarea.value.trim())) {
-            Toast.fire({ icon: 'warning', title: 'Please provide a detailed reason for the return.' });
-            return;
-          }
+          submitBtn.disabled = true;
+          submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Processing...';
 
-          // Combine reason fields for return item into single reason
-          let combinedReason = '';
-          if (data.reasonType === 'Other') {
-            combinedReason = (data.customReason || '').trim();
-          } else {
-            combinedReason = (data.reasonType || '').trim();
-          }
-          if (data.additionalDetails && data.additionalDetails.trim()) {
-            combinedReason += (combinedReason ? ' - ' : '') + data.additionalDetails.trim();
-          }
-          data.reason = combinedReason;
-          delete data.reasonType;
-          delete data.customReason;
-          delete data.additionalDetails;
-        } else if (formId.includes('return')) {
-          const reasonSelect = form.querySelector('select[name="reasonType"]');
-          const customReasonTextarea = form.querySelector('textarea[name="customReason"]');
-          
-          if (!reasonSelect || !reasonSelect.value) {
-            reasonSelect.classList.add('is-invalid');
-            return;
-          }
-          
-          if (reasonSelect.value === 'Other' && (!customReasonTextarea || !customReasonTextarea.value.trim())) {
-            customReasonTextarea.classList.add('is-invalid');
-            return;
-          }
-          
-          // Combine reason fields into a single reason field for backend
-          let combinedReason = '';
-          if (data.reasonType === 'Other') {
-            combinedReason = data.customReason || '';
-          } else {
-            combinedReason = data.reasonType || '';
-          }
-          
-          // Add additional details if provided
-          if (data.additionalDetails && data.additionalDetails.trim()) {
-            combinedReason += (combinedReason ? ' - ' : '') + data.additionalDetails.trim();
-          }
-          
-          // Replace the separate fields with combined reason
-          data.reason = combinedReason;
-          delete data.reasonType;
-          delete data.customReason;
-          delete data.additionalDetails;
-        } else if (formId === 'cancelItemForm') {
-          const reasonSelect = form.querySelector('select[name="reasonType"]');
-          const customReasonTextarea = form.querySelector('textarea[name="customReason"]');
-
-          if (!reasonSelect || !reasonSelect.value) {
-            Toast.fire({ icon: 'warning', title: 'Please select a reason for cancellation.' });
-            return;
-          }
-
-          if (reasonSelect.value === 'Other' && (!customReasonTextarea || !customReasonTextarea.value.trim())) {
-            Toast.fire({ icon: 'warning', title: 'Please provide a detailed reason for cancellation.' });
-            return;
-          }
-
-          // Combine reason fields for cancel item into single reason
-          let combinedReason = '';
-          if (data.reasonType === 'Other') {
-            combinedReason = (data.customReason || '').trim();
-          } else {
-            combinedReason = (data.reasonType || '').trim();
-          }
-          data.reason = combinedReason;
-          delete data.reasonType;
-          delete data.customReason;
-        }
-
-        submitBtn.disabled = true;
-        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Processing...';
-
-        try {
-          const response = await fetch(form.action, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data)
-          });
-          const result = await response.json();
-
-          if (result.success) {
-            Toast.fire({
-              icon: 'success',
-              title: `${formId.includes('cancel') ? 'Cancellation' : 'Return'} successful!`
+          try {
+            const response = await fetch(form.action, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(data)
             });
-            setTimeout(() => {
-              window.location.reload();
-            }, 1000);
-          } else {
+            const result = await response.json();
+
+            if (result.success) {
+              Toast.fire({
+                icon: 'success',
+                title: `${formId.includes('cancel') ? 'Cancellation' : 'Return'} successful!`
+              });
+              setTimeout(() => {
+                window.location.reload();
+              }, 1000);
+            } else {
+              Toast.fire({
+                icon: 'error',
+                title: result.message || 'Action failed!'
+              });
+              submitBtn.disabled = false;
+              submitBtn.innerHTML = originalContent;
+              // Close the modal
+              const modal = bootstrap.Modal.getInstance(form.closest('.modal'));
+              if (modal) {
+                modal.hide();
+              }
+            }
+          } catch (error) {
+            console.error('Form error:', error);
             Toast.fire({
               icon: 'error',
-              title: result.message || 'Action failed!'
+              title: 'Server error occurred.'
             });
             submitBtn.disabled = false;
             submitBtn.innerHTML = originalContent;
+            // Close the modal
+            const modal = bootstrap.Modal.getInstance(form.closest('.modal'));
+            if (modal) {
+              modal.hide();
+            }
           }
-        } catch (error) {
-          console.error('Form error:', error);
-          Toast.fire({
-            icon: 'error',
-            title: 'Server error occurred.'
-          });
-          submitBtn.disabled = false;
-          submitBtn.innerHTML = originalContent;
-        }
-      });
-    }
-  });
-
-  // ✨ Fade-in animation on load
-  document.addEventListener('DOMContentLoaded', () => {
-    const elements = document.querySelectorAll('.fade-in');
-    elements.forEach((el, index) => {
-      setTimeout(() => {
-        el.style.opacity = '1';
-        el.style.transform = 'translateY(0)';
-      }, index * 150);
-    });
-  });
-
-  // 🔄 Handle Return Reason Dropdown Changes
-  function handleReasonDropdownChange(selectId, customReasonDivId, additionalDetailsDivId) {
-    const select = document.getElementById(selectId);
-    const customReasonDiv = document.getElementById(customReasonDivId);
-    const additionalDetailsDiv = document.getElementById(additionalDetailsDivId);
-    
-    if (select && customReasonDiv) {
-      select.addEventListener('change', function() {
-        if (this.value === 'Other') {
-          customReasonDiv.style.display = 'block';
-          if (additionalDetailsDiv) {
-            additionalDetailsDiv.style.display = 'block';
-          }
-          // Make custom reason required when "Other" is selected
-          const customReasonTextarea = customReasonDiv.querySelector('textarea');
-          if (customReasonTextarea) {
-            customReasonTextarea.required = true;
-          }
-        } else {
-          customReasonDiv.style.display = 'none';
-          if (additionalDetailsDiv) {
-            additionalDetailsDiv.style.display = this.value ? 'block' : 'none';
-          }
-          // Remove required attribute when not "Other"
-          const customReasonTextarea = customReasonDiv.querySelector('textarea');
-          if (customReasonTextarea) {
-            customReasonTextarea.required = false;
-            customReasonTextarea.value = ''; // Clear the value
-          }
-        }
-        
-        // Remove invalid class when selection changes
-        this.classList.remove('is-invalid');
-      });
-    }
-  }
-
-  // Initialize dropdown handlers for all modals
-  handleReasonDropdownChange('returnReasonSelect', 'returnCustomReasonDiv', 'returnAdditionalDetailsDiv');
-  handleReasonDropdownChange('returnItemReasonSelect', 'returnItemCustomReasonDiv', 'returnItemAdditionalDetailsDiv');
-  handleReasonDropdownChange('cancelReasonSelect', 'cancelCustomReasonDiv', 'cancelAdditionalDetailsDiv');
-  handleReasonDropdownChange('cancelItemReasonSelect', 'cancelItemCustomReasonDiv', null);
-
-  // ❌ Remove invalid on input
-  document.querySelectorAll('.form-control').forEach(input => {
-    input.addEventListener('input', () => {
-      input.classList.remove('is-invalid');
-    });
-  });
-
-  // 📱 Responsive table scroll
-  window.addEventListener('resize', () => {
-    const tables = document.querySelectorAll('.items-table-container');
-    tables.forEach(container => {
-      container.style.overflowX = (window.innerWidth < 768) ? 'auto' : 'visible';
-    });
-  });
-// �'� Retry Payment Handler
-  const retryPaymentBtn = document.getElementById('retryPaymentBtn');
-  if (retryPaymentBtn) {
-    retryPaymentBtn.addEventListener('click', async () => {
-      const originalContent = retryPaymentBtn.innerHTML;
-      retryPaymentBtn.disabled = true;
-      retryPaymentBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Processing...';
-
-      try {
-        // Redirect to checkout with the failed order ID
-        window.location.href = `/checkout/retry/<%= order._id %>`;
-      } catch (error) {
-        console.error('Retry payment error:', error);
-        Toast.fire({
-          icon: 'error',
-          title: 'Failed to retry payment. Please try again.'
         });
-        retryPaymentBtn.disabled = false;
-        retryPaymentBtn.innerHTML = originalContent;
       }
     });
-  }
-</script>
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const elements = document.querySelectorAll('.fade-in');
+      elements.forEach((el, index) => {
+        setTimeout(() => {
+          el.style.opacity = '1';
+          el.style.transform = 'translateY(0)';
+        }, index * 150);
+      });
+    });
+
+    function handleReasonDropdownChange(selectId, customReasonDivId, additionalDetailsDivId) {
+      const select = document.getElementById(selectId);
+      const customReasonDiv = document.getElementById(customReasonDivId);
+      const additionalDetailsDiv = document.getElementById(additionalDetailsDivId);
+      
+      if (select && customReasonDiv) {
+        select.addEventListener('change', function() {
+          if (this.value === 'Other') {
+            customReasonDiv.style.display = 'block';
+            if (additionalDetailsDiv) {
+              additionalDetailsDiv.style.display = 'block';
+            }
+            const customReasonTextarea = customReasonDiv.querySelector('textarea');
+            if (customReasonTextarea) {
+              customReasonTextarea.required = true;
+            }
+          } else {
+            customReasonDiv.style.display = 'none';
+            if (additionalDetailsDiv) {
+              additionalDetailsDiv.style.display = this.value ? 'block' : 'none';
+            }
+            const customReasonTextarea = customReasonDiv.querySelector('textarea');
+            if (customReasonTextarea) {
+              customReasonTextarea.required = false;
+              customReasonTextarea.value = '';
+            }
+          }
+          
+          this.classList.remove('is-invalid');
+        });
+      }
+    }
+
+    handleReasonDropdownChange('returnReasonSelect', 'returnCustomReasonDiv', 'returnAdditionalDetailsDiv');
+    handleReasonDropdownChange('returnItemReasonSelect', 'returnItemCustomReasonDiv', 'returnItemAdditionalDetailsDiv');
+    handleReasonDropdownChange('cancelReasonSelect', 'cancelCustomReasonDiv', 'cancelAdditionalDetailsDiv');
+    handleReasonDropdownChange('cancelItemReasonSelect', 'cancelItemCustomReasonDiv', null);
+
+    document.querySelectorAll('.form-control').forEach(input => {
+      input.addEventListener('input', () => {
+        input.classList.remove('is-invalid');
+      });
+    });
+
+    window.addEventListener('resize', () => {
+      const tables = document.querySelectorAll('.items-table-container');
+      tables.forEach(container => {
+        container.style.overflowX = (window.innerWidth < 768) ? 'auto' : 'visible';
+      });
+    });
+
+    const retryPaymentBtn = document.getElementById('retryPaymentBtn');
+    if (retryPaymentBtn) {
+      retryPaymentBtn.addEventListener('click', async () => {
+        const originalContent = retryPaymentBtn.innerHTML;
+        retryPaymentBtn.disabled = true;
+        retryPaymentBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Processing...';
+
+        try {
+          window.location.href = `/checkout/retry/<%= order._id %>`;
+        } catch (error) {
+          console.error('Retry payment error:', error);
+          Toast.fire({
+            icon: 'error',
+            title: 'Failed to retry payment. Please try again.'
+          });
+          retryPaymentBtn.disabled = false;
+          retryPaymentBtn.innerHTML = originalContent;
+        }
+      });
+    }
+  </script>
 </body>
 
+
 </html>
-
-
-
