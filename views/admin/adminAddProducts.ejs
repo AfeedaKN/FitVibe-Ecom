@@ -1,724 +1,371 @@
-<%- include('./partials/header', { pageTitle: 'Add New Product' }) %>
+<%- include('./partials/header', { pageTitle: 'Add Product' }) %>
+<%- include('./partials/sidebar', { page: 'products' }) %>
 
-    <%- include('./partials/sidebar', { page: 'products' }) %>
-
-        <div class="main-content">
-            <!-- Top Header -->
-            <header class="top-header">
-                <div class="header-content">
-                    <div class="header-left">
-                        <button class="sidebar-toggle" onclick="toggleSidebar()">
-                            <i class="fas fa-bars"></i>
-                        </button>
-                        <div>
-                            <h1 class="page-title">Add New Product</h1>
-                            <div class="breadcrumbs">
-                                <a href="/admin/dashboard">Dashboard</a>
-                                <span class="breadcrumb-separator">/</span>
-                                <a href="/admin/products">Products</a>
-                                <span class="breadcrumb-separator">/</span>
-                                <span>Add Product</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="header-right">
-                        <a href="/admin/products" class="btn btn-outline-modern">
-                            <i class="fas fa-arrow-left me-2"></i>Back to Products
-                        </a>
-                        <div class="admin-profile">
-                            <div class="admin-avatar">
-                                A
-                            </div>
-                            <div class="admin-info">
-                                <div class="admin-name">Admin</div>
-                                <div class="admin-role">Administrator</div>
-                            </div>
-                        </div>
+<div class="main-content">
+    <header class="top-header">
+        <div class="header-content">
+            <div class="header-left">
+                <button class="sidebar-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+                <div>
+                    <h1 class="page-title">Add New Product</h1>
+                    <div class="breadcrumbs">
+                        <a href="/admin/dashboard">Dashboard</a>
+                        <span class="breadcrumb-separator">/</span>
+                        <a href="/admin/products">Products</a>
+                        <span class="breadcrumb-separator">/</span>
+                        <span>Add Product</span>
                     </div>
                 </div>
-            </header>
-
-            <!-- Content Area -->
-            <div class="content-area">
-                <form id="addProductForm" action="/admin/addproducts" method="POST" enctype="multipart/form-data">
-                    <div class="row">
-                        <!-- Product Information -->
-                        <div class="col-lg-8">
-                            <div class="card mb-4">
-                                <div class="card-header">
-                                    <h5 class="mb-0">Product Information</h5>
-                                </div>
-                                <div class="card-body">
-                                    <div class="row">
-                                        <div class="col-md-6 mb-3">
-                                            <label for="name" class="form-label">Product Name *</label>
-                                            <input type="text" class="form-control" id="name" name="name" >
-                                            <div class="invalid-feedback">Please provide a product name.</div>
-                                        </div>
-                                        <div class="col-md-6 mb-3">
-                                            <label for="categoryId" class="form-label">Category *</label>
-                                            <select class="form-select" id="categoryId" name="categoryId" >
-                                                <option value="">Select Category</option>
-                                                <% categories.forEach(category=> { %>
-                                                    <option value="<%= category._id %>">
-                                                        <%= category.name %>
-                                                    </option>
-                                                    <% }) %>
-                                            </select>
-                                            <div class="invalid-feedback">Please select a category.</div>
-                                        </div>
-                                    </div>
-
-                                    <div class="mb-3">
-                                        <label for="description" class="form-label">Description *</label>
-                                        <textarea class="form-control" id="description" name="description" rows="4"
-                                            ></textarea>
-                                        <div class="invalid-feedback">Please provide a description.</div>
-                                    </div>
-
-                                    <div class="row">
-                                        <div class="col-md-4 mb-3">
-                                            <label for="brand" class="form-label">Brand</label>
-                                            <input type="text" class="form-control" id="brand" name="brand">
-                                            <div class="invalid-feedback">Please provide a brand.</div>
-                                        </div>
-                                        <div class="col-md-4 mb-3">
-                                            <label for="color" class="form-label">Color *</label>
-                                            <input type="text" class="form-control" id="color" name="color" >
-                                            <div class="invalid-feedback">Please provide a color.</div>
-                                        </div>
-                                        <div class="col-md-4 mb-3">
-                                            <label for="fabric" class="form-label">Fabric *</label>
-                                            <input type="text" class="form-control" id="fabric" name="fabric" >
-                                            <div class="invalid-feedback">Please provide fabric information.</div>
-                                        </div>
-                                    </div>
-
-                                    <div class="row">
-                                        <div class="col-md-6 mb-3">
-                                            <label for="sku" class="form-label">SKU</label>
-                                            <input type="text" class="form-control" id="sku" name="sku">
-                                            <div class="invalid-feedback">Please provide a SKU.</div>
-                                        </div>
-                                        <div class="col-md-6 mb-3">
-                                            <label for="offer" class="form-label">Product Offer (%)</label>
-                                            <input type="number" class="form-control" id="offer" name="offer" min="0"
-                                                max="100" value="0">
-                                                <div class="invalid-feedback">Please provide a offer.</div>
-                                        </div>
-                                    </div>
-
-                                    <div class="mb-3">
-                                        <label for="tags" class="form-label">Tags (comma separated)</label>
-                                        <input type="text" class="form-control" id="tags" name="tags"
-                                            placeholder="casual, summer, cotton">
-                                            <div class="invalid-feedback">Please provide valid tags.</div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Variants Section -->
-                            <div class="card mb-4">
-                                <div class="card-header">
-                                    <h5 class="mb-0">Product Variants</h5>
-                                </div>
-                                <div class="card-body">
-                                    <div class="row">
-                                        <% ['S', 'M' , 'L' , 'XL' ].forEach((size, index)=> { %>
-                                            <div class="col-md-3 mb-3">
-                                                <label class="form-label">Size <%= size %></label>
-                                                <div class="variant-group">
-                                                    <input type="number" class="form-control mb-2" name="varientPrice"
-                                                        placeholder="Price" min="0" step="0.01">
-                                                    <input type="number" class="form-control" name="varientquatity"
-                                                        placeholder="Quantity" min="0">
-                                                </div>
-                                            </div>
-                                            <% }) %>
-                                    </div>
-                                    <small class="text-muted">Enter price and quantity for each size. Leave empty for
-                                        unavailable sizes.</small>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Images Section -->
-                        <div class="col-lg-4">
-                            <div class="card mb-4">
-                                <div class="card-header">
-                                    <h5 class="mb-0">Product Images</h5>
-                                </div>
-                                <div class="card-body">
-                                    <div class="mb-3">
-                                        <label for="productImages" class="form-label">Upload Images (Min 3 )
-                                            *</label>
-                                        <% if (error_msg) { %>
-                                            <div class="alert alert-danger">
-                                                <%= error_msg %>
-                                            </div>
-                                            <% } %>
-
-                                                <input type="file" class="form-control" id="productImages"
-                                                    name="productImages" multiple accept="image/*" >
-                                                <div class="invalid-feedback">Please upload at least 3 images.</div>
-                                                <small class="text-muted">Select multiple images (minimum 3). First
-                                                    image will be the main image.</small>
-                                    </div>
-
-                                    <!-- Image Preview Container -->
-                                    <div id="imagePreviewContainer" class="mt-3">
-                                        <!-- Previews will be added here -->
-                                    </div>
-
-                                    <!-- Cropped Images Container (hidden) -->
-                                    <div id="croppedImagesContainer" style="display: none;">
-                                        <!-- Cropped images will be stored here -->
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Form Actions -->
-                            <div class="card">
-                                <div class="card-body">
-                                    <div class="d-grid gap-2">
-                                        <button type="submit" class="btn btn-success" id="submitBtn">
-                                            <i class="fas fa-save"></i> Save Product
-                                        </button>
-                                        <a href="/admin/products" class="btn btn-secondary">
-                                            <i class="fas fa-arrow-left"></i> Back to Products
-                                        </a>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </form>
             </div>
-        </div>
-
-        <!-- Image Cropping Modal -->
-        <div class="modal fade" id="cropModal" tabindex="-1" aria-hidden="true">
-            <div class="modal-dialog modal-lg">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title">Crop Image</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                    </div>
-                    <div class="modal-body">
-                        <div class="crop-container">
-                            <img id="cropImage" style="max-width: 100%;">
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <button type="button" class="btn btn-primary" id="cropConfirm">Crop & Save</button>
+            <div class="header-right">
+                <a href="/admin/products" class="btn btn-outline-modern"><i class="fas fa-arrow-left me-2"></i>Back</a>
+                <div class="admin-profile">
+                    <div class="admin-avatar">A</div>
+                    <div class="admin-info">
+                        <div class="admin-name">Admin</div>
+                        <div class="admin-role">Administrator</div>
                     </div>
                 </div>
             </div>
         </div>
+    </header>
 
-        <style>
-            /* Override conflicting styles from products.css to match admin theme */
-            .main-content {
-                margin-left: 280px !important;
-                /* Match sidebar width */
-                padding: 0 !important;
-                /* Remove padding as content-area handles it */
-                background-color: var(--bg-secondary) !important;
-            }
+    <div class="content-area">
+        <% if (success_msg) { %>
+            <div class="alert alert-success alert-dismissible fade show alert-modern alert-success-modern" role="alert">
+                <i class="fas fa-check-circle me-2"></i><%= success_msg %>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close" style="filter: invert(1);"></button>
+            </div>
+        <% } %>
+        <% if (error_msg) { %>
+            <div class="alert alert-danger alert-dismissible fade show alert-modern alert-danger-modern" role="alert">
+                <i class="fas fa-exclamation-circle me-2"></i><%= error_msg %>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close" style="filter: invert(1);"></button>
+            </div>
+        <% } %>
 
-            @media (max-width: 768px) {
-                .main-content {
-                    margin-left: 0 !important;
-                }
-            }
+        <form id="addProductForm" action="/admin/addproducts" method="POST" enctype="multipart/form-data" class="needs-validation" novalidate>
+            <div class="row g-4">
+                <!-- LEFT: Product Info -->
+                <div class="col-lg-8">
+                    <div class="card-modern mb-4 no-hover">
+                        <div class="card-header-modern"><h5 class="card-title mb-0"><i class="fas fa-info-circle me-2"></i>Product Information</h5></div>
+                        <div class="card-body-modern">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label for="name" class="form-label fw-medium">Product Name *</label>
+                                    <input type="text" class="form-control form-control-modern" id="name" name="name" required>
+                                    <div class="invalid-feedback">Please provide a product name.</div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="categoryId" class="form-label fw-medium">Category *</label>
+                                    <select class="form-select form-select-modern" id="categoryId" name="categoryId" required>
+                                        <option value="">Select Category</option>
+                                        <% categories.forEach(cat => { %>
+                                            <option value="<%= cat._id %>"><%= cat.name %></option>
+                                        <% }) %>
+                                    </select>
+                                    <div class="invalid-feedback">Please select a category.</div>
+                                </div>
+                            </div>
 
-            /* Form Styles - Match admin theme */
-            .form-control,
-            .form-select {
-                border: 2px solid var(--border-light) !important;
-                border-radius: var(--radius-lg) !important;
-                padding: 0.75rem 1rem !important;
-                font-size: 0.875rem !important;
-                background: var(--bg-primary) !important;
-                color: var(--text-primary) !important;
-                transition: all var(--transition-normal) !important;
-            }
+                            <div class="row g-3 mt-2">
+                                <div class="col-12">
+                                    <label for="description" class="form-label fw-medium">Description *</label>
+                                    <textarea class="form-control form-control-modern" id="description" name="description" rows="4" required></textarea>
+                                    <div class="invalid-feedback">Please provide a description.</div>
+                                </div>
+                            </div>
 
-            .form-control:focus,
-            .form-select:focus {
-                border-color: var(--color-primary) !important;
-                box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1) !important;
-                outline: none !important;
-            }
+                            <div class="row g-3 mt-2">
+                                <div class="col-md-4">
+                                    <label for="brand" class="form-label fw-medium">Brand</label>
+                                    <input type="text" class="form-control form-control-modern" id="brand" name="brand">
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="color" class="form-label fw-medium">Color *</label>
+                                    <input type="text" class="form-control form-control-modern" id="color" name="color" required>
+                                    <div class="invalid-feedback">Please provide a color.</div>
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="fabric" class="form-label fw-medium">Fabric</label>
+                                    <input type="text" class="form-control form-control-modern" id="fabric" name="fabric">
+                                </div>
+                            </div>
 
-            /* Card Styles - Match admin theme */
-            .card {
-                background: var(--bg-primary) !important;
-                border: 1px solid var(--border-light) !important;
-                border-radius: var(--radius-xl) !important;
-                box-shadow: var(--shadow-sm) !important;
-                margin-bottom: 1.5rem !important;
-            }
+                            <div class="row g-3 mt-2">
+                                <div class="col-md-6">
+                                    <label for="sku" class="form-label fw-medium">SKU</label>
+                                    <input type="text" class="form-control form-control-modern" id="sku" name="sku">
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="offer" class="form-label fw-medium">Offer (%)</label>
+                                    <input type="number" class="form-control form-control-modern" id="offer" name="offer" min="0" max="100" value="0">
+                                </div>
+                            </div>
 
-            .card:hover {
-                box-shadow: var(--shadow-md) !important;
-            }
+                            <div class="row g-3 mt-2">
+                                <div class="col-12">
+                                    <label for="tags" class="form-label fw-medium">Tags (comma separated)</label>
+                                    <input type="text" class="form-control form-control-modern" id="tags" name="tags" placeholder="casual, summer">
+                                </div>
+                            </div>
 
-            .card-header {
-                background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%) !important;
-                border-bottom: 1px solid var(--border-light) !important;
-                border-radius: var(--radius-xl) var(--radius-xl) 0 0 !important;
-                padding: 1.5rem !important;
-            }
+                            <div class="row g-3 mt-2">
+                                <div class="col-12">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="isActive" name="isActive" checked>
+                                        <label class="form-check-label fw-medium" for="isActive">Product is Active</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
-            .card-header h5 {
-                color: var(--text-primary) !important;
-                font-weight: 600 !important;
-                margin: 0 !important;
-                font-size: 1.125rem !important;
-            }
+                    <!-- Variants -->
+                    <div class="card-modern mb-4 no-hover">
+                        <div class="card-header-modern"><h5 class="card-title mb-0"><i class="fas fa-layer-group me-2"></i>Product Variants</h5></div>
+                        <div class="card-body-modern">
+                            <div class="row g-3">
+                                <% ['S','M','L','XL'].forEach(size => { %>
+                                    <div class="col-md-6 col-lg-3">
+                                        <div class="variant-card">
+                                            <label class="form-label fw-medium text-center d-block">Size <%= size %></label>
+                                            <div class="variant-inputs">
+                                                <input type="number" class="form-control form-control-modern"
+                                                       name="varientPrice[<%= size %>]" placeholder="Price (₹)" min="0" step="0.01">
+                                                <input type="number" class="form-control form-control-modern"
+                                                       name="varientquatity[<%= size %>]" placeholder="Quantity" min="0">
+                                            </div>
+                                        </div>
+                                    </div>
+                                <% }) %>
+                            </div>
+                            <small class="text-muted-modern mt-2"><i class="fas fa-info-circle me-1"></i>Enter price and quantity for each size. Leave empty for unavailable sizes.</small>
+                        </div>
+                    </div>
+                </div>
 
-            .card-body {
-                padding: 1.5rem !important;
-            }
+                <!-- RIGHT: Images -->
+                <div class="col-lg-4">
+                    <div class="card-modern mb-4 no-hover">
+                        <div class="card-header-modern"><h5 class="card-title mb-0"><i class="fas fa-upload me-2"></i>Upload Images (Exactly 3)</h5></div>
+                        <div class="card-body-modern">
+                            <% for(let i = 1; i <= 3; i++) { %>
+                            <div class="mb-4">
+                                <label class="form-label fw-medium">Image <%= i %> *</label>
+                                <input type="file" class="form-control form-control-modern" name="productImages" id="input<%= i %>" accept="image/*" onchange="viewImage(event, <%= i %>)">
+                                <img src="" alt="" id="imgView<%= i %>" class="mt-2 img-fluid rounded" style="max-height: 150px; display: none;">
+                                <div class="crop-container position-relative mt-2" id="cropContainer<%= i %>" style="display:none; height:250px; background:#f8f9fa; border-radius:8px; overflow:hidden;">
+                                    <canvas id="cropCanvas<%= i %>" style="max-width:100%;"></canvas>
+                                    <div class="crop-box position-absolute border border-primary border-2" id="cropBox<%= i %>" style="cursor:move;">
+                                        <div class="resize-handle position-absolute" style="width:12px;height:12px;background:#2b6cb0;right:-6px;bottom:-6px;cursor:nwse-resize;"></div>
+                                    </div>
+                                    <button type="button" class="btn btn-success btn-sm position-absolute bottom-0 start-50 translate-middle-x mb-2" style="z-index:10;" onclick="saveCrop(<%= i %>)">Save Crop</button>
+                                </div>
+                                <input type="hidden" name="croppedImage<%= i %>" id="croppedData<%= i %>" value="">
+                            </div>
+                            <% } %>
+                            <div id="images-error" class="text-danger small mt-2"></div>
+                        </div>
+                    </div>
 
-            /* Button Styles - Match admin theme */
-            .btn {
-                border-radius: var(--radius-lg) !important;
-                padding: 0.75rem 1.5rem !important;
-                font-weight: 500 !important;
-                font-size: 0.875rem !important;
-                transition: all var(--transition-normal) !important;
-                border: none !important;
-                display: inline-flex !important;
-                align-items: center !important;
-                gap: 0.5rem !important;
-            }
+                    <div class="card-modern no-hover">
+                        <div class="card-body-modern">
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-primary-modern" id="submitBtn">
+                                    <i class="fas fa-save me-2"></i>Add Product
+                                </button>
+                                <a href="/admin/products" class="btn btn-outline-modern"><i class="fas fa-arrow-left me-2"></i>Back</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
 
-            .btn-success {
-                background: linear-gradient(135deg, var(--color-success) 0%, var(--color-success-dark) 100%) !important;
-                color: var(--text-light) !important;
-                box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3) !important;
-            }
+<style>
+    .variant-card{background:var(--bg-tertiary);border:1px solid var(--border-light);border-radius:var(--radius-lg);padding:1rem;text-align:center;transition:all var(--transition-normal)}
+    .variant-card:hover{background:var(--bg-secondary);box-shadow:var(--shadow-sm)}
+    .variant-inputs{display:flex;flex-direction:column;gap:.5rem}
+    .crop-container{border:1px solid var(--border-light);border-radius:var(--radius-lg);}
+    .crop-box{border:2px dashed #2b6cb0 !important;}
+    .invalid-feedback{color:red!important;font-size:.875rem;margin-top:.25rem}
+    .was-validated .form-control:invalid,.form-control.is-invalid{border-color:red!important;box-shadow:0 0 0 .25rem rgba(255,0,0,.25)!important}
+    .btn-loading{position:relative;color:transparent}
+    .btn-loading::after{content:'';position:absolute;width:16px;height:16px;top:50%;left:50%;margin-left:-8px;margin-top:-8px;border:2px solid transparent;border-top-color:currentColor;border-radius:50%;animation:spin 1s linear infinite}
+    @keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
+</style>
 
-            .btn-success:hover {
-                background: linear-gradient(135deg, var(--color-success-dark) 0%, var(--color-success) 100%) !important;
-                box-shadow: 0 8px 20px rgba(16, 185, 129, 0.4) !important;
-                transform: translateY(-2px) !important;
-                color: var(--text-light) !important;
-            }
+<script>
+    const cropData = {};
+    let currentCropIndex = null;
 
-            .btn-secondary {
-                background: transparent !important;
-                color: var(--text-secondary) !important;
-                border: 2px solid var(--border-medium) !important;
-            }
+    function viewImage(event, index) {
+        const input = event.target;
+        const file = input.files[0];
+        if (!file) return;
 
-            .btn-secondary:hover {
-                background: var(--bg-tertiary) !important;
-                color: var(--text-primary) !important;
-                border-color: var(--border-dark) !important;
-                transform: translateY(-2px) !important;
-            }
-
-            .btn-primary {
-                background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%) !important;
-                color: var(--text-light) !important;
-                box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3) !important;
-            }
-
-            .btn-primary:hover {
-                background: linear-gradient(135deg, var(--color-primary-dark) 0%, var(--color-primary) 100%) !important;
-                box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4) !important;
-                transform: translateY(-2px) !important;
-                color: var(--text-light) !important;
-            }
-
-            /* Form Labels */
-            .form-label {
-                font-weight: 600 !important;
-                color: var(--text-primary) !important;
-                font-size: 0.875rem !important;
-                margin-bottom: 0.5rem !important;
-            }
-
-            /* Variant Group Styling */
-            .variant-group {
-                border: 1px solid var(--border-light) !important;
-                border-radius: var(--radius-lg) !important;
-                padding: 1rem !important;
-                background: var(--bg-secondary) !important;
-            }
-
-            /* Image Preview Styling */
-            .image-preview-container {
-                display: flex;
-                flex-wrap: wrap;
-                gap: 1rem;
-                margin-top: 1rem;
-            }
-
-            .image-preview-item {
-                position: relative;
-                width: 120px;
-                height: 120px;
-                border: 2px solid var(--border-light);
-                border-radius: var(--radius-lg);
-                overflow: hidden;
-                background: var(--bg-secondary);
-                cursor: pointer;
-                transition: all var(--transition-normal);
-            }
-
-            .image-preview-item:hover {
-                border-color: var(--color-primary);
-                box-shadow: var(--shadow-md);
-                transform: translateY(-2px);
-            }
-
-            .image-preview-item img {
-                width: 100%;
-                height: 100%;
-                object-fit: cover;
-                transition: transform var(--transition-normal);
-            }
-
-            .image-preview-item:hover img {
-                transform: scale(1.05);
-            }
-
-            .image-preview-overlay {
-                position: absolute;
-                top: 0;
-                left: 0;
-                right: 0;
-                bottom: 0;
-                background: rgba(0, 0, 0, 0.7);
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                gap: 0.5rem;
-                opacity: 0;
-                transition: opacity var(--transition-normal);
-                z-index: 10;
-            }
-
-            .image-preview-item:hover .image-preview-overlay {
-                opacity: 1;
-            }
-
-            .image-preview-overlay button {
-                border: none;
-                border-radius: var(--radius-md);
-                padding: 0.5rem;
-                font-size: 0.75rem;
-                cursor: pointer;
-                transition: all var(--transition-normal);
-                color: white;
-            }
-
-            .image-preview-overlay button:hover {
-                transform: scale(1.1);
-            }
-
-            .main-image-badge {
-                position: absolute;
-                top: 0.5rem;
-                left: 0.5rem;
-                background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
-                color: white;
-                padding: 0.25rem 0.5rem;
-                border-radius: var(--radius-md);
-                font-size: 0.7rem;
-                font-weight: 600;
-                z-index: 5;
-                box-shadow: 0 2px 4px rgba(102, 126, 234, 0.3);
-            }
-
-            /* Modal Styling */
-            .modal-content {
-                border-radius: var(--radius-xl) !important;
-                border: none !important;
-                box-shadow: var(--shadow-xl) !important;
-            }
-
-            .modal-header {
-                background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%) !important;
-                border-bottom: 1px solid var(--border-light) !important;
-                border-radius: var(--radius-xl) var(--radius-xl) 0 0 !important;
-            }
-
-            .modal-title {
-                color: var(--text-primary) !important;
-                font-weight: 600 !important;
-            }
-
-            .crop-container {
-                max-height: 400px;
-                overflow: hidden;
-                position: relative;
-                border-radius: var(--radius-lg);
-            }
-
-            /* Validation Styles */
-            .was-validated .form-control:invalid,
-            .form-control.is-invalid {
-                border-color: var(--color-danger) !important;
-            }
-
-            .was-validated .form-control:valid,
-            .form-control.is-valid {
-                border-color: var(--color-success) !important;
-            }
-
-            .was-validated .form-select:invalid,
-            .form-select.is-invalid {
-                border-color: var(--color-danger) !important;
-            }
-
-            .was-validated .form-select:valid,
-            .form-select.is-valid {
-                border-color: var(--color-success) !important;
-            }
-
-            .invalid-feedback {
-                color: var(--color-danger) !important;
-                font-size: 0.875rem !important;
-                margin-top: 0.25rem !important;
-            }
-
-            /* Text Styling */
-            .text-muted {
-                color: var(--text-muted) !important;
-            }
-
-            /* Responsive Design */
-            @media (max-width: 768px) {
-                .image-preview-item {
-                    width: 100px;
-                    height: 100px;
-                }
-
-                .card-body {
-                    padding: 1rem !important;
-                }
-
-                .card-header {
-                    padding: 1rem !important;
-                }
-            }
-        </style>
-
-        <!-- Scripts -->
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
-        <script src="/js/admin/productManagement.js"></script>
-        <script>
-            // Initialize image cropping for add product page
-            document.addEventListener('DOMContentLoaded', function () {
-                initializeImageCropping();
-                initializeFormValidation();
-            });
-
-
-            document.addEventListener('DOMContentLoaded', function () {
-    initializeFormValidation();
-});
-
-function initializeFormValidation() {
-    const form = document.getElementById('addProductForm');
-    form.addEventListener('submit', function (event) {
-        let valid = true;
-
-        // Product Name
-        const name = document.getElementById('name');
-        if (!name.value.trim()) {
-            markInvalid(name, 'Please provide a product name.');
-            valid = false;
-        } else {
-            markValid(name);
+        const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+        if (!validTypes.includes(file.type)) {
+            alert('Only JPG, PNG, WEBP allowed');
+            input.value = '';
+            return;
         }
 
-        // Category
-        const category = document.getElementById('categoryId');
-        if (!category.value) {
-            markInvalid(category, 'Please select a category.');
-            valid = false;
-        } else {
-            markValid(category);
-        }
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const imgView = document.getElementById(`imgView${index}`);
+            imgView.src = e.target.result;
+            imgView.style.display = 'block';
 
-        // Description
-        const description = document.getElementById('description');
-        if (!description.value.trim()) {
-            markInvalid(description, 'Please provide a description.');
-            valid = false;
-        } else {
-            markValid(description);
-        }
+            const container = document.getElementById(`cropContainer${index}`);
+            container.style.display = 'block';
 
-        // Color
-        const color = document.getElementById('color');
-        if (!color.value.trim()) {
-            markInvalid(color, 'Please provide a color.');
-            valid = false;
-        } else {
-            markValid(color);
-        }
+            setupCropper(index, e.target.result);
+        };
+        reader.readAsDataURL(file);
+    }
 
-        // Fabric
-        const fabric = document.getElementById('fabric');
-        if (!fabric.value.trim()) {
-            markInvalid(fabric, 'Please provide fabric information.');
-            valid = false;
-        } else {
-            markValid(fabric);
-        }
+    function setupCropper(index, src) {
+        const canvas = document.getElementById(`cropCanvas${index}`);
+        const ctx = canvas.getContext('2d');
+        const cropBox = document.getElementById(`cropBox${index}`);
+        const img = new Image();
+        img.src = src;
 
-        // Brand (Required, min 2 chars)
-        const brand = document.getElementById('brand');
-        if (!brand.value.trim()) {
-            markInvalid(brand, 'Please provide a brand.');
-            valid = false;
-        } else if (brand.value.trim().length < 2) {
-            markInvalid(brand, 'Brand must be at least 2 characters.');
-            valid = false;
-        } else {
-            markValid(brand);
-        }
+        img.onload = function() {
+            const maxW = 400, maxH = 250;
+            const ratio = Math.min(maxW / img.width, maxH / img.height);
+            canvas.width = img.width * ratio;
+            canvas.height = img.height * ratio;
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
-        // SKU (Required, min 3 chars, alphanumeric/-,_)
-        const sku = document.getElementById('sku');
-        if (!sku.value.trim()) {
-            markInvalid(sku, 'Please provide a SKU.');
-            valid = false;
-        } else if (sku.value.trim().length < 3) {
-            markInvalid(sku, 'SKU must be at least 3 characters.');
-            valid = false;
-        } else if (!/^[a-zA-Z0-9-_]+$/.test(sku.value.trim())) {
-            markInvalid(sku, 'SKU can only contain letters, numbers, - and _.');
-            valid = false;
-        } else {
-            markValid(sku);
-        }
+            let w = Math.min(200, canvas.width * 0.7);
+            let h = w;
+            let x = (canvas.width - w) / 2;
+            let y = (canvas.height - h) / 2;
 
-        // Offer (number)
-        const offer = document.getElementById('offer');
-        if (offer.value && (offer.value < 0 || offer.value > 100)) {
-            markInvalid(offer, 'Offer must be between 0 and 100.');
-            valid = false;
-        } else {
-            markValid(offer);
-        }
+            cropBox.style.width = w + 'px';
+            cropBox.style.height = h + 'px';
+            cropBox.style.left = x + 'px';
+            cropBox.style.top = y + 'px';
 
-        // Tags (Required, only comma-separated words)
-        const tags = document.getElementById('tags');
-        if (!tags.value.trim()) {
-            markInvalid(tags, 'Please provide at least one tag.');
-            valid = false;
-        } else if (!/^([a-zA-Z0-9]+)(,\s*[a-zA-Z0-9]+)*$/.test(tags.value.trim())) {
-            markInvalid(tags, 'Tags must be comma-separated single words (no special characters).');
-            valid = false;
-        } else {
-            markValid(tags);
-        }
+            cropData[index] = { x, y, width: w, height: h };
 
-        // Variants: at least one variant should have both positive price and quantity
-        const variantPriceInputs = form.querySelectorAll('input[name="varientPrice"]');
-        const variantQtyInputs = form.querySelectorAll('input[name="varientquatity"]');
-        let variantAtLeastOne = false;
-        for (let i = 0; i < variantPriceInputs.length; i++) {
-            const priceInput = variantPriceInputs[i];
-            const qtyInput = variantQtyInputs[i];
-            const price = priceInput.value;
-            const qty = qtyInput.value;
-            if ((price && price > 0) || (qty && qty > 0)) {
-                if (!(price > 0 && qty > 0)) {
-                    markInvalid(priceInput, 'Provide both price and quantity for this size.');
-                    markInvalid(qtyInput, 'Provide both price and quantity for this size.');
-                    valid = false;
+            let isDragging = false, isResizing = false, startX, startY;
+
+            const startDrag = (e) => {
+                if (e.target.classList.contains('resize-handle')) {
+                    isResizing = true;
                 } else {
-                    markValid(priceInput);
-                    markValid(qtyInput);
-                    variantAtLeastOne = true;
+                    isDragging = true;
                 }
-            } else {
-                clearValidation(priceInput);
-                clearValidation(qtyInput);
+                startX = e.clientX;
+                startY = e.clientY;
+                e.preventDefault();
+            };
+
+            const onMove = (e) => {
+                if (!isDragging && !isResizing) return;
+                const dx = e.clientX - startX;
+                const dy = e.clientY - startY;
+
+                if (isDragging) {
+                    x = Math.max(0, Math.min(x + dx, canvas.width - w));
+                    y = Math.max(0, Math.min(y + dy, canvas.height - h));
+                    cropBox.style.left = x + 'px';
+                    cropBox.style.top = y + 'px';
+                } else if (isResizing) {
+                    w = Math.max(50, Math.min(w + dx, canvas.width - x));
+                    h = Math.max(50, Math.min(h + dy, canvas.height - y));
+                    cropBox.style.width = w + 'px';
+                    cropBox.style.height = h + 'px';
+                }
+
+                startX = e.clientX;
+                startY = e.clientY;
+                cropData[index] = { x, y, width: w, height: h };
+            };
+
+            const stopDrag = () => {
+                isDragging = isResizing = false;
+            };
+
+            cropBox.addEventListener('mousedown', startDrag);
+            document.addEventListener('mousemove', onMove);
+            document.addEventListener('mouseup', stopDrag);
+
+            // Cleanup on new image
+            canvas.__cleanup = () => {
+                cropBox.removeEventListener('mousedown', startDrag);
+                document.removeEventListener('mousemove', onMove);
+                document.removeEventListener('mouseup', stopDrag);
+            };
+        };
+    }
+
+    window.saveCrop = function(index) {
+        const canvas = document.getElementById(`cropCanvas${index}`);
+        const { x, y, width, height } = cropData[index];
+        const input = document.getElementById(`input${index}`);
+        const imgView = document.getElementById(`imgView${index}`);
+        const hidden = document.getElementById(`croppedData${index}`);
+
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = 800;
+        tempCanvas.height = 800;
+        const ctx = tempCanvas.getContext('2d');
+        const img = new Image();
+        img.src = canvas.toDataURL();
+
+        img.onload = () => {
+            ctx.drawImage(img, x, y, width, height, 0, 0, 800, 800);
+            tempCanvas.toBlob(blob => {
+                const file = new File([blob], `cropped_${index}.jpg`, { type: 'image/jpeg' });
+                const dt = new DataTransfer();
+                dt.items.add(file);
+                input.files = dt.files;
+
+                imgView.src = URL.createObjectURL(file);
+                hidden.value = tempCanvas.toDataURL('image/jpeg', 0.9);
+
+                document.getElementById(`cropContainer${index}`).style.display = 'none';
+                showToast('Image cropped & saved!', 'success');
+            }, 'image/jpeg', 0.9);
+        };
+    };
+
+    // Form Submit
+    document.getElementById('addProductForm').addEventListener('submit', function(e) {
+        const cropped = [];
+        for(let i=1; i<=3; i++) {
+            const input = document.getElementById(`input${i}`);
+            const hidden = document.getElementById(`croppedData${i}`).value;
+            if (!input.files[0] || !hidden) {
+                e.preventDefault();
+                document.getElementById('images-error').textContent = 'Please upload and crop all 3 images.';
+                return;
             }
-        }
-        if (!variantAtLeastOne) {
-            valid = false;
-            if (!document.getElementById('variantErrorMsg')) {
-                const errorMsg = document.createElement('div');
-                errorMsg.className = 'invalid-feedback d-block';
-                errorMsg.id = 'variantErrorMsg';
-                errorMsg.textContent = 'At least one variant with price and quantity required.';
-                variantPriceInputs[0].parentNode.parentNode.parentNode.appendChild(errorMsg);
-            }
-        } else {
-            const existingMsg = document.getElementById('variantErrorMsg');
-            if (existingMsg) existingMsg.remove();
+            cropped.push(hidden);
         }
 
-        // Images: minimum 3 files, all must be images
-        const imagesInput = document.getElementById('productImages');
-        removeGlobalError(imagesInput);
-        if (!imagesInput.files || imagesInput.files.length < 3) {
-            markInvalid(imagesInput, 'Please upload at least 3 images.');
-            valid = false;
-        } else {
-            let imagesValid = true;
-            for (let i = 0; i < imagesInput.files.length; i++) {
-                if (!imagesInput.files[i].type.startsWith('image/')) {
-                    imagesValid = false;
-                }
-            }
-            if (!imagesValid) {
-                markInvalid(imagesInput, 'All uploaded files must be images.');
-                valid = false;
-            } else {
-                markValid(imagesInput);
-            }
+        if (!this.checkValidity()) {
+            e.preventDefault();
+            this.classList.add('was-validated');
+            return;
         }
 
-        // Prevent submit
-        if (!valid) {
-            event.preventDefault();
-            event.stopPropagation();
-            form.classList.add('was-validated');
-        }
+        document.getElementById('submitBtn').classList.add('btn-loading');
+        document.getElementById('submitBtn').disabled = true;
     });
 
-    function markInvalid(input, message) {
-        input.classList.add('is-invalid');
-        input.classList.remove('is-valid');
-        const feedback = input.parentNode.querySelector('.invalid-feedback');
-        if (feedback) feedback.textContent = message;
+    function showToast(msg, type = 'success') {
+        if (typeof window.showToast === 'function') window.showToast(msg, type);
+        else alert(msg);
     }
+</script>
 
-    function markValid(input) {
-        input.classList.remove('is-invalid');
-        input.classList.add('is-valid');
-        const feedback = input.parentNode.querySelector('.invalid-feedback');
-        if (feedback) feedback.textContent = '';
-    }
-
-    function clearValidation(input) {
-        input.classList.remove('is-invalid');
-        input.classList.remove('is-valid');
-        const feedback = input.parentNode.querySelector('.invalid-feedback');
-        if (feedback) feedback.textContent = '';
-    }
-
-    function removeGlobalError(input) {
-        const parent = input.parentNode;
-        const existing = parent.querySelector('[data-variant-error="true"]');
-        if (existing) parent.removeChild(existing);
-    }
-}
-
-        </script>
-
-        <%- include('./partials/footer') %>
+<%- include('./partials/footer') %>

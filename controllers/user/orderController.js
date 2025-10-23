@@ -618,18 +618,13 @@ const returnOrderItem = async (req, res) => {
 };
 
 
-
-
-
-
 const downloadInvoice = async (req, res) => {
   try {
     const orderId = req.params.id;
     const order = await Order.findById(orderId)
-  .populate("user", "name email")    
-  .populate("products.product")
-  .populate("address");
-
+      .populate("user", "name email")
+      .populate("products.product")
+      .populate("addressDetails");
 
     if (!order) {
       return res.status(404).render("pageNotFound", { message: "Order not found" });
@@ -643,49 +638,65 @@ const downloadInvoice = async (req, res) => {
 
     doc.pipe(res);
 
-    
+    // Header
     doc.font("Helvetica-Bold").fontSize(22).text("FitVibe Pvt. Ltd.", 50, 50);
     doc.fontSize(10).font("Helvetica")
       .text("123 Fashion Street, Kochi, Kerala, India", 50, 75)
       .text("Email: support@fitvibe.com | Phone: +91 9876543210", 50, 90)
       .text("GSTIN: 32ABCDE1234F1ZB", 50, 105);
 
-    
     doc.fontSize(18).font("Helvetica-Bold").text("INVOICE", 450, 50);
 
     doc.moveTo(50, 125).lineTo(550, 125).strokeColor("#00A859").stroke();
     doc.moveDown(1.5);
 
-    
+    // Invoice Details
     doc.fontSize(12).font("Helvetica-Bold").text("Invoice Details", 50, 140);
     doc.font("Helvetica").fontSize(10)
       .text(`Invoice Number: ${order.orderID}`, 50, 160)
       .text(`Order Date: ${order.orderDate.toLocaleDateString()}`, 50, 175)
       .text(`Due Date: ${order.orderDate.toLocaleDateString()}`, 50, 190);
 
-    
-    const addressY = 140;
-    doc.fontSize(12).font("Helvetica-Bold").text("Bill To:", 300, addressY);
-    doc.font("Helvetica").fontSize(10)
-      .text(order.user?.name || "Customer", 300, addressY + 20)
-      .text(order.user?.email || "Email not available", 300, addressY + 35);
+    // Bill To & Ship To fixed positions with dynamic height and increased spacing
+    const startY = 220; // Fixed starting point for addresses
+    let billHeight = 0;
+    let shipHeight = 0;
 
-    doc.fontSize(12).font("Helvetica-Bold").text("Ship To:", 450, addressY);
+    // Bill To
+    doc.fontSize(12).font("Helvetica-Bold").text("Bill To:", 50, startY);
+    doc.font("Helvetica").fontSize(10);
+    const billLines = [
+      order.user?.name || "Customer",
+      order.user?.email || "Email not available",
+    ];
+    billLines.forEach((line, i) => {
+      doc.text(line, 50, startY + 25 + i * 20); // Increased line spacing to 20, offset by 25
+    });
+    billHeight = 25 + billLines.length * 20;
+
+    // Ship To
+    doc.fontSize(12).font("Helvetica-Bold").text("Ship To:", 350, startY); // Increased x to 350 for wider gap
+    doc.font("Helvetica").fontSize(10);
     if (order.addressDetails) {
       const addr = order.addressDetails;
-      doc.font("Helvetica").fontSize(10)
-        .text(addr.name, 450, addressY + 20)
-        .text(`${addr.address}`, 450, addressY + 35)
-        .text(`${addr.city}, ${addr.state} - ${addr.zipCode}`, 450, addressY + 50)
-        .text(addr.country, 450, addressY + 65)
-        .text(`Phone: ${addr.phone}`, 450, addressY + 80);
+      const shipLines = [
+        addr.name,
+        addr.address,
+        `${addr.city}, ${addr.state} - ${addr.zipCode}`,
+        addr.country,
+        `Phone: ${addr.phone}`,
+      ];
+      shipLines.forEach((line, i) => {
+        doc.text(line, 350, startY + 25 + i * 20); // Increased line spacing to 20, offset by 25
+      });
+      shipHeight = 25 + shipLines.length * 20;
     } else {
-      doc.font("Helvetica").fontSize(10)
-        .text("Address not available", 450, addressY + 20);
+      doc.text("Address not available", 350, startY + 25);
+      shipHeight = 45;
     }
 
-    
-    const tableTop = 260;
+    // Table Header
+    const tableTop = startY + Math.max(billHeight, shipHeight) + 40; // Increased padding to 40
     doc.moveTo(50, tableTop - 5).lineTo(550, tableTop - 5).strokeColor("#000").stroke();
     doc.font("Helvetica-Bold").fontSize(10);
     doc.text("#", 55, tableTop);
@@ -695,65 +706,61 @@ const downloadInvoice = async (req, res) => {
     doc.text("Total", 470, tableTop, { width: 80, align: "right" });
     doc.moveTo(50, tableTop + 12).lineTo(550, tableTop + 12).stroke();
 
-    
+    // Table Rows
     let y = tableTop + 25;
-    let index = 1;
-
-    order.products.forEach((item) => {
+    order.products.forEach((item, index) => {
       const totalPrice = item.variant.salePrice * item.quantity;
       doc.font("Helvetica").fontSize(10)
-        .text(index, 55, y)
+        .text(index + 1, 55, y)
         .text(item.product.name, 80, y)
         .text(item.quantity, 300, y, { width: 90, align: "right" })
         .text(`${item.variant.salePrice.toFixed(2)}`, 380, y, { width: 80, align: "right" })
         .text(`${totalPrice.toFixed(2)}`, 470, y, { width: 80, align: "right" });
       y += 20;
-      index++;
     });
 
-    
     doc.moveTo(50, y + 5).lineTo(550, y + 5).stroke();
 
-    
+    // Payment Info
     y += 20;
     doc.font("Helvetica-Bold").text("Payment Method:", 50, y);
     doc.font("Helvetica").text(order.paymentMethod, 150, y);
     doc.font("Helvetica-Bold").text("Payment Status:", 300, y);
     doc.font("Helvetica").text(order.paymentStatus || "Pending", 410, y);
 
-    
+    // Amount Calculation
     y += 40;
     doc.moveTo(320, y - 10).lineTo(550, y - 10).strokeColor("#ccc").stroke();
 
+    const subtotal = order.totalAmount;
+    const discount = order.couponDiscount || 0;
+    const shipping = order.shippingCharge || 0;
+    const totalAmount = subtotal - discount + shipping;
+
     doc.font("Helvetica").fontSize(11)
       .text(`Subtotal:`, 380, y, { width: 100, align: "right" })
-      .text(`${order.totalAmount.toFixed(2)}`, 470, y, { width: 80, align: "right" });
+      .text(`${subtotal.toFixed(2)}`, 470, y, { width: 80, align: "right" });
 
     y += 15;
-    if (order.couponDiscount > 0) {
+    if (discount > 0) {
       doc.text(`Discount:`, 380, y, { width: 100, align: "right" })
-        .text(`-${order.couponDiscount.toFixed(2)}`, 470, y, { width: 80, align: "right" });
+        .text(`-${discount.toFixed(2)}`, 470, y, { width: 80, align: "right" });
       y += 15;
     }
 
     doc.text(`Shipping:`, 380, y, { width: 100, align: "right" })
-      .text(`${order.shippingCharge.toFixed(2)}`, 470, y, { width: 80, align: "right" });
+      .text(`${shipping.toFixed(2)}`, 470, y, { width: 80, align: "right" });
     y += 15;
 
-    doc.text(`Tax (10%):`, 380, y, { width: 100, align: "right" })
-      .text(`${(order.finalAmount - order.totalAmount).toFixed(2)}`, 470, y, { width: 80, align: "right" });
-    y += 15;
-
-    
     doc.moveTo(320, y + 5).lineTo(550, y + 5).strokeColor("#00A859").stroke();
     doc.font("Helvetica-Bold").fontSize(12)
       .fillColor("#00A859")
       .text(`Total Amount:`, 380, y + 10, { width: 100, align: "right" })
-      .text(`${order.finalAmount.toFixed(2)}`, 470, y + 10, { width: 80, align: "right" });
+      .text(`${totalAmount.toFixed(2)}`, 470, y + 10, { width: 80, align: "right" });
     doc.fillColor("black");
 
-    
-   const pageHeight = doc.page.height;
+    // Footer
+    const pageHeight = doc.page.height;
     const footerY = pageHeight - 90;
 
     doc.font("Helvetica").fontSize(9)
@@ -764,11 +771,13 @@ const downloadInvoice = async (req, res) => {
       .text("© 2025 FitVibe Pvt. Ltd. All rights reserved.", { align: "center" });
 
     doc.end();
+
   } catch (error) {
     console.error("Error generating invoice:", error);
     res.status(500).send("Error generating invoice");
   }
-}
+};
+
 
 const retryPayment = async (req, res) => {
   try {

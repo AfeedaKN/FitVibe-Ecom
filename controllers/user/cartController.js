@@ -231,7 +231,29 @@ const updateCart = async (req, res) => {
 
         console.log(cartItem.quantity);
         await cart.save();
-        res.json({ success: true, message: 'Cart updated' });
+
+        // Recalculate totals after update
+        const updatedCart = await Cart.findOne({ userId: user._id }).populate({
+            path: 'items.productId',
+            model: 'Product'
+        });
+
+        let subtotal = 0;
+        for (const item of updatedCart.items) {
+            const product = item.productId;
+            const variant = product.variants.find(v => v._id.toString() === item.variantId.toString());
+            if (variant) {
+                subtotal += (variant.salePrice || item.price) * item.quantity;
+            }
+        }
+
+        res.json({ 
+            success: true, 
+            message: 'Cart updated',
+            newQuantity: cartItem.quantity,
+            subtotal: subtotal,
+            cartCount: updatedCart.items.length
+        });
     } catch (error) {
         console.error('Update cart error:', error);
         res.status(500).json({ success: false, message: 'Server error' });

@@ -181,14 +181,25 @@ const calculateProductOffer = async (product) => {
 
 const addProduct = async (req, res) => {
   try {
-    const { name, description, categoryId, brand, color, offer, fabric, sku, tags } = req.body;
+    const { 
+      name, description, categoryId, brand, color, offer, fabric, sku, tags,
+      croppedImage1, croppedImage2, croppedImage3
+    } = req.body;
+
+    // === VALIDATIONS ===
+    if (!name || !description || !categoryId || !color || !fabric) {
+      req.flash("error_msg", "All required fields must be filled");
+      return res.redirect("/admin/addproducts");
+    }
 
     const existingProduct = await Product.findOne({
-      $or: [{ name: { $regex: new RegExp(`^${name}$`, "i") } }, { sku: sku }],
+      $or: [
+        { name: { $regex: new RegExp(`^${name}$`, "i") } },
+        { sku: sku || "" }
+      ]
     });
-
     if (existingProduct) {
-      req.flash("error_msg", "Product with the same name already exists");
+      req.flash("error_msg", "Product with the same name or SKU already exists");
       return res.redirect("/admin/addproducts");
     }
 
@@ -197,112 +208,111 @@ const addProduct = async (req, res) => {
       req.flash("error_msg", "Category not found");
       return res.redirect("/admin/addproducts");
     }
-   
 
+    // === VARIANTS ===
     const variants = [];
     const sizes = ["S", "M", "L", "XL"];
-    const varientPrices = Array.isArray(req.body.varientPrice)
+
+    // convert possible object/array to proper array
+    const variantPrices = Array.isArray(req.body.varientPrice)
       ? req.body.varientPrice
-      : [req.body.varientPrice];
-    const varientQuantities = Array.isArray(req.body.varientquatity)
+      : Object.values(req.body.varientPrice || []);
+    const variantQuantities = Array.isArray(req.body.varientquatity)
       ? req.body.varientquatity
-      : [req.body.varientquatity];
+      : Object.values(req.body.varientquatity || []);
 
     for (let i = 0; i < sizes.length; i++) {
-      const price = Number(varientPrices[i]);
-      const quantity = Number(varientQuantities[i]);
+      const price = Number(variantPrices[i] || 0);
+      const quantity = Number(variantQuantities[i] || 0);
 
       if (!isNaN(price) && !isNaN(quantity) && price > 0 && quantity > 0) {
         variants.push({
           size: sizes[i],
           varientPrice: price,
+          salePrice: price, // set salePrice same as price for now
           varientquatity: quantity,
         });
       }
     }
 
     if (variants.length === 0) {
-      req.flash("error_msg", "At least one variant is required");
+      req.flash("error_msg", "At least one variant with price & quantity is required");
       return res.redirect("/admin/addproducts");
     }
 
-    const seen = new Set();
-    const filteredFiles = [];
-    for (const file of req.files) {
-      if (!seen.has(file.originalname)) {
-        filteredFiles.push(file);
-        seen.add(file.originalname);
-      }
+    // === CROPPED IMAGES ===
+    const croppedBase64 = [croppedImage1, croppedImage2, croppedImage3].filter(Boolean);
+    if (croppedBase64.length !== 3) {
+      req.flash("error_msg", "You must crop and save all 3 images");
+      return res.redirect("/admin/addproducts");
     }
 
     const images = [];
-    if (!filteredFiles || filteredFiles.length === 0) {
-      req.flash("error_msg", "Please upload at least 3 images");
-      return res.redirect("/admin/addproducts");
-    }
-    if (filteredFiles.length < 3) {
-      req.flash("error_msg", "Please upload at least 3 images");
-      return res.redirect("/admin/addproducts");
-    }
+    for (let i = 0; i < 3; i++) {
+      const base64Data = croppedBase64[i].replace(/^data:image\/\w+;base64,/, "");
+      const buffer = Buffer.from(base64Data, 'base64');
 
-    for (let index = 0; index < filteredFiles.length; index++) {
-      const file = filteredFiles[index];
       try {
-        const uploadResult = await cloudinary.uploader.upload(file.path, {
-          folder: "products",
-          transformation: [{ width: 800, height: 800, crop: "fill" }],
+        const uploadResult = await new Promise((resolve, reject) => {
+          cloudinary.uploader.upload_stream(
+            {
+              folder: "products",
+              transformation: [{ width: 800, height: 800, crop: "fill" }],
+              quality: 90
+            },
+            (error, result) => {
+              if (error) reject(error);
+              else resolve(result);
+            }
+          ).end(buffer);
         });
 
-        const thumbUrl = cloudinary.url(uploadResult.public_id, {
-          width: 200,
-          height: 200,
-          crop: "fill",
-          format: uploadResult.format,
+        const thumb200 = cloudinary.url(uploadResult.public_id, {
+          width: 200, height: 200, crop: "fill", format: uploadResult.format
+        });
+        const thumb400 = cloudinary.url(uploadResult.public_id, {
+          width: 400, height: 400, crop: "fill", format: uploadResult.format
         });
 
         images.push({
           url: uploadResult.secure_url,
-          thumbnail: thumbUrl,
-          isMain: index === 0,
+          thumbnail: thumb200,
+          medium: thumb400,
+          isMain: i === 0,
           public_id: uploadResult.public_id,
         });
-
-        const fs = require("fs").promises;
-        await fs.unlink(file.path).catch(() => {});
       } catch (err) {
-        console.error("PRODUCT CONTROLLER: Error uploading to Cloudinary", file.path, err);
-        req.flash("error_msg", "Error uploading image: " + file.originalname);
+        console.error("Cloudinary upload failed:", err);
+        req.flash("error_msg", `Failed to upload image ${i + 1}`);
         return res.redirect("/admin/addproducts");
       }
     }
 
+    // === TAGS ===
     const tagArray = tags
       ? typeof tags === "string"
-        ? tags.split(",").map((tag) => tag.trim())
-        : tags
+        ? tags.split(",").map(t => t.trim()).filter(Boolean)
+        : Array.isArray(tags) ? tags.map(t => t.trim()).filter(Boolean) : []
       : [];
 
+    // === CREATE PRODUCT ===
     const newProduct = new Product({
       name,
       description,
       categoryId: new mongoose.Types.ObjectId(categoryId),
-      brand: brand || "",
-      color,
+      brand: brand?.trim() || "",
+      color: color.trim(),
       offer: Number(offer) || 0,
       images,
       variants,
-      sku: sku || "",
+      sku: sku?.trim() || "",
       tags: tagArray,
-      fabric,
-      ratings: {
-        average: 0,
-        count: 0,
-      },
+      fabric: fabric?.trim(),
+      ratings: { average: 0, count: 0 },
       isListed: true,
     });
 
     await calculateProductOffer(newProduct);
-
     await newProduct.save();
 
     req.flash("success_msg", "Product added successfully");
@@ -358,184 +368,180 @@ const updateProduct = async (req, res) => {
       tags,
       isActive,
       deletedImages,
+      croppedImage1,
+      croppedImage2,
+      croppedImage3
     } = req.body;
+
+    // Validations
+    if (!name || !description || !category || !color) {
+      req.flash("error_msg", "All required fields must be filled");
+      return res.redirect(`/admin/editproducts?id=${productId}`);
+    }
 
     const productObjectId = new mongoose.Types.ObjectId(productId);
     const categoryIdObj = new mongoose.Types.ObjectId(category);
 
-    const existingProductn = await Product.findOne({
+    const existingProduct = await Product.findOne({
       _id: { $ne: productObjectId },
-      name: { $regex: new RegExp(`^${name}$`, "i") },
+      $or: [
+        { name: { $regex: new RegExp(`^${name}$`, "i") } },
+        { sku: sku || "" }
+      ]
     });
 
-    if (existingProductn) {
-      req.flash("error_msg", "Another product with the same name already exists");
-      return res.redirect("/admin/products");
+    if (existingProduct) {
+      req.flash("error_msg", "Product with the same name or SKU already exists");
+      return res.redirect(`/admin/editproducts?id=${productId}`);
     }
 
     const categoryObj = await Category.findById(categoryIdObj);
     if (!categoryObj) {
       req.flash("error_msg", "Category not found");
-      return res.redirect("/admin/products");
+      return res.redirect(`/admin/editproducts?id=${productId}`);
     }
 
+    // Variants
     const variantPrices = req.body.varientPrice || {};
     const sizes = req.body.sizes || {};
     const variants = [];
-
     ["S", "M", "L", "XL"].forEach((size) => {
       const price = Number(variantPrices[size]);
       const quantity = Number(sizes[size]);
-
       if (!isNaN(price) && !isNaN(quantity) && price > 0 && quantity > 0) {
         variants.push({
           size,
           varientPrice: price,
+          salePrice: price,
           varientquatity: quantity,
         });
       }
     });
 
-    const existingProduct = await Product.findById(productObjectId);
-    let images = existingProduct.images || [];
+    if (variants.length === 0) {
+      req.flash("error_msg", "At least one variant with price & quantity is required");
+      return res.redirect(`/admin/editproducts?id=${productId}`);
+    }
 
-    
+    // Images
+    const product = await Product.findById(productObjectId);
+    let images = product.images || [];
     let deletedIndices = [];
+    
     if (deletedImages) {
-      if (typeof deletedImages === 'string') {
-        
-        const trimmedImages = deletedImages.trim();
-        if (trimmedImages) {
-          try {
-            deletedIndices = JSON.parse(trimmedImages);
-          } catch (parseError) {
-            console.error("Error parsing deletedImages JSON:", parseError);
-            deletedIndices = []; 
-          }
+      try {
+        deletedIndices = JSON.parse(deletedImages);
+        if (!Array.isArray(deletedIndices)) {
+          deletedIndices = [];
         }
-      } else if (Array.isArray(deletedImages)) {
-        
-        deletedIndices = [...new Set(deletedImages)];
-      } else {
-        console.warn("Unexpected deletedImages type:", typeof deletedImages);
-        deletedIndices = []; 
+      } catch (err) {
+        console.error("Error parsing deletedImages:", err);
       }
     }
 
     if (deletedIndices.length > 0) {
-      console.log("Processing deleted images:", deletedIndices);
-
-      const imagesToDelete = [];
-      deletedIndices.forEach((index) => {
-        if (images[index]) {
-          imagesToDelete.push(images[index]);
-        }
-      });
+      const imagesToDelete = deletedIndices
+        .filter(index => images[index])
+        .map(index => images[index]);
 
       for (const image of imagesToDelete) {
         if (image.public_id) {
           try {
             await cloudinary.uploader.destroy(image.public_id);
-            console.log(`Deleted image from Cloudinary: ${image.public_id}`);
-          } catch (cloudinaryError) {
-            console.error("Error deleting image from Cloudinary:", cloudinaryError);
+          } catch (err) {
+            console.error("Error deleting image from Cloudinary:", err);
           }
         }
       }
 
       images = images.filter((_, index) => !deletedIndices.includes(index));
-
-      if (images.length > 0 && !images.some((img) => img.isMain)) {
+      if (images.length > 0 && !images.some(img => img.isMain)) {
         images[0].isMain = true;
       }
-
-      console.log(
-        `Successfully processed deletion of ${deletedIndices.length} images. Remaining images: ${images.length}`
-      );
     }
 
-    const seen = new Set();
-    const filteredFiles = [];
-    if (req.files && req.files.length > 0) {
-      for (const file of req.files) {
-        if (!seen.has(file.originalname)) {
-          filteredFiles.push(file);
-          seen.add(file.originalname);
-        }
+    // Cropped Images
+    const croppedBase64 = [croppedImage1, croppedImage2, croppedImage3].filter(Boolean);
+    const newImages = [];
+    
+    for (let i = 0; i < croppedBase64.length; i++) {
+      const base64Data = croppedBase64[i].replace(/^data:image\/\w+;base64,/, "");
+      const buffer = Buffer.from(base64Data, 'base64');
+
+      try {
+        const uploadResult = await new Promise((resolve, reject) => {
+          cloudinary.uploader.upload_stream(
+            {
+              folder: "products",
+              transformation: [{ width: 800, height: 800, crop: "fill" }],
+              quality: 90
+            },
+            (error, result) => {
+              if (error) reject(error);
+              else resolve(result);
+            }
+          ).end(buffer);
+        });
+
+        const thumb200 = cloudinary.url(uploadResult.public_id, {
+          width: 200, height: 200, crop: "fill", format: uploadResult.format
+        });
+        const thumb400 = cloudinary.url(uploadResult.public_id, {
+          width: 400, height: 400, crop: "fill", format: uploadResult.format
+        });
+
+        newImages.push({
+          url: uploadResult.secure_url,
+          thumbnail: thumb200,
+          medium: thumb400,
+          isMain: images.length === 0 && i === 0,
+          public_id: uploadResult.public_id,
+        });
+      } catch (err) {
+        console.error("Cloudinary upload failed:", err);
+        req.flash("error_msg", `Failed to upload image ${i + 1}`);
+        return res.redirect(`/admin/editproducts?id=${productId}`);
       }
     }
 
-    if (filteredFiles.length > 0) {
-      const newImages = [];
-      const fs = require("fs").promises;
+    images = [...images, ...newImages];
 
-      for (let index = 0; index < filteredFiles.length; index++) {
-        const file = filteredFiles[index];
-        try {
-          const uploadResult = await cloudinary.uploader.upload(file.path, {
-            folder: "products",
-            transformation: [{ width: 800, height: 800, crop: "fill" }],
-          });
-
-          const thumbUrl = cloudinary.url(uploadResult.public_id, {
-            width: 200,
-            height: 200,
-            crop: "fill",
-            format: uploadResult.format,
-          });
-
-          newImages.push({
-            url: uploadResult.secure_url,
-            thumbnail: thumbUrl,
-            isMain: images.length === 0 && index === 0,
-            public_id: uploadResult.public_id,
-          });
-
-          await fs.unlink(file.path).catch(() => {});
-        } catch (err) {
-          console.error(
-            "PRODUCT CONTROLLER: Error uploading to Cloudinary (update)",
-            file.path,
-            err
-          );
-          req.flash("error_msg", "Error uploading image: " + file.originalname);
-          return res.redirect("/admin/products");
-        }
-      }
-      images = [...images, ...newImages];
+    if (images.length !== 3) {
+      req.flash("error_msg", "Exactly 3 images are required");
+      return res.redirect(`/admin/editproducts?id=${productId}`);
     }
 
+    // Tags
     const tagArray = tags
       ? typeof tags === "string"
-        ? tags.split(",").map((tag) => tag.trim())
-        : tags
+        ? tags.split(",").map(t => t.trim()).filter(Boolean)
+        : Array.isArray(tags) ? tags.map(t => t.trim()).filter(Boolean) : []
       : [];
 
+    // Update Product
     const updatedProduct = await Product.findById(productObjectId);
     updatedProduct.name = name;
     updatedProduct.description = description;
     updatedProduct.categoryId = categoryIdObj;
-    updatedProduct.brand = brand || "";
-    updatedProduct.color = color;
+    updatedProduct.brand = brand?.trim() || "";
+    updatedProduct.color = color.trim();
     updatedProduct.offer = Number(offer) || 0;
     updatedProduct.images = images;
     updatedProduct.variants = variants;
-    updatedProduct.sku = sku || "";
+    updatedProduct.sku = sku?.trim() || "";
     updatedProduct.tags = tagArray;
-    updatedProduct.fabric = fabric || "";
+    updatedProduct.fabric = fabric?.trim() || "";
     updatedProduct.isListed = isActive === "on";
 
-    
     await calculateProductOffer(updatedProduct);
-
     await updatedProduct.save();
 
     req.flash("success_msg", "Product updated successfully");
     res.redirect("/admin/products");
   } catch (error) {
     console.error("PRODUCT CONTROLLER: Error in updateProduct", error);
-    req.flash("error_msg", "Failed to update product");
-    res.redirect("/admin/products");
+    req.flash("error_msg", "Failed to update product: " + error.message);
+    res.redirect(`/admin/editproducts?id=${req.body.productId}`);
   }
 };
 

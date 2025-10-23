@@ -500,19 +500,23 @@
     <% } %>
 
     // Function to update cart item quantity in DOM
-    function updateCartItemQuantity(productId, variantId, newQuantity) {
-      const cartItem = document.querySelector(`[data-product-id="${productId}"][data-variant-id="${variantId}"]`).closest('.cart-item');
+    function updateCartItemQuantity(button, newQuantity) {
+      const cartItem = button.closest('.cart-item');
       const quantityInput = cartItem.querySelector('input[type="number"]');
       const priceElement = cartItem.querySelector('.price');
       
       quantityInput.value = newQuantity;
       
       const priceText = priceElement.textContent;
-      const unitPrice = parseFloat(priceText.match(/₹([\d.]+)/)[1]);
-      priceElement.innerHTML = `₹${unitPrice.toFixed(2)} x ${newQuantity}`;
-      
-      updateCartTotal();
-      updateButtonStates();
+      const unitPriceMatch = priceText.match(/₹([\d,]+\.\d{2})/);
+      if (unitPriceMatch) {
+        const unitPrice = parseFloat(unitPriceMatch[1].replace(/,/g, ''));
+        priceElement.innerHTML = `₹${unitPrice.toFixed(2)} x ${newQuantity}`;
+      }
+    }
+
+    function updateHeaderCartCount(count) {
+        if (typeof window.updateCartCount === 'function') window.updateCartCount(count);
     }
 
     // Function to remove cart item from DOM
@@ -534,20 +538,19 @@
     }
 
     // Function to update cart total
-    function updateCartTotal() {
-      const cartItems = document.querySelectorAll('.cart-item');
-      let total = 0;
-      
-      cartItems.forEach(item => {
-        const priceText = item.querySelector('.price').textContent;
-        const unitPrice = parseFloat(priceText.match(/₹([\d.]+)/)[1]);
-        const quantity = parseInt(item.querySelector('input[type="number"]').value);
-        total += unitPrice * quantity;
-      });
-      
+    function updateCartTotal(newSubtotal) {
       const totalElement = document.querySelector('.cart-summary .price');
       if (totalElement) {
-        totalElement.textContent = `Total: ₹${total.toFixed(2)}`;
+        totalElement.textContent = `Total: ₹${newSubtotal.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+      }
+
+      // Also update the checkout button state
+      const checkoutBtn = document.querySelector('.checkout-btn');
+      if (checkoutBtn) {
+        const hasInvalidItems = Array.from(document.querySelectorAll('.cart-item')).some(item => 
+          item.querySelector('.cart-item-out-of-stock')
+        );
+        checkoutBtn.disabled = hasInvalidItems;
       }
     }
 
@@ -607,7 +610,12 @@
           const data = await response.json();
           
           if (data.success) {
-            window.location.reload();
+            updateCartItemQuantity(button, data.newQuantity);
+            updateCartTotal(data.subtotal);
+            updateHeaderCartCount(data.cartCount);
+            updateButtonStates();
+          } else if (data.stockStatus === 'insufficient_stock') {
+            Toast.fire({ icon: 'warning', title: data.message });
           } else {
             Toast.fire({
               icon: 'error',
@@ -653,11 +661,10 @@
           const data = await response.json();
           
           if (data.success) {
-            updateCartItemQuantity(productId, variantId, currentQuantity - 1);
-            Toast.fire({
-              icon: 'success',
-              title: 'Quantity updated!'
-            });
+            updateCartItemQuantity(button, data.newQuantity);
+            updateCartTotal(data.subtotal);
+            updateHeaderCartCount(data.cartCount);
+            updateButtonStates();
           } else {
             Toast.fire({
               icon: 'error',
@@ -710,9 +717,6 @@
                 icon: 'success',
                 title: 'Product removed successfully'
               });
-                setTimeout(() => {
-                   window.location.reload();
-                   }, 1000);
             } else {
               Toast.fire({
                 icon: 'error',

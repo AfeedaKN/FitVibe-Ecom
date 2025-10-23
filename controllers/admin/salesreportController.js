@@ -1,10 +1,7 @@
-/* -------------------------------------------------------------
-   SALES REPORT CONTROLLERS – PDFKit version
-   ------------------------------------------------------------- */
 const Order = require("../../models/orderSchema");
 const fs = require("fs");
 const path = require("path");
-const PDFDocument = require("pdfkit");          // <-- NEW
+const PDFDocument = require("pdfkit");        
 const excel = require("exceljs");
 
 /* -----------------------------------------------------------------
@@ -48,7 +45,7 @@ const salesreport = async (req, res) => {
     const limit = 10;
     const skip = (page - 1) * limit;
 
-    // ----- build query (same as before) -----
+    // Build query
     let query = {};
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -100,13 +97,13 @@ const salesreport = async (req, res) => {
       else if (status === "returned") query["products.status"] = "returned";
     }
 
-    // ----- fetch orders -----
+    // Fetch orders
     let allFilteredOrders = await Order.find(query)
       .populate({ path: "products.product", select: "name" })
       .populate("user")
       .lean();
 
-    // ----- filter by status (if any) -----
+    // Filter by status
     if (status) {
       allFilteredOrders = allFilteredOrders
         .map(order => {
@@ -118,8 +115,9 @@ const salesreport = async (req, res) => {
         .filter(order => order.products.length > 0);
     }
 
-    // ----- calculations (same as before) -----
+    // Calculations
     let totalSales = 0,
+      totalRevenue = 0,
       totalProducts = 0,
       deliveredProducts = 0,
       cancelledProducts = 0,
@@ -137,21 +135,26 @@ const salesreport = async (req, res) => {
 
         totalProducts++;
         if (product.status === "delivered") {
-          totalSales += productAmount - couponDeductionPerProduct;
+          totalSales += productAmount;
           deliveredProducts++;
         } else if (product.status === "cancelled") {
           cancelledProducts++;
         } else if (product.status === "returned") {
-          totalSales -= productAmount - couponDeductionPerProduct;
+          totalSales -= productAmount;
           returnedProducts++;
           totalRefunds += product.refundAmount || 0;
         }
         totalDiscount +=
           (order.discountAmount || 0) / order.products.length + couponDeductionPerProduct;
+
+        // Revenue calculation: include all statuses except cancelled or returned
+        if (product.status !== "cancelled" && product.status !== "returned") {
+          totalRevenue += productAmount - couponDeductionPerProduct;
+        }
       });
     });
 
-    // ----- pagination -----
+    // Pagination
     const allProducts = allFilteredOrders.flatMap(order =>
       order.products.map(p => ({ ...p, order }))
     );
@@ -162,18 +165,23 @@ const salesreport = async (req, res) => {
           ...p,
           productData: p.product,
           order,
+          revenue: (p.status !== "cancelled" && p.status !== "returned")
+            ? ((p.variant.salePrice || p.variant.varientPrice) * p.quantity) -
+              ((order.couponDiscount || 0) / order.products.length)
+            : 0
         }))
       )
       .sort((a, b) => new Date(b.order.createdAt) - new Date(a.order.createdAt))
       .slice(skip, skip + limit);
 
-    // ----- render page -----
+    // Render page
     res.render("salesreport", {
       period: period || "",
       startDate: startDate || "",
       endDate: endDate || "",
       filterStatus: status || "",
       totalSales: Math.max(totalSales, 0),
+      totalRevenue: Math.max(totalRevenue, 0),
       totalOrders: totalProducts,
       deliveredProducts,
       cancelledProducts,
@@ -189,7 +197,7 @@ const salesreport = async (req, res) => {
     console.error(error);
     res.status(500).send("Server Error");
   }
-};
+};;;
 
 /* -----------------------------------------------------------------
    2. Export (PDF with PDFKit / Excel unchanged)
@@ -202,43 +210,28 @@ const exportSalesReport = async (req, res) => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    // ----- same query building as in salesreport -----
+    // ----- build the same query as in your salesreport -----
     if (period) {
       switch (period) {
         case "daily":
-          query.createdAt = {
-            $gte: today,
-            $lte: new Date(today.getTime() + 24 * 60 * 60 * 1000 - 1),
-          };
+          query.createdAt = { $gte: today, $lte: new Date(today.getTime() + 24 * 60 * 60 * 1000 - 1) };
           break;
         case "weekly":
           const weekStart = new Date(today);
           weekStart.setDate(today.getDate() - today.getDay());
-          query.createdAt = {
-            $gte: weekStart,
-            $lte: new Date(weekStart.getTime() + 7 * 24 * 60 * 60 * 1000 - 1),
-          };
+          query.createdAt = { $gte: weekStart, $lte: new Date(weekStart.getTime() + 7 * 24 * 60 * 60 * 1000 - 1) };
           break;
         case "monthly":
           const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
-          query.createdAt = {
-            $gte: monthStart,
-            $lte: new Date(today.getFullYear(), today.getMonth() + 1, 0, 23, 59, 59),
-          };
+          query.createdAt = { $gte: monthStart, $lte: new Date(today.getFullYear(), today.getMonth() + 1, 0, 23, 59, 59) };
           break;
         case "yearly":
           const yearStart = new Date(today.getFullYear(), 0, 1);
-          query.createdAt = {
-            $gte: yearStart,
-            $lte: new Date(today.getFullYear(), 11, 31, 23, 59, 59),
-          };
+          query.createdAt = { $gte: yearStart, $lte: new Date(today.getFullYear(), 11, 31, 23, 59, 59) };
           break;
         case "custom":
           if (startDate && endDate) {
-            query.createdAt = {
-              $gte: new Date(startDate),
-              $lte: new Date(endDate + "T23:59:59"),
-            };
+            query.createdAt = { $gte: new Date(startDate), $lte: new Date(endDate + "T23:59:59") };
           }
           break;
       }
@@ -250,10 +243,7 @@ const exportSalesReport = async (req, res) => {
       else if (status === "returned") query["products.status"] = "returned";
     }
 
-    let allFilteredOrders = await Order.find(query)
-      .populate("products.product")
-      .populate("user")
-      .lean();
+    let allFilteredOrders = await Order.find(query).populate("products.product").populate("user").lean();
 
     if (status) {
       allFilteredOrders = allFilteredOrders
@@ -265,124 +255,235 @@ const exportSalesReport = async (req, res) => {
         .filter(order => order.products.length > 0);
     }
 
-    /* -------------------------- PDF (PDFKit) -------------------------- */
+    /* ---------------- PDF Export (fixed alignment, dynamic rows) ---------------- */
     if (format === "pdf") {
-      const doc = new PDFDocument({ margin: 40, size: "A4" });
-      const filePath = path.join(
-        __dirname,
-        "../../public/reports/sales-report.pdf"
-      );
+      // ensure reports dir exists
+      const reportsDir = path.join(__dirname, "../../public/reports");
+      if (!fs.existsSync(reportsDir)) fs.mkdirSync(reportsDir, { recursive: true });
 
-      // pipe to a file first (PDF Kit streams to file then we send it)
+      const doc = new PDFDocument({ size: "A4", margin: 30, bufferPages: true });
+      const filePath = path.join(reportsDir, `sales-report.pdf`);
       const stream = fs.createWriteStream(filePath);
       doc.pipe(stream);
 
-      // ---- Header -------------------------------------------------
-      doc
+      // config
+      const pageWidth = doc.page.width - 60; // left+right margin 30 each
+      const startX = 30;
+      let y = 120; // initial y after header
+      const baseRowHeight = 16; // minimum row height
+      const fontSize = 9;
+      const headerFontSize = 10;
+      const titleFontSize = 16;
+      const lineGap = 2;
 
-        .fontSize(18)
-        .font("Helvetica-Bold")
-        .text("FitVibe – Sales Report", { align: "center" });
-      doc.moveDown(0.5);
-      doc
-        .fontSize(12)
-        .font("Helvetica")
-        .text(
-          `Period: ${period || "All Time"} ${
-            startDate && endDate ? `(${startDate} – ${endDate})` : ""
-          }`,
-          { align: "center" }
-        )
-        .text(`Status: ${status || "All"}`, { align: "center" })
-        .moveDown();
-
-      // ---- Table data --------------------------------------------
-      const headers = [
-        "Order ID",
-        "Product",
-        "Size",
-        "Date",
-        "Customer",
-        "Amount",
-        "Coupon",
-        "Payment",
-        "Status",
+      // columns: keys must match row object keys below
+      const columns = [
+        { key: "orderID", header: "Order ID", width: 70, align: "left" },
+        { key: "product", header: "Product", width: 150, align: "left" },
+        { key: "size", header: "Size", width: 30, align: "center" },
+        { key: "date", header: "Date", width: 60, align: "center" },
+        { key: "customer", header: "Customer", width: 80, align: "left" },
+        { key: "amount", header: "Amount", width: 60, align: "right" },
+        { key: "coupon", header: "Coupon", width: 60, align: "right" },
+        { key: "payment", header: "Payment", width: 50, align: "center" },
+        { key: "status", header: "Status", width: 50, align: "center" },
       ];
 
-      const rows = [];
-      let totalDelivered = 0;
+      const totalWidth = columns.reduce((s, c) => s + c.width, 0);
+      const getX = (idx) => startX + columns.slice(0, idx).reduce((s, c) => s + c.width, 0);
 
+      // header function (will be called on first page and after every addPage)
+      const addHeader = () => {
+        y = 120;
+        doc.font("Helvetica-Bold").fontSize(titleFontSize).fillColor("black")
+          .text("FitVibe – Sales Report", startX, 40, { align: "center", width: pageWidth });
+        doc.font("Helvetica").fontSize(9).fillColor("black")
+          .text(`Period: ${period || "All Time"} ${startDate && endDate ? `(${startDate} – ${endDate})` : ""}`, startX, 65, { align: "center", width: pageWidth })
+          .text(`Status: ${status || "All"}`, startX, 80, { align: "center", width: pageWidth });
+
+        // header background
+        doc.save();
+        doc.rect(startX, y - 6, totalWidth, baseRowHeight + 8).fill("#e9e9e9");
+        doc.fillColor("black");
+        doc.font("Helvetica-Bold").fontSize(headerFontSize);
+
+        // header texts
+        columns.forEach((c, i) => {
+          doc.text(c.header, getX(i) + 4, y - 2, { width: c.width - 8, align: c.align });
+        });
+
+        // underline
+        doc.moveTo(startX, y + baseRowHeight + 2).lineTo(startX + totalWidth, y + baseRowHeight + 2).lineWidth(0.8).stroke();
+        doc.restore();
+        y += baseRowHeight + 8; // leave space after header
+      };
+
+      // first header
+      addHeader();
+
+      // set font for body
+      doc.font("Helvetica").fontSize(fontSize).fillColor("black");
+
+      // counters
+      let totalDelivered = 0;
+      let totalDiscount = 0;
+      let productCount = 0;
+      let rowIndex = 0;
+
+      // helper: wrap text into lines fitting width using widthOfString
+      const wrapTextLines = (text, maxWidth) => {
+        if (!text) return [""];
+        const words = String(text).split(" ");
+        const lines = [];
+        let line = "";
+        for (let i = 0; i < words.length; i++) {
+          const word = words[i];
+          const test = line ? line + " " + word : word;
+          const testWidth = doc.widthOfString(test);
+          if (testWidth <= maxWidth) {
+            line = test;
+          } else {
+            if (line) lines.push(line);
+            // if single word longer than width, we need to chop it
+            if (doc.widthOfString(word) > maxWidth) {
+              // chop word into chars until fit
+              let part = "";
+              for (let ch of word) {
+                const t = part + ch;
+                if (doc.widthOfString(t) <= maxWidth) part = t;
+                else {
+                  if (part) lines.push(part);
+                  part = ch;
+                }
+              }
+              if (part) line = part;
+              else line = "";
+            } else {
+              line = word;
+            }
+          }
+        }
+        if (line) lines.push(line);
+        return lines;
+      };
+
+      // iterate orders & products
       allFilteredOrders.forEach(order => {
         order.products.forEach(p => {
-          const price = p.variant.salePrice || p.variant.varientPrice;
-          const amount = price * p.quantity;
-          const couponPerItem = order.couponDiscount
-            ? order.couponDiscount / order.products.length
-            : 0;
+          rowIndex++;
+          productCount++;
 
-          rows.push([
-            order.orderID,
-            p.product?.name || "Unknown",
-            p.variant.size,
-            new Date(order.createdAt).toLocaleDateString("en-IN"),
-            order.user?.name || "Unknown",
-            `₹${amount.toLocaleString("en-IN")}`,
-            `₹${couponPerItem.toLocaleString("en-IN")}`,
-            order.paymentMethod,
-            p.status,
-          ]);
+          const price = p.variant.salePrice || p.variant.varientPrice || 0;
+          const amountVal = price * (p.quantity || 1);
+          const couponPerItem = order.couponDiscount ? order.couponDiscount / order.products.length : 0;
+          const netAmount = amountVal - couponPerItem;
 
-          if (p.status === "delivered") totalDelivered += amount - couponPerItem;
+          if (p.status === "delivered") totalDelivered += netAmount;
+          totalDiscount += (order.discountAmount || 0) / order.products.length + couponPerItem;
+
+          const row = {
+            orderID: order.orderID || "",
+            product: (p.product?.name || "Unknown").replace(/\s+/g, " ").trim(),
+            size: p.variant.size || "",
+            date: new Date(order.createdAt).toLocaleDateString("en-IN"),
+            customer: order.user?.name || "Unknown",
+            amount: `${amountVal.toLocaleString("en-IN")}`,
+            coupon: `${couponPerItem ? couponPerItem.toFixed(2).toLocaleString("en-IN") : "0.00"}`,
+            payment: order.paymentMethod || "",
+            status: p.status || "",
+          };
+
+          // Build wrapped lines for each column and find the max number of lines => dynamic row height
+          const columnLines = columns.map(c => {
+            const maxW = c.width - 8; // padding inside column
+            return wrapTextLines(row[c.key], maxW);
+          });
+          const maxLines = Math.max(...columnLines.map(l => l.length));
+          const lineHeight = fontSize + lineGap;
+          const rowHeightDynamic = Math.max(baseRowHeight, maxLines * lineHeight + 6);
+
+          // Page break check
+          if (y + rowHeightDynamic > doc.page.height - 70) {
+            doc.addPage();
+            addHeader();
+          }
+
+          // Zebra background
+          if (rowIndex % 2 === 0) {
+            doc.save();
+            doc.rect(startX, y - 4, totalWidth, rowHeightDynamic + 4).fill("#fbfbfb");
+            doc.restore();
+          }
+
+          columns.forEach((c, i) => {
+            const lines = columnLines[i];
+            const tx = getX(i) + 4;
+            const ty = y;
+            const maxW = c.width - 8;
+            const textToPrint = lines.join("\n");
+            const align = c.align || "left";
+            doc.text(textToPrint, tx, ty + 2, { width: maxW, align, lineGap });
+          });
+
+          doc.moveTo(startX, y + rowHeightDynamic).lineTo(startX + totalWidth, y + rowHeightDynamic).lineWidth(0.3).stroke();
+
+          y += rowHeightDynamic + 6;
         });
       });
 
-      addTableToPDF(doc, rows, headers);
+      if (y + 120 > doc.page.height - 70) {
+        doc.addPage();
+        addHeader();
+      }
 
-      // ---- Summary ------------------------------------------------
-      doc.addPage();
-      doc.fontSize(14).font("Helvetica-Bold").text("Summary", { underline: true });
-      doc.moveDown(0.5);
-      doc.fontSize(12).font("Helvetica");
+      doc.font("Helvetica-Bold").fontSize(12).fillColor("black").text("Summary", startX, y + 10);
+      const labelX = startX + 10;
+      const valueX = startX + 200;
+      doc.font("Helvetica").fontSize(10).fillColor("black");
 
-      const summary = [
-        ["Total Sales (Delivered)", `₹${totalDelivered.toLocaleString("en-IN")}`],
-        ["Total Products", rows.length],
-        [
-          "Total Discount",
-          `₹${allFilteredOrders
-            .reduce(
-              (s, o) =>
-                s +
-                (o.discountAmount || 0) / o.products.length +
-                (o.couponDiscount || 0) / o.products.length,
-              0
-            )
-            .toLocaleString("en-IN")}`,
-        ],
-      ];
+      doc.text("Total Sales (Delivered):", labelX, y + 40);
+      doc.text(`${totalDelivered.toFixed(2).toLocaleString("en-IN")}`, valueX, y + 40, { width: 150, align: "right" });
 
-      summary.forEach(([label, value]) => {
-        doc.text(`${label}: ${value}`);
-      });
+      doc.text("Total Products:", labelX, y + 70);
+      doc.text(`${productCount}`, valueX, y + 70, { width: 150, align: "right" });
+
+      doc.text("Total Discount:", labelX, y + 100);
+      doc.text(`${totalDiscount.toFixed(2).toLocaleString("en-IN")}`, valueX, y + 100, { width: 150, align: "right" });
+
+      const pages = doc.bufferedPageRange();
+      for (let i = 0; i < pages.count; i++) {
+        doc.switchToPage(i);
+        const footY = doc.page.height - 50;
+        doc.fontSize(8).fillColor("gray")
+          .text(`Page ${i + 1} of ${pages.count}`, startX, footY, { align: "center", width: pageWidth })
+          .text(`Generated on: ${new Date().toLocaleString("en-IN")}`, startX, footY + 12, { align: "center", width: pageWidth });
+      }
 
       doc.end();
 
-      // Wait for the file to be written, then send it
       stream.on("finish", () => {
         res.download(filePath, "sales-report.pdf", err => {
-          if (err) console.error(err);
-          fs.unlink(filePath, () => {}); // clean up
+          if (err) console.error("Download error:", err);
+           fs.unlink(filePath, () => {});
         });
       });
-    }
-    /* -------------------------- EXCEL (unchanged) -------------------------- */
+
+      stream.on("error", err => {
+        console.error("PDF stream error:", err);
+        res.status(500).send("PDF generation failed");
+      });
+
+      return;
+    } // end pdf
+
+    /* ---------------- EXCEL (unchanged) ---------------- */
     else if (format === "excel") {
       const workbook = new excel.Workbook();
       const worksheet = workbook.addWorksheet("Sales Report");
 
       worksheet.columns = [
         { header: "Order ID", key: "orderID", width: 15 },
-        { header: "Product Name", key: "productName", width: 20 },
+        { header: "Product Name", key: "productName", width: 30 },
         { header: "Variant", key: "variant", width: 15 },
         { header: "Date", key: "date", width: 15 },
         { header: "Customer", key: "customer", width: 20 },
@@ -400,63 +501,41 @@ const exportSalesReport = async (req, res) => {
             variant: product.variant.size,
             date: new Date(order.createdAt).toLocaleDateString("en-IN"),
             customer: order.user?.name || "Unknown",
-            amount:
-              (product.variant.salePrice || product.variant.varientPrice) *
-              product.quantity,
-            couponDeduction: order.couponDiscount
-              ? order.couponDiscount / order.products.length
-              : 0,
+            amount: (product.variant.salePrice || product.variant.varientPrice) * product.quantity,
+            couponDeduction: order.couponDiscount ? order.couponDiscount / order.products.length : 0,
             paymentMethod: order.paymentMethod,
             status: product.status,
           });
         });
       });
 
-      // ----- Summary rows -----
       const totalDelivered = allFilteredOrders
         .flatMap(order =>
           order.products
             .filter(p => p.status === "delivered")
-            .map(
-              p =>
-                (p.variant.salePrice || p.variant.varientPrice) * p.quantity -
-                (order.couponDiscount ? order.couponDiscount / order.products.length : 0)
-            )
-        )
-        .reduce((a, b) => a + b, 0);
+            .map(p => (p.variant.salePrice || p.variant.varientPrice) * p.quantity - (order.couponDiscount ? order.couponDiscount / order.products.length : 0))
+        ).reduce((a, b) => a + b, 0);
 
       worksheet.addRow({});
       worksheet.addRow({ productName: "Total Sales", amount: totalDelivered });
-      worksheet.addRow({
-        productName: "Total Products",
-        amount: allFilteredOrders.reduce((s, o) => s + o.products.length, 0),
-      });
-      worksheet.addRow({
-        productName: "Total Discount",
-        amount: allFilteredOrders.reduce(
-          (s, o) =>
-            s +
-            (o.discountAmount || 0) / o.products.length +
-            (o.couponDiscount || 0) / o.products.length,
-          0
-        ),
-      });
+      worksheet.addRow({ productName: "Total Products", amount: allFilteredOrders.reduce((s, o) => s + o.products.length, 0) });
+      worksheet.addRow({ productName: "Total Discount", amount: allFilteredOrders.reduce((s, o) => s + (o.discountAmount || 0) / o.products.length + (o.couponDiscount || 0) / o.products.length, 0) });
 
-      res.setHeader(
-        "Content-Type",
-        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-      );
+      res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
       res.setHeader("Content-Disposition", "attachment; filename=sales-report.xlsx");
       await workbook.xlsx.write(res);
       res.end();
+      return;
     } else {
       res.status(400).send("Invalid export format");
     }
   } catch (error) {
-    console.error(error);
+    console.error("exportSalesReport error:", error);
     res.status(500).send("Server Error");
   }
 };
+
+
 
 module.exports = {
   salesreport,
