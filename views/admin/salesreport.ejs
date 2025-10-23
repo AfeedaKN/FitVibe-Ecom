@@ -229,23 +229,7 @@
             const exportSelect = document.querySelector('.export-select');
             exportSelect.addEventListener('change', (e) => {
                 if (e.target.value) {
-                    Swal.fire({
-                        title: 'Export Report?',
-                        text: `Are you sure you want to export the report as ${e.target.value.toUpperCase()}?`,
-                        icon: 'question',
-                        showCancelButton: true,
-                        confirmButtonColor: '#667eea',
-                        cancelButtonColor: '#64748b',
-                        confirmButtonText: 'Yes, Export',
-                        cancelButtonText: 'Cancel'
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                            exportReport(e.target.value);
-                            e.target.value = '';
-                        } else {
-                            e.target.value = '';
-                        }
-                    });
+                    
                 }
             });
         });
