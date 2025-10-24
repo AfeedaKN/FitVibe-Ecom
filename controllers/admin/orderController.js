@@ -290,7 +290,7 @@ const approveReturn = async (req, res) => {
     let totalRefundAmount = 0;
     let processedItems = 0;
     let couponAlreadyRemoved = order.couponDiscount === 0;
-    let totalReducedAmount = 0; // ✅ to adjust order.finalAmount & totalAmount later
+    let totalReducedAmount = 0; 
 
     for (const item of order.products) {
       if (item.status === "return pending") {
@@ -303,11 +303,11 @@ const approveReturn = async (req, res) => {
         const variant = product.variants.find(v => v.size === variantSize);
         if (!variant) continue;
 
-        // ✅ increase stock
+        
         variant.varientquatity += item.quantity;
         await product.save();
 
-        // ✅ mark as returned
+        
         item.status = "returned";
 
         const returnedItemSubtotal = item.variant.salePrice * item.quantity;
@@ -341,7 +341,7 @@ const approveReturn = async (req, res) => {
 
         totalRefundAmount += refundAmount;
         processedItems++;
-        totalReducedAmount += refundAmount; // ✅ keep track for finalAmount update
+        totalReducedAmount += refundAmount; 
 
         order.statusHistory.push({
           status: "returned",
@@ -356,7 +356,7 @@ const approveReturn = async (req, res) => {
       return res.redirect("/admin/orders");
     }
 
-    // ✅ Update order amounts (same logic as cancel)
+    
     order.finalAmount = Math.max(0, order.finalAmount - totalReducedAmount);
     order.totalAmount = Math.max(0, order.totalAmount - totalReducedAmount);
 
@@ -371,7 +371,7 @@ const approveReturn = async (req, res) => {
       order.orderStatus = "delivered";
     }
 
-    // ✅ Refund to wallet
+    
     const userId = order.user;
     let wallet = await Wallet.findOne({ userId });
     if (!wallet) {
@@ -393,7 +393,7 @@ const approveReturn = async (req, res) => {
 
     order.refundAmount = (order.refundAmount || 0) + totalRefundAmount;
     order.refundStatus = "processed";
-    await order.save(); // ✅ now saving updated order values (includes finalAmount)
+    await order.save(); 
 
     const successMessage = allReturned
       ? `Return approved. ₹${totalRefundAmount.toFixed(2)} refunded (including shipping if applicable).`

@@ -232,7 +232,7 @@ const updateCart = async (req, res) => {
         console.log(cartItem.quantity);
         await cart.save();
 
-        // Recalculate totals after update
+        
         const updatedCart = await Cart.findOne({ userId: user._id }).populate({
             path: 'items.productId',
             model: 'Product'

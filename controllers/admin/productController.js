@@ -373,7 +373,7 @@ const updateProduct = async (req, res) => {
       croppedImage3
     } = req.body;
 
-    // Validations
+    
     if (!name || !description || !category || !color) {
       req.flash("error_msg", "All required fields must be filled");
       return res.redirect(`/admin/editproducts?id=${productId}`);
@@ -401,7 +401,7 @@ const updateProduct = async (req, res) => {
       return res.redirect(`/admin/editproducts?id=${productId}`);
     }
 
-    // Variants
+    
     const variantPrices = req.body.varientPrice || {};
     const sizes = req.body.sizes || {};
     const variants = [];
@@ -423,7 +423,7 @@ const updateProduct = async (req, res) => {
       return res.redirect(`/admin/editproducts?id=${productId}`);
     }
 
-    // Images
+    
     const product = await Product.findById(productObjectId);
     let images = product.images || [];
     let deletedIndices = [];
@@ -460,7 +460,7 @@ const updateProduct = async (req, res) => {
       }
     }
 
-    // Cropped Images
+    
     const croppedBase64 = [croppedImage1, croppedImage2, croppedImage3].filter(Boolean);
     const newImages = [];
     
@@ -511,14 +511,14 @@ const updateProduct = async (req, res) => {
       return res.redirect(`/admin/editproducts?id=${productId}`);
     }
 
-    // Tags
+    
     const tagArray = tags
       ? typeof tags === "string"
         ? tags.split(",").map(t => t.trim()).filter(Boolean)
         : Array.isArray(tags) ? tags.map(t => t.trim()).filter(Boolean) : []
       : [];
 
-    // Update Product
+    
     const updatedProduct = await Product.findById(productObjectId);
     updatedProduct.name = name;
     updatedProduct.description = description;

@@ -4,40 +4,6 @@ const path = require("path");
 const PDFDocument = require("pdfkit");        
 const excel = require("exceljs");
 
-/* -----------------------------------------------------------------
-   Helper – builds a PDF table with PDFKit
-   ----------------------------------------------------------------- */
-function addTableToPDF(doc, rows, headers, startY = 120) {
-  const colWidths = [80, 110, 60, 70, 90, 70, 70, 70, 60];
-  const startX = 40;
-  let y = startY;
-
-  // ---- Header ----------------------------------------------------
-  doc.font("Helvetica-Bold").fontSize(10);
-  headers.forEach((h, i) => {
-    doc.text(h, startX + colWidths.slice(0, i).reduce((a, b) => a + b, 0), y);
-  });
-  y += 20;
-  doc.moveTo(startX, y - 5).lineTo(570, y - 5).stroke();
-
-  // ---- Rows -------------------------------------------------------
-  doc.font("Helvetica").fontSize(9);
-  rows.forEach(row => {
-    row.forEach((cell, i) => {
-      const x = startX + colWidths.slice(0, i).reduce((a, b) => a + b, 0);
-      doc.text(String(cell), x, y, { width: colWidths[i], align: "left" });
-    });
-    y += 18;
-    if (y > 750) {               // page break
-      doc.addPage();
-      y = 60;
-    }
-  });
-}
-
-/* -----------------------------------------------------------------
-   1. Render the sales-report page (unchanged)
-   ----------------------------------------------------------------- */
 const salesreport = async (req, res) => {
   try {
     const { startDate, endDate, status, period } = req.query;
@@ -45,7 +11,7 @@ const salesreport = async (req, res) => {
     const limit = 10;
     const skip = (page - 1) * limit;
 
-    // Build query
+    
     let query = {};
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -97,13 +63,13 @@ const salesreport = async (req, res) => {
       else if (status === "returned") query["products.status"] = "returned";
     }
 
-    // Fetch orders
+    
     let allFilteredOrders = await Order.find(query)
       .populate({ path: "products.product", select: "name" })
       .populate("user")
       .lean();
 
-    // Filter by status
+    
     if (status) {
       allFilteredOrders = allFilteredOrders
         .map(order => {
@@ -115,7 +81,7 @@ const salesreport = async (req, res) => {
         .filter(order => order.products.length > 0);
     }
 
-    // Calculations
+    
     let totalSales = 0,
       totalRevenue = 0,
       totalProducts = 0,
@@ -147,14 +113,14 @@ const salesreport = async (req, res) => {
         totalDiscount +=
           (order.discountAmount || 0) / order.products.length + couponDeductionPerProduct;
 
-        // Revenue calculation: include all statuses except cancelled or returned
+        
         if (product.status !== "cancelled" && product.status !== "returned") {
           totalRevenue += productAmount - couponDeductionPerProduct;
         }
       });
     });
 
-    // Pagination
+    
     const allProducts = allFilteredOrders.flatMap(order =>
       order.products.map(p => ({ ...p, order }))
     );
@@ -174,7 +140,7 @@ const salesreport = async (req, res) => {
       .sort((a, b) => new Date(b.order.createdAt) - new Date(a.order.createdAt))
       .slice(skip, skip + limit);
 
-    // Render page
+    
     res.render("salesreport", {
       period: period || "",
       startDate: startDate || "",
@@ -197,11 +163,9 @@ const salesreport = async (req, res) => {
     console.error(error);
     res.status(500).send("Server Error");
   }
-};;;
+};
 
-/* -----------------------------------------------------------------
-   2. Export (PDF with PDFKit / Excel unchanged)
-   ----------------------------------------------------------------- */
+
 const exportSalesReport = async (req, res) => {
   try {
     const { startDate, endDate, status, period, format } = req.query;
@@ -210,7 +174,7 @@ const exportSalesReport = async (req, res) => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    // ----- build the same query as in your salesreport -----
+    
     if (period) {
       switch (period) {
         case "daily":
@@ -255,9 +219,9 @@ const exportSalesReport = async (req, res) => {
         .filter(order => order.products.length > 0);
     }
 
-    /* ---------------- PDF Export (fixed alignment, dynamic rows) ---------------- */
+    
     if (format === "pdf") {
-      // ensure reports dir exists
+      
       const reportsDir = path.join(__dirname, "../../public/reports");
       if (!fs.existsSync(reportsDir)) fs.mkdirSync(reportsDir, { recursive: true });
 
@@ -266,17 +230,17 @@ const exportSalesReport = async (req, res) => {
       const stream = fs.createWriteStream(filePath);
       doc.pipe(stream);
 
-      // config
-      const pageWidth = doc.page.width - 60; // left+right margin 30 each
+      
+      const pageWidth = doc.page.width - 60; 
       const startX = 30;
-      let y = 120; // initial y after header
-      const baseRowHeight = 16; // minimum row height
+      let y = 120; 
+      const baseRowHeight = 16; 
       const fontSize = 9;
       const headerFontSize = 10;
       const titleFontSize = 16;
       const lineGap = 2;
 
-      // columns: keys must match row object keys below
+      
       const columns = [
         { key: "orderID", header: "Order ID", width: 70, align: "left" },
         { key: "product", header: "Product", width: 150, align: "left" },
@@ -292,7 +256,7 @@ const exportSalesReport = async (req, res) => {
       const totalWidth = columns.reduce((s, c) => s + c.width, 0);
       const getX = (idx) => startX + columns.slice(0, idx).reduce((s, c) => s + c.width, 0);
 
-      // header function (will be called on first page and after every addPage)
+      
       const addHeader = () => {
         y = 120;
         doc.font("Helvetica-Bold").fontSize(titleFontSize).fillColor("black")
@@ -301,36 +265,36 @@ const exportSalesReport = async (req, res) => {
           .text(`Period: ${period || "All Time"} ${startDate && endDate ? `(${startDate} – ${endDate})` : ""}`, startX, 65, { align: "center", width: pageWidth })
           .text(`Status: ${status || "All"}`, startX, 80, { align: "center", width: pageWidth });
 
-        // header background
+        
         doc.save();
         doc.rect(startX, y - 6, totalWidth, baseRowHeight + 8).fill("#e9e9e9");
         doc.fillColor("black");
         doc.font("Helvetica-Bold").fontSize(headerFontSize);
 
-        // header texts
+        
         columns.forEach((c, i) => {
           doc.text(c.header, getX(i) + 4, y - 2, { width: c.width - 8, align: c.align });
         });
 
-        // underline
+        
         doc.moveTo(startX, y + baseRowHeight + 2).lineTo(startX + totalWidth, y + baseRowHeight + 2).lineWidth(0.8).stroke();
         doc.restore();
-        y += baseRowHeight + 8; // leave space after header
+        y += baseRowHeight + 8; 
       };
 
-      // first header
+      
       addHeader();
 
-      // set font for body
+      
       doc.font("Helvetica").fontSize(fontSize).fillColor("black");
 
-      // counters
+      
       let totalDelivered = 0;
       let totalDiscount = 0;
       let productCount = 0;
       let rowIndex = 0;
 
-      // helper: wrap text into lines fitting width using widthOfString
+      
       const wrapTextLines = (text, maxWidth) => {
         if (!text) return [""];
         const words = String(text).split(" ");
@@ -344,9 +308,9 @@ const exportSalesReport = async (req, res) => {
             line = test;
           } else {
             if (line) lines.push(line);
-            // if single word longer than width, we need to chop it
+            
             if (doc.widthOfString(word) > maxWidth) {
-              // chop word into chars until fit
+              
               let part = "";
               for (let ch of word) {
                 const t = part + ch;
@@ -367,7 +331,7 @@ const exportSalesReport = async (req, res) => {
         return lines;
       };
 
-      // iterate orders & products
+      
       allFilteredOrders.forEach(order => {
         order.products.forEach(p => {
           rowIndex++;
@@ -393,22 +357,22 @@ const exportSalesReport = async (req, res) => {
             status: p.status || "",
           };
 
-          // Build wrapped lines for each column and find the max number of lines => dynamic row height
+          
           const columnLines = columns.map(c => {
-            const maxW = c.width - 8; // padding inside column
+            const maxW = c.width - 8; 
             return wrapTextLines(row[c.key], maxW);
           });
           const maxLines = Math.max(...columnLines.map(l => l.length));
           const lineHeight = fontSize + lineGap;
           const rowHeightDynamic = Math.max(baseRowHeight, maxLines * lineHeight + 6);
 
-          // Page break check
+          
           if (y + rowHeightDynamic > doc.page.height - 70) {
             doc.addPage();
             addHeader();
           }
 
-          // Zebra background
+          
           if (rowIndex % 2 === 0) {
             doc.save();
             doc.rect(startX, y - 4, totalWidth, rowHeightDynamic + 4).fill("#fbfbfb");
@@ -474,9 +438,9 @@ const exportSalesReport = async (req, res) => {
       });
 
       return;
-    } // end pdf
+    } 
 
-    /* ---------------- EXCEL (unchanged) ---------------- */
+    
     else if (format === "excel") {
       const workbook = new excel.Workbook();
       const worksheet = workbook.addWorksheet("Sales Report");
