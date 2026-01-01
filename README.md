@@ -458,3 +458,27 @@ GitHub: AfeedaKN
 - Keep shared utilities reusable.
 - Maintain consistent naming conventions.
 
+<<<<<<< HEAD
+=======
+
+## Project Structure
+
+- Organize routes, controllers, models, and services clearly.
+- Keep shared utilities reusable.
+- Maintain consistent naming conventions.
+
+
+## Project Structure
+
+- Organize routes, controllers, models, and services clearly.
+- Keep shared utilities reusable.
+- Maintain consistent naming conventions.
+
+>>>>>>> 7477bcb (docs: document project structure)
+
+## Project Structure
+
+- Organize routes, controllers, models, and services clearly.
+- Keep shared utilities reusable.
+- Maintain consistent naming conventions.
+
