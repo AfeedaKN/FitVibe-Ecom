@@ -482,3 +482,10 @@ GitHub: AfeedaKN
 - Keep shared utilities reusable.
 - Maintain consistent naming conventions.
 
+
+## Authentication
+
+- Verify user credentials securely.
+- Protect private routes.
+- Handle expired sessions safely.
+
