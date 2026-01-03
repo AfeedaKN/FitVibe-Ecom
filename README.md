@@ -489,3 +489,10 @@ GitHub: AfeedaKN
 - Protect private routes.
 - Handle expired sessions safely.
 
+
+## Authorization
+
+- Restrict administrative operations.
+- Verify permissions before sensitive actions.
+- Prevent unauthorized access to user data.
+
