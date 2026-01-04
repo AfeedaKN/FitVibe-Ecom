@@ -496,3 +496,10 @@ GitHub: AfeedaKN
 - Verify permissions before sensitive actions.
 - Prevent unauthorized access to user data.
 
+
+## Product Management
+
+- Validate product details before saving.
+- Maintain consistent product information.
+- Handle unavailable products safely.
+
