@@ -503,3 +503,10 @@ GitHub: AfeedaKN
 - Maintain consistent product information.
 - Handle unavailable products safely.
 
+
+## Product Variants
+
+- Validate available sizes and colors.
+- Associate variants with the correct product.
+- Check stock before accepting purchases.
+
