@@ -510,3 +510,10 @@ GitHub: AfeedaKN
 - Associate variants with the correct product.
 - Check stock before accepting purchases.
 
+
+## Image Uploads
+
+- Validate uploaded image formats.
+- Enforce file size limits.
+- Handle image upload failures safely.
+
