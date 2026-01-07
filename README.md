@@ -517,3 +517,10 @@ GitHub: AfeedaKN
 - Enforce file size limits.
 - Handle image upload failures safely.
 
+
+## Product Search
+
+- Support relevant product searches.
+- Handle empty search results.
+- Validate search parameters.
+
