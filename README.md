@@ -524,3 +524,10 @@ GitHub: AfeedaKN
 - Handle empty search results.
 - Validate search parameters.
 
+
+## Shopping Cart
+
+- Validate product quantities.
+- Recalculate prices on the server.
+- Check stock before checkout.
+
