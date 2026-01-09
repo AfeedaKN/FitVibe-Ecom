@@ -531,3 +531,10 @@ GitHub: AfeedaKN
 - Recalculate prices on the server.
 - Check stock before checkout.
 
+
+## Wishlist
+
+- Associate wishlist items with the correct user.
+- Handle deleted products safely.
+- Prevent unauthorized wishlist modifications.
+
