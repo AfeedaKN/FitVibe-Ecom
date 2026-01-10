@@ -538,3 +538,10 @@ GitHub: AfeedaKN
 - Handle deleted products safely.
 - Prevent unauthorized wishlist modifications.
 
+
+## Coupon Management
+
+- Validate coupon expiry dates.
+- Enforce usage limits.
+- Apply discounts according to eligibility rules.
+
