@@ -545,3 +545,10 @@ GitHub: AfeedaKN
 - Enforce usage limits.
 - Apply discounts according to eligibility rules.
 
+
+## Checkout
+
+- Calculate order totals on the server.
+- Validate shipping addresses.
+- Recheck product availability before placing orders.
+
