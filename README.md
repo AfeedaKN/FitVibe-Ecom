@@ -552,3 +552,10 @@ GitHub: AfeedaKN
 - Validate shipping addresses.
 - Recheck product availability before placing orders.
 
+
+## Order Management
+
+- Maintain clear order statuses.
+- Validate status transitions.
+- Preserve order details for future reference.
+
