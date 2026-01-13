@@ -559,3 +559,10 @@ GitHub: AfeedaKN
 - Validate status transitions.
 - Preserve order details for future reference.
 
+
+## Payment Processing
+
+- Verify payment responses on the server.
+- Handle failed and cancelled payments.
+- Prevent duplicate payment processing.
+
