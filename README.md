@@ -566,3 +566,10 @@ GitHub: AfeedaKN
 - Handle failed and cancelled payments.
 - Prevent duplicate payment processing.
 
+
+## Wallet Management
+
+- Maintain transaction history.
+- Validate available balance before debiting.
+- Keep wallet balances consistent with transactions.
+
