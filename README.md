@@ -573,3 +573,10 @@ GitHub: AfeedaKN
 - Validate available balance before debiting.
 - Keep wallet balances consistent with transactions.
 
+
+## Order Cancellation
+
+- Validate cancellation eligibility.
+- Update order status consistently.
+- Handle stock restoration and refunds correctly.
+
