@@ -587,3 +587,10 @@ GitHub: AfeedaKN
 - Calculate refunds from the correct order data.
 - Preserve original order totals.
 
+
+## User Management
+
+- Validate user profile updates.
+- Protect private user information.
+- Apply account restrictions consistently.
+
