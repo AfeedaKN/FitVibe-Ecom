@@ -594,3 +594,10 @@ GitHub: AfeedaKN
 - Protect private user information.
 - Apply account restrictions consistently.
 
+
+## Admin Product Management
+
+- Validate product creation and editing.
+- Keep product variants consistent.
+- Handle product deletion safely.
+
