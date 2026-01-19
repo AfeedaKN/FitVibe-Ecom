@@ -601,3 +601,10 @@ GitHub: AfeedaKN
 - Keep product variants consistent.
 - Handle product deletion safely.
 
+
+## Admin User Management
+
+- Restrict account management to authorized administrators.
+- Validate user search parameters.
+- Handle blocked accounts consistently.
+
