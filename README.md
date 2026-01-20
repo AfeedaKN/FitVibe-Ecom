@@ -608,3 +608,10 @@ GitHub: AfeedaKN
 - Validate user search parameters.
 - Handle blocked accounts consistently.
 
+
+## Sales Reports
+
+- Calculate revenue from valid order records.
+- Define how cancelled orders affect reports.
+- Validate top-selling product calculations.
+
