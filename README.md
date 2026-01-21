@@ -615,3 +615,10 @@ GitHub: AfeedaKN
 - Define how cancelled orders affect reports.
 - Validate top-selling product calculations.
 
+
+## Database Performance
+
+- Review frequently used database queries.
+- Add indexes when query patterns justify them.
+- Avoid unnecessary database operations.
+
