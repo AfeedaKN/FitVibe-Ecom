@@ -622,3 +622,10 @@ GitHub: AfeedaKN
 - Add indexes when query patterns justify them.
 - Avoid unnecessary database operations.
 
+
+## Security Practices
+
+- Store secrets outside source code.
+- Validate incoming requests.
+- Avoid exposing sensitive information in error responses.
+
