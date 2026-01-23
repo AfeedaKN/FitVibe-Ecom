@@ -629,3 +629,10 @@ GitHub: AfeedaKN
 - Validate incoming requests.
 - Avoid exposing sensitive information in error responses.
 
+
+## Responsive Design
+
+- Support common mobile and desktop screen sizes.
+- Keep product cards readable.
+- Make cart and checkout forms usable on small screens.
+
