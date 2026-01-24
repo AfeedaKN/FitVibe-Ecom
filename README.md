@@ -636,3 +636,10 @@ GitHub: AfeedaKN
 - Keep product cards readable.
 - Make cart and checkout forms usable on small screens.
 
+
+## Form Validation
+
+- Validate required fields.
+- Display clear validation messages.
+- Repeat important validation on the server.
+
