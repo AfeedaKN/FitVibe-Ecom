@@ -643,3 +643,10 @@ GitHub: AfeedaKN
 - Display clear validation messages.
 - Repeat important validation on the server.
 
+
+## Error Handling
+
+- Return appropriate HTTP status codes.
+- Handle expected failures consistently.
+- Keep internal error details private.
+
