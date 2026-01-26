@@ -650,3 +650,10 @@ GitHub: AfeedaKN
 - Handle expected failures consistently.
 - Keep internal error details private.
 
+
+## Automated Testing
+
+- Test important business rules.
+- Cover invalid inputs and edge cases.
+- Verify coupon and checkout calculations.
+
