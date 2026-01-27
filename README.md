@@ -657,3 +657,10 @@ GitHub: AfeedaKN
 - Cover invalid inputs and edge cases.
 - Verify coupon and checkout calculations.
 
+
+## Workflow Testing
+
+- Test checkout and payment failure paths.
+- Verify cancellation and refund behavior.
+- Check order status transitions.
+
