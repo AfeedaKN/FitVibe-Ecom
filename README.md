@@ -664,3 +664,10 @@ GitHub: AfeedaKN
 - Verify cancellation and refund behavior.
 - Check order status transitions.
 
+
+## Code Quality
+
+- Use meaningful names.
+- Keep functions focused.
+- Reuse shared validation and calculation logic.
+
