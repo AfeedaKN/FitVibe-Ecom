@@ -671,3 +671,10 @@ GitHub: AfeedaKN
 - Keep functions focused.
 - Reuse shared validation and calculation logic.
 
+
+## Project Setup
+
+- Document required dependencies.
+- Explain environment configuration.
+- Keep installation instructions accurate.
+
