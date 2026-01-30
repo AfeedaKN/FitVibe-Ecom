@@ -678,3 +678,10 @@ GitHub: AfeedaKN
 - Explain environment configuration.
 - Keep installation instructions accurate.
 
+
+## Regression Testing
+
+- Verify product browsing and cart operations.
+- Test critical checkout and order flows.
+- Fix regressions before release.
+
