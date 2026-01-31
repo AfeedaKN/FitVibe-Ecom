@@ -685,3 +685,10 @@ GitHub: AfeedaKN
 - Test critical checkout and order flows.
 - Fix regressions before release.
 
+
+## Release Readiness
+
+- Review application configuration.
+- Verify critical customer and admin workflows.
+- Confirm project documentation matches the implementation.
+
