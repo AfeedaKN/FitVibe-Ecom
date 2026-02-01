@@ -692,3 +692,10 @@ GitHub: AfeedaKN
 - Verify critical customer and admin workflows.
 - Confirm project documentation matches the implementation.
 
+
+## Backend Architecture
+
+- Separate routes, controllers, and models.
+- Keep business logic organized.
+- Reuse shared utilities where appropriate.
+
