@@ -911,3 +911,10 @@ GitHub: AfeedaKN
 - Keep business logic organized.
 - Reuse shared utilities where appropriate.
 
+
+## Authentication and Sessions
+
+- Verify user credentials securely.
+- Manage authenticated sessions.
+- Handle session expiration and logout.
+
