@@ -706,3 +706,10 @@ GitHub: AfeedaKN
 - Manage authenticated sessions.
 - Handle session expiration and logout.
 
+
+## Admin Authorization
+
+- Restrict administrative routes.
+- Verify permissions before sensitive actions.
+- Prevent unauthorized access to admin operations.
+
