@@ -932,3 +932,10 @@ GitHub: AfeedaKN
 - Check available sizes and colors.
 - Prevent invalid variant and stock values.
 
+
+## Product Image Uploads
+
+- Validate image formats and file sizes.
+- Handle Cloudinary upload failures.
+- Keep product image references consistent.
+
