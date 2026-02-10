@@ -713,3 +713,10 @@ GitHub: AfeedaKN
 - Verify permissions before sensitive actions.
 - Prevent unauthorized access to admin operations.
 
+
+## Product and Variant Validation
+
+- Validate product details before saving.
+- Check available sizes and colors.
+- Prevent invalid variant and stock values.
+
