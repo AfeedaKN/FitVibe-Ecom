@@ -946,3 +946,10 @@ GitHub: AfeedaKN
 - Recheck stock before checkout.
 - Calculate cart prices on the server.
 
+
+## Wishlist Management
+
+- Associate wishlist entries with the correct user.
+- Validate product references.
+- Restrict wishlist changes to authorized users.
+
