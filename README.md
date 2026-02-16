@@ -727,3 +727,10 @@ GitHub: AfeedaKN
 - Handle Cloudinary upload failures.
 - Keep product image references consistent.
 
+
+## Cart Validation
+
+- Validate requested product quantities.
+- Recheck stock before checkout.
+- Calculate cart prices on the server.
+
