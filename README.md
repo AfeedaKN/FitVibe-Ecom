@@ -961,3 +961,10 @@ GitHub: AfeedaKN
 - Validate minimum purchase requirements.
 - Apply eligible discounts correctly.
 
+
+## Checkout Calculations
+
+- Calculate subtotal and discounts on the server.
+- Include applicable delivery charges.
+- Validate final totals before creating an order.
+
