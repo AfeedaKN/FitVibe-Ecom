@@ -968,3 +968,10 @@ GitHub: AfeedaKN
 - Include applicable delivery charges.
 - Validate final totals before creating an order.
 
+
+## Order Creation
+
+- Validate cart items before placing orders.
+- Keep order totals consistent with checkout.
+- Maintain stock consistency during order creation.
+
