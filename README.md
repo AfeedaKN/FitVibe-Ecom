@@ -741,3 +741,11 @@ GitHub: AfeedaKN
 - Validate product references.
 - Restrict wishlist changes to authorized users.
 
+
+## Coupon Validation
+
+- Check coupon expiry dates.
+- Enforce usage limits.
+- Validate minimum purchase requirements.
+- Apply eligible discounts correctly.
+
