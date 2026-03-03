@@ -763,3 +763,10 @@ GitHub: AfeedaKN
 - Keep order totals consistent with checkout.
 - Maintain stock consistency during order creation.
 
+
+## Razorpay Payment Verification
+
+- Verify payment signatures on the server.
+- Handle unsuccessful payment attempts.
+- Prevent duplicate payment processing.
+
