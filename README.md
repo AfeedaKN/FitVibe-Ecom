@@ -989,3 +989,10 @@ GitHub: AfeedaKN
 - Record credit and debit transactions.
 - Keep transaction history consistent with wallet balances.
 
+
+## Cash on Delivery
+
+- Validate COD eligibility during checkout.
+- Enforce configured order-value restrictions.
+- Recheck payment rules before placing orders.
+
