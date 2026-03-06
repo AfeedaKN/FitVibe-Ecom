@@ -770,3 +770,10 @@ GitHub: AfeedaKN
 - Handle unsuccessful payment attempts.
 - Prevent duplicate payment processing.
 
+
+## Wallet Transactions
+
+- Validate the available balance before debiting.
+- Record credit and debit transactions.
+- Keep transaction history consistent with wallet balances.
+
