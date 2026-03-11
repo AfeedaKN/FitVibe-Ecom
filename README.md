@@ -996,3 +996,10 @@ GitHub: AfeedaKN
 - Enforce configured order-value restrictions.
 - Recheck payment rules before placing orders.
 
+
+## Order Cancellation
+
+- Validate whether an order can be cancelled.
+- Update order status consistently.
+- Handle stock restoration and applicable refunds.
+
