@@ -791,3 +791,10 @@ GitHub: AfeedaKN
 - Update order status consistently.
 - Handle stock restoration and applicable refunds.
 
+
+## Returns and Refunds
+
+- Validate return eligibility and order status.
+- Calculate refunds using the correct order data.
+- Preserve original order totals.
+
