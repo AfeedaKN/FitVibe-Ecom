@@ -1017,3 +1017,10 @@ GitHub: AfeedaKN
 - Maintain product variant consistency.
 - Handle product images and category references correctly.
 
+
+## User Management
+
+- Validate user search parameters.
+- Support appropriate user management operations.
+- Restrict sensitive actions to authorized administrators.
+
