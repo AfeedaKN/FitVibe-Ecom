@@ -1024,3 +1024,10 @@ GitHub: AfeedaKN
 - Support appropriate user management operations.
 - Restrict sensitive actions to authorized administrators.
 
+
+## Sales Reports
+
+- Aggregate order and revenue information accurately.
+- Define how cancelled and returned orders are counted.
+- Validate top-selling product calculations.
+
