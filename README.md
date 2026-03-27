@@ -819,3 +819,10 @@ GitHub: AfeedaKN
 - Define how cancelled and returned orders are counted.
 - Validate top-selling product calculations.
 
+
+## MongoDB Query Optimization
+
+- Review frequently used database queries.
+- Add indexes when justified by query patterns.
+- Avoid unnecessary database operations.
+
