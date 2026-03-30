@@ -826,3 +826,10 @@ GitHub: AfeedaKN
 - Add indexes when justified by query patterns.
 - Avoid unnecessary database operations.
 
+
+## Responsive EJS Pages
+
+- Support common mobile and desktop screen sizes.
+- Keep product and order information readable.
+- Make checkout forms usable on smaller screens.
+
