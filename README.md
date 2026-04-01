@@ -1045,3 +1045,10 @@ GitHub: AfeedaKN
 - Keep product and order information readable.
 - Make checkout forms usable on smaller screens.
 
+
+## Form Validation
+
+- Validate required fields.
+- Display clear and useful validation messages.
+- Repeat important validation on the server.
+
