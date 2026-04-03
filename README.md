@@ -1052,3 +1052,10 @@ GitHub: AfeedaKN
 - Display clear and useful validation messages.
 - Repeat important validation on the server.
 
+
+## Error Handling
+
+- Handle expected errors consistently.
+- Return appropriate HTTP status codes.
+- Avoid exposing internal implementation details.
+
