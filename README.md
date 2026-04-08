@@ -847,3 +847,10 @@ GitHub: AfeedaKN
 - Return appropriate HTTP status codes.
 - Avoid exposing internal implementation details.
 
+
+## Business Logic Testing
+
+- Test coupon eligibility and discount calculations.
+- Test cart and stock validation.
+- Cover invalid inputs and edge cases.
+
