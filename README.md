@@ -854,3 +854,10 @@ GitHub: AfeedaKN
 - Test cart and stock validation.
 - Cover invalid inputs and edge cases.
 
+
+## Checkout Workflow Testing
+
+- Test successful and unsuccessful checkout attempts.
+- Verify payment failure handling.
+- Test order creation and stock consistency.
+
