@@ -1087,3 +1087,11 @@ GitHub: AfeedaKN
 - Explain required request fields.
 - Describe expected responses and error cases.
 
+
+## Security Review
+
+- Review authentication and authorization rules.
+- Keep secrets outside source code.
+- Validate uploaded files and incoming requests.
+- Protect sensitive user information.
+
