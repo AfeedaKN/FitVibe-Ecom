@@ -868,3 +868,10 @@ GitHub: AfeedaKN
 - Reuse common validation and calculation logic.
 - Keep functions focused on one responsibility.
 
+
+## API Documentation
+
+- Document endpoint URLs and HTTP methods.
+- Explain required request fields.
+- Describe expected responses and error cases.
+
