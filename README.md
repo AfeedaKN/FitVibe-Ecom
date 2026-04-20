@@ -1095,3 +1095,10 @@ GitHub: AfeedaKN
 - Validate uploaded files and incoming requests.
 - Protect sensitive user information.
 
+
+## Regression Testing
+
+- Verify product browsing and cart operations.
+- Test checkout, cancellation, and refund workflows.
+- Check that new changes do not break existing features.
+
