@@ -1109,3 +1109,10 @@ GitHub: AfeedaKN
 - Explain environment variable setup.
 - Provide accurate installation and startup instructions.
 
+
+## Installation and Configuration
+
+- Document required dependencies.
+- Explain environment variable setup.
+- Provide accurate installation and startup instructions.
+
