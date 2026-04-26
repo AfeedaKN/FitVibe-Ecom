@@ -890,3 +890,10 @@ GitHub: AfeedaKN
 - Test checkout, cancellation, and refund workflows.
 - Check that new changes do not break existing features.
 
+
+## Installation and Configuration
+
+- Document required dependencies.
+- Explain environment variable setup.
+- Provide accurate installation and startup instructions.
+
