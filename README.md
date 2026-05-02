@@ -1327,3 +1327,10 @@ GitHub: AfeedaKN
 - Reuse common validation functions.
 - Avoid duplicated calculations.
 
+
+## Backend Structure and MVC
+
+- Organize routes, controllers, and models.
+- Separate business logic from request handling.
+- Keep shared utilities reusable.
+
