@@ -1334,3 +1334,10 @@ GitHub: AfeedaKN
 - Separate business logic from request handling.
 - Keep shared utilities reusable.
 
+
+## Authentication and Sessions
+
+- Verify user credentials securely.
+- Manage sessions safely.
+- Handle session expiration and logout.
+
