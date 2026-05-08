@@ -1348,3 +1348,10 @@ GitHub: AfeedaKN
 - Check user roles before sensitive operations.
 - Prevent unauthorized access to admin features.
 
+
+## Product and Variant Validation
+
+- Validate product details before saving.
+- Check available sizes and colors.
+- Prevent invalid variant quantities.
+
