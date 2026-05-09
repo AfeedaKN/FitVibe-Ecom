@@ -1355,3 +1355,10 @@ GitHub: AfeedaKN
 - Check available sizes and colors.
 - Prevent invalid variant quantities.
 
+
+## Cloudinary Image Uploads
+
+- Validate uploaded image formats.
+- Enforce image size limits.
+- Handle upload failures safely.
+
