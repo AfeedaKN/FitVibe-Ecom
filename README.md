@@ -1362,3 +1362,10 @@ GitHub: AfeedaKN
 - Enforce image size limits.
 - Handle upload failures safely.
 
+
+## Cart Quantity and Stock
+
+- Validate requested product quantities.
+- Recheck stock before checkout.
+- Calculate cart prices on the server.
+
