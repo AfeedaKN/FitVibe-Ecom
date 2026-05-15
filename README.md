@@ -1369,3 +1369,10 @@ GitHub: AfeedaKN
 - Recheck stock before checkout.
 - Calculate cart prices on the server.
 
+
+## Wishlist Ownership
+
+- Associate wishlist items with the correct user.
+- Prevent unauthorized wishlist modifications.
+- Handle unavailable products safely.
+
