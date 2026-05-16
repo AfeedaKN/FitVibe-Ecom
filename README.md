@@ -1376,3 +1376,10 @@ GitHub: AfeedaKN
 - Prevent unauthorized wishlist modifications.
 - Handle unavailable products safely.
 
+
+## Coupon Validation
+
+- Check coupon expiration.
+- Enforce usage limits.
+- Validate minimum purchase requirements.
+
