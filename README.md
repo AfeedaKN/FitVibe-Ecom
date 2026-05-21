@@ -1390,3 +1390,10 @@ GitHub: AfeedaKN
 - Include applicable delivery charges.
 - Validate final order totals before payment.
 
+
+## Order Creation and Stock Consistency
+
+- Validate products before creating orders.
+- Keep order and stock updates consistent.
+- Handle failed order creation safely.
+
