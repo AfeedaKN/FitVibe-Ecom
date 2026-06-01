@@ -1397,3 +1397,10 @@ GitHub: AfeedaKN
 - Keep order and stock updates consistent.
 - Handle failed order creation safely.
 
+
+## Razorpay Payment Verification
+
+- Verify payment signatures on the server.
+- Handle unsuccessful payments.
+- Prevent duplicate payment processing.
+
