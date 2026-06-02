@@ -1404,3 +1404,10 @@ GitHub: AfeedaKN
 - Handle unsuccessful payments.
 - Prevent duplicate payment processing.
 
+
+## Wallet Transaction Integrity
+
+- Validate available balance before debiting.
+- Record wallet transactions consistently.
+- Keep balance updates and transaction history synchronized.
+
