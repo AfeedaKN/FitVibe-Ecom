@@ -1411,3 +1411,10 @@ GitHub: AfeedaKN
 - Record wallet transactions consistently.
 - Keep balance updates and transaction history synchronized.
 
+
+## Cash-on-Delivery Restrictions
+
+- Enforce configured COD order limits.
+- Validate payment method eligibility.
+- Apply restrictions on the server.
+
