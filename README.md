@@ -1418,3 +1418,10 @@ GitHub: AfeedaKN
 - Validate payment method eligibility.
 - Apply restrictions on the server.
 
+
+## Order Cancellation
+
+- Validate cancellation eligibility.
+- Update order status consistently.
+- Handle stock restoration and refunds appropriately.
+
