@@ -1432,3 +1432,10 @@ GitHub: AfeedaKN
 - Calculate refunds from the correct order data.
 - Preserve the original order total.
 
+
+## Admin Product Management
+
+- Validate product creation and editing.
+- Keep product variants consistent.
+- Handle product updates safely.
+
