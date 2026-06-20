@@ -1439,3 +1439,10 @@ GitHub: AfeedaKN
 - Keep product variants consistent.
 - Handle product updates safely.
 
+
+## User Management and Search
+
+- Validate search parameters.
+- Restrict user management to authorized administrators.
+- Handle blocked accounts consistently.
+
