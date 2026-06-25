@@ -1446,3 +1446,10 @@ GitHub: AfeedaKN
 - Restrict user management to authorized administrators.
 - Handle blocked accounts consistently.
 
+
+## Sales Report Aggregation
+
+- Calculate revenue from valid order records.
+- Validate order counts and sales totals.
+- Apply consistent rules for cancelled orders.
+
