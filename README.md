@@ -1453,3 +1453,10 @@ GitHub: AfeedaKN
 - Validate order counts and sales totals.
 - Apply consistent rules for cancelled orders.
 
+
+## MongoDB Query Optimization
+
+- Review frequently used queries.
+- Add indexes when justified by query patterns.
+- Avoid unnecessary database operations.
+
