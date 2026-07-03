@@ -1474,3 +1474,10 @@ GitHub: AfeedaKN
 - Display clear validation messages.
 - Repeat important validation on the server.
 
+
+## Centralized Error Handling
+
+- Handle application errors consistently.
+- Return appropriate HTTP status codes.
+- Avoid exposing internal error details.
+
