@@ -1481,3 +1481,10 @@ GitHub: AfeedaKN
 - Return appropriate HTTP status codes.
 - Avoid exposing internal error details.
 
+
+## Business-Logic Unit Tests
+
+- Test coupon eligibility rules.
+- Test order total calculations.
+- Cover invalid quantities and edge cases.
+
