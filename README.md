@@ -1488,3 +1488,10 @@ GitHub: AfeedaKN
 - Test order total calculations.
 - Cover invalid quantities and edge cases.
 
+
+## Checkout Workflow Tests
+
+- Test checkout with valid and invalid cart data.
+- Verify payment failure handling.
+- Test order creation and cancellation flows.
+
