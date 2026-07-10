@@ -1495,3 +1495,10 @@ GitHub: AfeedaKN
 - Verify payment failure handling.
 - Test order creation and cancellation flows.
 
+
+## Reusable Service Functions
+
+- Separate business logic from route handlers.
+- Reuse common validation and calculation logic.
+- Keep functions focused on a single responsibility.
+
