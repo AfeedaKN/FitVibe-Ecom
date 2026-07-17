@@ -1509,3 +1509,11 @@ GitHub: AfeedaKN
 - Explain required request fields.
 - Describe expected response formats and errors.
 
+
+## Security Review
+
+- Keep secrets out of source code.
+- Verify authorization on protected operations.
+- Validate incoming requests.
+- Avoid exposing sensitive user information.
+
