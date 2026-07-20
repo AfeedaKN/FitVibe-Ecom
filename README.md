@@ -1517,3 +1517,10 @@ GitHub: AfeedaKN
 - Validate incoming requests.
 - Avoid exposing sensitive user information.
 
+
+## Regression Testing
+
+- Recheck product browsing and cart operations.
+- Verify checkout and payment workflows.
+- Test order cancellation and refunds after changes.
+
