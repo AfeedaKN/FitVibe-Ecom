@@ -1524,3 +1524,10 @@ GitHub: AfeedaKN
 - Verify checkout and payment workflows.
 - Test order cancellation and refunds after changes.
 
+
+## Installation and Environment Documentation
+
+- Document required dependencies.
+- Explain environment variable configuration.
+- Keep setup instructions aligned with project scripts.
+
