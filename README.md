@@ -1531,3 +1531,11 @@ GitHub: AfeedaKN
 - Explain environment variable configuration.
 - Keep setup instructions aligned with project scripts.
 
+
+## Final Project Review
+
+- Review application configuration.
+- Verify critical customer and admin workflows.
+- Confirm documentation matches the implementation.
+- Check repository status before release.
+
