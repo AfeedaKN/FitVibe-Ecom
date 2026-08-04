@@ -1546,3 +1546,10 @@ GitHub: AfeedaKN
 - Filter products by category and availability.
 - Handle empty search results clearly.
 
+
+## Product Variant Management
+
+- Validate product sizes and colors.
+- Associate variants with the correct product.
+- Check stock before accepting purchases.
+
