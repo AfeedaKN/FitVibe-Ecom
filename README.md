@@ -1553,3 +1553,10 @@ GitHub: AfeedaKN
 - Associate variants with the correct product.
 - Check stock before accepting purchases.
 
+
+## Cart Validation
+
+- Validate requested product quantities.
+- Recalculate prices on the server.
+- Check stock before checkout.
+
