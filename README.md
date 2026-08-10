@@ -1560,3 +1560,10 @@ GitHub: AfeedaKN
 - Recalculate prices on the server.
 - Check stock before checkout.
 
+
+## Coupon Eligibility
+
+- Check coupon expiry.
+- Enforce usage limits.
+- Validate minimum purchase requirements.
+
