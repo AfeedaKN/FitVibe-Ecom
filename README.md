@@ -1567,3 +1567,10 @@ GitHub: AfeedaKN
 - Enforce usage limits.
 - Validate minimum purchase requirements.
 
+
+## Checkout Total Calculations
+
+- Calculate subtotal and discounts on the server.
+- Include applicable delivery charges.
+- Validate the final amount before payment.
+
