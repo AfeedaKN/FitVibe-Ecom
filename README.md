@@ -1574,3 +1574,10 @@ GitHub: AfeedaKN
 - Include applicable delivery charges.
 - Validate the final amount before payment.
 
+
+## Payment Verification
+
+- Verify payment responses on the server.
+- Handle unsuccessful payments safely.
+- Prevent duplicate payment processing.
+
