@@ -1581,3 +1581,10 @@ GitHub: AfeedaKN
 - Handle unsuccessful payments safely.
 - Prevent duplicate payment processing.
 
+
+## Order Cancellation
+
+- Validate cancellation eligibility.
+- Update order status consistently.
+- Handle stock restoration and refunds appropriately.
+
