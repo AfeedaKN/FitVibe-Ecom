@@ -1595,3 +1595,10 @@ GitHub: AfeedaKN
 - Calculate refunds from correct order data.
 - Preserve original order totals.
 
+
+## Admin Sales Reports
+
+- Calculate revenue from valid order records.
+- Validate sales totals and order counts.
+- Apply consistent rules for cancelled orders.
+
