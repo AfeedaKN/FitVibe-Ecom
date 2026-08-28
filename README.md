@@ -1602,3 +1602,10 @@ GitHub: AfeedaKN
 - Validate sales totals and order counts.
 - Apply consistent rules for cancelled orders.
 
+
+## Testing and Release Review
+
+- Test important checkout and order workflows.
+- Review error handling and validation.
+- Confirm documentation matches the implementation.
+
