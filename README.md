@@ -1172,3 +1172,10 @@ GitHub: AfeedaKN
 - Validate ownership before modifications.
 - Handle unavailable products safely.
 
+
+## Coupon Validation
+
+- Validate coupon expiry dates.
+- Enforce minimum purchase requirements.
+- Check usage limits and eligibility.
+
