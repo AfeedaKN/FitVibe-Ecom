@@ -1299,3 +1299,10 @@ GitHub: AfeedaKN
 - Display clear validation messages.
 - Validate important data on the server.
 
+
+## Centralized Error Handling
+
+- Handle application errors consistently.
+- Return appropriate HTTP status codes.
+- Avoid exposing internal error details.
+
