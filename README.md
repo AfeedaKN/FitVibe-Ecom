@@ -1252,3 +1252,11 @@ GitHub: AfeedaKN
 - Handle stock restoration correctly.
 - Prevent repeated cancellation operations.
 
+
+## Returns and Refunds
+
+- Validate return eligibility.
+- Calculate refunds using the correct order data.
+- Preserve original order totals.
+- Track return request status.
+
