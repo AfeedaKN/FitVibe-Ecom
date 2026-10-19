@@ -1200,3 +1200,10 @@ GitHub: AfeedaKN
 - Recalculate the payable amount on the server.
 - Reject invalid or expired coupons.
 
+
+## Checkout Total Calculations
+
+- Calculate the subtotal from product prices and quantities.
+- Apply eligible discounts correctly.
+- Validate shipping charges before order creation.
+
