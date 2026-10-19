@@ -1237,3 +1237,10 @@ GitHub: AfeedaKN
 - Keep product cards readable across devices.
 - Make cart and checkout forms mobile-friendly.
 
+
+## Cash-on-Delivery Restrictions
+
+- Validate COD eligibility on the server.
+- Enforce the configured minimum order requirements.
+- Reject COD orders that violate business rules.
+
