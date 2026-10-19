@@ -1276,3 +1276,11 @@ GitHub: AfeedaKN
 - Handle blocked accounts consistently.
 - Protect user information.
 
+
+## Sales Report Aggregation
+
+- Calculate revenue from valid order records.
+- Track order counts and sales totals.
+- Review top-selling product calculations.
+- Handle cancelled and returned orders consistently.
+
