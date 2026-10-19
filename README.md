@@ -1320,3 +1320,10 @@ GitHub: AfeedaKN
 - Verify payment failure handling.
 - Check stock validation and order creation.
 
+
+## Reusable Service Functions
+
+- Keep business logic separate from controllers.
+- Reuse common validation functions.
+- Avoid duplicated calculations.
+
