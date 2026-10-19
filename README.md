@@ -1268,3 +1268,11 @@ GitHub: AfeedaKN
 - Validate uploaded product images.
 - Handle product deletion safely.
 
+
+## User Management and Search
+
+- Validate user search parameters.
+- Restrict account management to administrators.
+- Handle blocked accounts consistently.
+- Protect user information.
+
