@@ -1292,3 +1292,10 @@ GitHub: AfeedaKN
 - Avoid unnecessary database operations.
 - Measure query performance before and after changes.
 
+
+## Form Validation and User Feedback
+
+- Validate required fields.
+- Display clear validation messages.
+- Validate important data on the server.
+
