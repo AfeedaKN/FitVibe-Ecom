@@ -1313,3 +1313,10 @@ GitHub: AfeedaKN
 - Verify cart and checkout calculations.
 - Test order status validation.
 
+
+## Checkout Workflow Testing
+
+- Test successful checkout.
+- Verify payment failure handling.
+- Check stock validation and order creation.
+
