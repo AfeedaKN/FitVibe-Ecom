@@ -1151,3 +1151,10 @@ GitHub: AfeedaKN
 - Check available sizes and colors.
 - Validate variant stock and prices.
 
+
+## Cloudinary Image Uploads
+
+- Validate uploaded image formats.
+- Enforce file size limits.
+- Handle upload failures safely.
+
