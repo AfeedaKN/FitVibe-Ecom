@@ -1137,3 +1137,10 @@ GitHub: AfeedaKN
 - Manage user sessions safely.
 - Handle session expiry and logout correctly.
 
+
+## Admin Authorization
+
+- Restrict administrative routes.
+- Verify user roles before sensitive actions.
+- Prevent unauthorized access to admin features.
+
