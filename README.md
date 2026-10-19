@@ -1222,3 +1222,11 @@ GitHub: AfeedaKN
 - Prevent duplicate payment processing.
 - Confirm payment status before updating an order.
 
+
+## Wallet Transaction Integrity
+
+- Validate wallet balance before debiting.
+- Record credit and debit transactions.
+- Keep transaction history consistent with wallet balance.
+- Prevent duplicate transaction processing.
+
