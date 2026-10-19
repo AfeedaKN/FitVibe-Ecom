@@ -1306,3 +1306,10 @@ GitHub: AfeedaKN
 - Return appropriate HTTP status codes.
 - Avoid exposing internal error details.
 
+
+## Business Logic Unit Testing
+
+- Test coupon eligibility rules.
+- Verify cart and checkout calculations.
+- Test order status validation.
+
