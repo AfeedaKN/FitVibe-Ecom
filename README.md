@@ -1186,3 +1186,10 @@ GitHub: AfeedaKN
 - Validate shipping charges.
 - Recalculate the final payable amount before order creation.
 
+
+## Order Creation and Stock Consistency
+
+- Validate products before creating orders.
+- Keep stock updates consistent with order creation.
+- Handle failed order operations safely.
+
