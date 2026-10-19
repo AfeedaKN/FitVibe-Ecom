@@ -1193,3 +1193,10 @@ GitHub: AfeedaKN
 - Keep stock updates consistent with order creation.
 - Handle failed order operations safely.
 
+
+## Coupon and Checkout Validation
+
+- Validate coupon eligibility before applying discounts.
+- Recalculate the payable amount on the server.
+- Reject invalid or expired coupons.
+
