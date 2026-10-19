@@ -1,13 +1,14 @@
 {
-  "name": "public",
+  "name": "fitvibe-ecom",
   "version": "1.0.0",
+  "description": "Men's shirt e-commerce web application built with Node.js, Express, MongoDB, and EJS",
   "main": "app.js",
   "scripts": {
-    "start": "nodemon app"
+    "start": "node app.js",
+    "dev": "nodemon app.js"
   },
   "author": "",
   "license": "ISC",
-  "description": "",
   "dependencies": {
     "bcrypt": "^6.0.0",
     "cloudinary": "^1.41.3",
