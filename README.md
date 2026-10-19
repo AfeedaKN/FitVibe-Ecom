@@ -1284,3 +1284,11 @@ GitHub: AfeedaKN
 - Review top-selling product calculations.
 - Handle cancelled and returned orders consistently.
 
+
+## MongoDB Query Optimization
+
+- Review frequently used database queries.
+- Add indexes when justified by query patterns.
+- Avoid unnecessary database operations.
+- Measure query performance before and after changes.
+
