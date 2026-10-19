@@ -1123,3 +1123,10 @@ GitHub: AfeedaKN
 - Verify tests and configuration.
 - Ensure documentation matches the implementation.
 
+
+## Backend Structure and MVC
+
+- Organize routes, controllers, and models.
+- Separate business logic from request handling.
+- Keep shared utilities reusable.
+
