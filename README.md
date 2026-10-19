@@ -1230,3 +1230,10 @@ GitHub: AfeedaKN
 - Keep transaction history consistent with wallet balance.
 - Prevent duplicate transaction processing.
 
+
+## Responsive EJS Pages
+
+- Support mobile and desktop screen sizes.
+- Keep product cards readable across devices.
+- Make cart and checkout forms mobile-friendly.
+
