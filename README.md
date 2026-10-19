@@ -1207,3 +1207,10 @@ GitHub: AfeedaKN
 - Apply eligible discounts correctly.
 - Validate shipping charges before order creation.
 
+
+## Order Creation and Stock Consistency
+
+- Validate product availability before creating an order.
+- Keep order creation and stock updates consistent.
+- Handle failed order operations safely.
+
