@@ -1244,3 +1244,11 @@ GitHub: AfeedaKN
 - Enforce the configured minimum order requirements.
 - Reject COD orders that violate business rules.
 
+
+## Order Cancellation
+
+- Validate cancellation eligibility.
+- Update order status consistently.
+- Handle stock restoration correctly.
+- Prevent repeated cancellation operations.
+
