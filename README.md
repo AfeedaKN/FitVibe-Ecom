@@ -1260,3 +1260,11 @@ GitHub: AfeedaKN
 - Preserve original order totals.
 - Track return request status.
 
+
+## Admin Product Management
+
+- Validate product creation and editing.
+- Maintain consistent product variants.
+- Validate uploaded product images.
+- Handle product deletion safely.
+
